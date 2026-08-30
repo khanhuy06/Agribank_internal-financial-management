@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <!-- Khai báo thư viện SheetJS để đọc file Excel -->
+        <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <table class="bang-du-lieu">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Lương tháng</th>
+                    <th>Lương thưởng</th>
+                    <th>Tổng cộng</th>
+                    <th>Xóa</th>
+                </tr>
+            </thead>
+                    
+            <tbody id="ben-do-du-lieu">
+                
+            </tbody>
+        </table>
+
+
+        <div style="text-align: center; margin-top: 15px;">
+            <button id="nut-them-dong" style="padding: 5px 15px; font-size: 20px; cursor: pointer;">+</button>
+        </div>
+
+
+        <table style="display: none;">
+            <tbody id="khuon-duc-dong-moi">
+                <tr>
+            
+                    <!-- Thêm contenteditable="true" để cho phép click vào sửa -->
+                    <td class="cot-id" contenteditable="true"></td>
+                    <td class="cot-luong" contenteditable="true"></td>
+                    <td class="cot-thuong" contenteditable="true"></td>
+        
+                    <!-- Cột Tổng giữ nguyên, tuyệt đối KHÔNG cho người dùng tự sửa -->
+                    <td class="cot-tong"></td>
+                    <td>
+                            <button class="nut-xoa" style="cursor: pointer; background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px;">X</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        
+        <div id="tam-kinh-mo" class="tam-kinh-mo" style="display: none;">
+    
+    
+            <div class="hop-nhap-lieu" id="bang-nhap-lieu">
+        
+        
+                <button id="nut-x" class="nut-x">X</button>
+
+                <h2 style="margin-top: 0; text-align: center;">Thêm Giao Dịch</h2>
+        
+        
+                <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td><input id="nhap-id" type="text" placeholder="Nhập ID..."></td>
+                                <td><input id="nhap-luong" type="number" placeholder="Nhập lương tháng..."></td>
+                                <td><input id="nhap-thuong" type="number" placeholder="Nhập lương thưởng..."></td>
+                                <td>
+                                    <input type="text" value="0 VND" readonly style="background-color: #f4f4f4; color: red; font-weight: bold; text-align: center; border: none; outline: none; width: 95%;">
+                                </td>
+                            </tr>
+                </table>
+
+        
+                <div style="text-align: right; margin-top: 15px;">
+                    <button id="nut-luu" style="padding: 5px 15px; cursor: pointer; background-color: #4CAF50; color: white; border: none;">Lưu Dữ Liệu</button>
+                </div>
+
+                <!-- Gắn thêm nút chọn file Excel vào form -->
+                <input type="file" id="nhap-excel" accept=".xlsx, .xls" style="margin-bottom: 10px;">
+
+            </div>
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
