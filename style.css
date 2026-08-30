@@ -23,36 +23,36 @@ header {display : flex;
     text-align: center;
 }
 
-/* Trang trí class link-thang */
+
 .link-thang {
-    text-decoration: none; /* Xóa cái đường gạch chân xấu xí mặc định của link */
-    color: black;          /* Chữ màu đen */
-    background-color: #f0f0f0; /* Nền xám nhạt giống nút bấm */
-    padding: 10px 15px;         /* Đệm thêm không gian cho nút to ra */
+    text-decoration: none; 
+    color: black;         
+    background-color: #f0f0f0; 
+    padding: 10px 15px;        
     
-    border: 1px solid #ccc;/* Viền mỏng cho giống nút */
-    border-radius: 5px;    /* Bo tròn 4 góc cho mềm mại */
-    font-weight: bold;     /* In đậm chữ */
+    border: 1px solid #ccc;
+    border-radius: 5px;   
+    font-weight: bold;     
     text-align : center;
     
-    /* 1. Ép chiều ngang của nút tự động thu lại cho vừa cái khung xám */
+   
     width: 100%; 
     
-    /* 2. Căn giữa cái nút: Trên dưới cách 5px, Trái phải tự động chia đều (auto) */
+    
     margin: 5px auto; 
     
-    /* 3. Lệnh sống còn: Ép trình duyệt tính cả Padding vào tổng chiều rộng, không cho phình ra ngoài */
+    
     box-sizing: border-box; 
     
-    /* Ép nó thành dạng khối (block) để 2 lệnh width và margin phía trên có tác dụng chuẩn nhất */
+  
     display: block; 
 }
 
-/* Hiệu ứng trỏ chuột (Hover) */
+
 .link-thang:hover {
-    background-color: #d13131; /* Đổi sang nền đỏ khi di chuột vào */
-    color: white;              /* Đổi chữ sang màu trắng */
-    cursor: pointer;           /* Biến con trỏ thành hình bàn tay */
+    background-color: #d13131; 
+    color: white;              
+    cursor: pointer;           
 }
 
 .giao_dien {
@@ -107,69 +107,68 @@ main {display : flex;
     cursor : pointer;
 }
 
-/* LỚP 1: TẤM KÍNH MỜ */
+
 .tam-kinh-mo {
-    /* Ép tọa độ dính chặt vào 4 góc màn hình */
-    position: fixed;
+   
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
     
-    /* Màu nền đen, độ trong suốt 0.6 (60%) để nhìn xuyên thấu web cũ */
+   
     background-color: rgba(0, 0, 0, 0.6);
     
-    /* Trục Z: Đẩy lên layer cao nhất để không bị bảng Agribank che mất */
+    
     z-index: 1000;
 
-    /* Ép Lớp 2 (Hộp trắng) phải đứng chính giữa màn hình */
+   
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
-/* LỚP 2: HỘP TRẮNG NHẬP LIỆU */
+
 .hop-nhap-lieu {
-    /* Đóng vai trò làm mốc (0,0) cho nút X bám vào */
+   
     position: relative; 
     
-    /* Trang trí vỏ hộp */
+  
     background-color: white;
     padding: 30px;
-    border-radius: 10px; /* Bo tròn 4 góc */
-    width: 50%; /* Không choán hết màn hình, chỉ chiếm 1 nửa */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Tạo bóng đổ 3D cho hộp nổi bần bật */
+    border-radius: 10px;
+    width: 50%; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
 }
 
-/* THẰNG CON: NÚT TẮT X */
+
 .nut-x {
-    /* Tách luồng, bám theo mốc tọa độ của .hop-nhap-lieu */
+    
     position: absolute;
     top: 15px;
     right: 15px;
     
-    /* Trang trí nút X cho đẹp */
+   
     background: none;
     border: none;
     font-size: 24px;
     font-weight: bold;
-    color: #ff4d4d; /* Màu đỏ */
-    cursor: pointer; /* Đổi icon chuột thành hình bàn tay khi trỏ vào */
+    color: #ff4d4d;  
+    cursor: pointer; 
 }
 
-/* Hiệu ứng: Trỏ chuột vào nút X thì đổi sang đỏ sậm */
+
 .nut-x:hover {
     color: #cc0000;
 }
 
 
 
-/* Ám hiệu cho người dùng biết ô này có thể sửa */
+
 [contenteditable="true"] {
     cursor: text; 
 }
 
-/* Đổi màu nền vàng nhạt và hiện viền cam khi click vào để gõ */
+
 [contenteditable="true"]:focus {
     background-color: #fffacd; 
     outline: 1px dashed #ff9900; 
