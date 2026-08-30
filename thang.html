@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <!-- Khai báo thư viện SheetJS để đọc file Excel -->
+        
         <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,12 +37,12 @@
             <tbody id="khuon-duc-dong-moi">
                 <tr>
             
-                    <!-- Thêm contenteditable="true" để cho phép click vào sửa -->
+                    
                     <td class="cot-id" contenteditable="true"></td>
                     <td class="cot-luong" contenteditable="true"></td>
                     <td class="cot-thuong" contenteditable="true"></td>
         
-                    <!-- Cột Tổng giữ nguyên, tuyệt đối KHÔNG cho người dùng tự sửa -->
+                    
                     <td class="cot-tong"></td>
                     <td>
                             <button class="nut-xoa" style="cursor: pointer; background: #ff4d4d; color: white; border: none; padding: 5px 10px; border-radius: 5px;">X</button>
@@ -79,7 +79,7 @@
                     <button id="nut-luu" style="padding: 5px 15px; cursor: pointer; background-color: #4CAF50; color: white; border: none;">Lưu Dữ Liệu</button>
                 </div>
 
-                <!-- Gắn thêm nút chọn file Excel vào form -->
+                
                 <input type="file" id="nhap-excel" accept=".xlsx, .xls" style="margin-bottom: 10px;">
 
             </div>
