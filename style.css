@@ -1,176 +1,701 @@
+/* =========================================================
+   HỆ THỐNG GIAO DIỆN QUẢN LÝ TÀI CHÍNH AGRIBANK (CHI NHÁNH HOÀN LÃO)
+   ========================================================= */
+
+:root {
+    --agri-red: #991b1b;
+    --agri-red-dark: #7f1d1d;
+    --agri-red-light: #fee2e2;
+    --agri-green: #059669;
+    --agri-green-light: #d1fae5;
+    --agri-blue: #2563eb;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --bg-main: #f1f5f9;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
 * {
-    font-family: 'Lora', sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-.logo {width : 200px;
-    margin-left: 10px;}
-
-header {display : flex;
-    align-items: center;
-    justify-content: center;
-    font-size : 50px;
-    flex : 1;}
-
-.header {
+body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    min-height: 100vh;
     display: flex;
+    flex-direction: column;
+}
+
+/* =========================================================
+   1. APP HEADER
+   ========================================================= */
+.app-header {
+    background: linear-gradient(135deg, var(--agri-red), var(--agri-red-dark));
+    color: white;
+    padding: 12px 30px;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    background-color : rgb(209, 49, 49);
-}
-
-.ngay_thang {
-    padding : 5px 20px;
-    border :5px solid black;
-    text-align: center;
-}
-
-/* Trang trí class link-thang */
-.link-thang {
-    text-decoration: none; /* Xóa cái đường gạch chân xấu xí mặc định của link */
-    color: black;          /* Chữ màu đen */
-    background-color: #f0f0f0; /* Nền xám nhạt giống nút bấm */
-    padding: 10px 15px;         /* Đệm thêm không gian cho nút to ra */
-    
-    border: 1px solid #ccc;/* Viền mỏng cho giống nút */
-    border-radius: 5px;    /* Bo tròn 4 góc cho mềm mại */
-    font-weight: bold;     /* In đậm chữ */
-    text-align : center;
-    
-    /* 1. Ép chiều ngang của nút tự động thu lại cho vừa cái khung xám */
-    width: 100%; 
-    
-    /* 2. Căn giữa cái nút: Trên dưới cách 5px, Trái phải tự động chia đều (auto) */
-    margin: 5px auto; 
-    
-    /* 3. Lệnh sống còn: Ép trình duyệt tính cả Padding vào tổng chiều rộng, không cho phình ra ngoài */
-    box-sizing: border-box; 
-    
-    /* Ép nó thành dạng khối (block) để 2 lệnh width và margin phía trên có tác dụng chuẩn nhất */
-    display: block; 
-}
-
-/* Hiệu ứng trỏ chuột (Hover) */
-.link-thang:hover {
-    background-color: #d13131; /* Đổi sang nền đỏ khi di chuột vào */
-    color: white;              /* Đổi chữ sang màu trắng */
-    cursor: pointer;           /* Biến con trỏ thành hình bàn tay */
-}
-
-.giao_dien {
-    display : flex;
-    flex : 1;
-    justify-content: center;
-    align-items: center;
-}
-
-.man_hinh_cho {
-    display : flex;
-    height : 100vh; 
-    align-items : center;
-    justify-content : center;
-    font-size: 25px;
-}
-
-main {display : flex;
-    min-height: 70vh;
-    background-color : rgb(180, 172, 178);}
-
-.bang-du-lieu {
-    width : 95%;
-    margin: 50px auto 20px auto;
-    border-collapse: collapse; 
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1); 
-}
-
-.bang-du-lieu th, .bang-du-lieu td {
-    border: 1px solid #555; 
-    padding: 15px; 
-    text-align: center; 
-}
-
-.bang-du-lieu th {
-    background-color: #d13131; 
-    color: #ffffff; 
-    font-size: 18px;
-    text-transform: uppercase; 
-}
-
-.link-thang {
-    display : flex;
-    flex : 1;
-    width : 100%;
-    text-decoration : none;
-}
-
-.link-thang button {
-    width: 100%;
-    height: 100%; 
-    cursor : pointer;
-}
-
-/* LỚP 1: TẤM KÍNH MỜ */
-.tam-kinh-mo {
-    /* Ép tọa độ dính chặt vào 4 góc màn hình */
-    position: fixed;
+    box-shadow: var(--shadow-md);
+    position: sticky;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    
-    /* Màu nền đen, độ trong suốt 0.6 (60%) để nhìn xuyên thấu web cũ */
-    background-color: rgba(0, 0, 0, 0.6);
-    
-    /* Trục Z: Đẩy lên layer cao nhất để không bị bảng Agribank che mất */
-    z-index: 1000;
+    z-index: 100;
+}
 
-    /* Ép Lớp 2 (Hộp trắng) phải đứng chính giữa màn hình */
+.header-brand {
     display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.app-logo {
+    height: 52px;
+    background: white;
+    padding: 4px 10px;
+    border-radius: 8px;
+    object-fit: contain;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.brand-text h1 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    font-family: 'Lora', serif;
+}
+
+.brand-text p {
+    font-size: 13px;
+    opacity: 0.9;
+    margin-top: 2px;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.nam-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.nam-select-wrapper select {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    font-weight: 600;
+    color: var(--agri-red-dark);
+    cursor: pointer;
+    outline: none;
+}
+
+.user-status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    backdrop-filter: blur(4px);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #34d399;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #34d399;
+}
+
+/* =========================================================
+   2. APP CONTAINER & SIDEBAR
+   ========================================================= */
+.app-container {
+    display: flex;
+    flex: 1;
+}
+
+.app-sidebar {
+    width: 220px;
+    background-color: #ffffff;
+    border-right: 1px solid var(--border-color);
+    padding: 20px 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    padding-left: 8px;
+}
+
+.sidebar-months {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.month-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.month-btn:hover {
+    background-color: var(--agri-red-light);
+    color: var(--agri-red);
+}
+
+.month-btn.active {
+    background-color: var(--agri-red);
+    color: #ffffff;
+    font-weight: 600;
+    box-shadow: 0 4px 8px rgba(153, 27, 27, 0.25);
+}
+
+.month-btn .month-badge {
+    font-size: 11px;
+    background: rgba(0, 0, 0, 0.08);
+    padding: 2px 7px;
+    border-radius: 10px;
+}
+
+.month-btn.active .month-badge {
+    background: rgba(255, 255, 255, 0.25);
+    color: white;
+}
+
+/* =========================================================
+   3. MAIN CONTENT & DASHBOARD
+   ========================================================= */
+.app-main {
+    flex: 1;
+    padding: 25px 30px;
+    overflow-y: auto;
+}
+
+.dashboard-header {
+    margin-bottom: 25px;
+}
+
+.current-month-banner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.current-month-banner h2 {
+    font-size: 24px;
+    color: var(--agri-red-dark);
+    font-family: 'Lora', serif;
+    font-weight: 700;
+}
+
+.badge-chi-nhanh {
+    background-color: var(--agri-red-light);
+    color: var(--agri-red-dark);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+/* KPI CARDS */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 16px;
+}
+
+.kpi-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.kpi-card.kpi-highlight {
+    border-left: 4px solid var(--agri-red);
+    background: linear-gradient(to right, #fff5f5, #ffffff);
+}
+
+.kpi-icon {
+    font-size: 24px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    border-radius: 10px;
+    background-color: var(--bg-main);
+}
+
+.icon-luong { background-color: #e0f2fe; }
+.icon-thuong { background-color: #fef3c7; }
+.icon-tong { background-color: var(--agri-red-light); }
+.icon-nhansu { background-color: #ede9fe; }
+
+.kpi-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.kpi-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.kpi-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.kpi-highlight .kpi-value {
+    color: var(--agri-red-dark);
+}
+
+/* =========================================================
+   4. TOOLBAR & BUTTONS
+   ========================================================= */
+.toolbar-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 18px;
+    background: white;
+    padding: 14px 18px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-primary {
+    background-color: var(--agri-red);
+    color: white;
+}
+.btn-primary:hover {
+    background-color: var(--agri-red-dark);
+}
+
+.btn-outline {
+    border-color: var(--agri-red);
+    color: var(--agri-red);
+    background: transparent;
+}
+.btn-outline:hover {
+    background-color: var(--agri-red-light);
+}
+
+.btn-secondary {
+    background-color: var(--agri-blue);
+    color: white;
+}
+.btn-secondary:hover {
+    background-color: #1d4ed8;
+}
+
+.btn-success {
+    background-color: var(--agri-green);
+    color: white;
+}
+.btn-success:hover {
+    background-color: #047857;
+}
+
+.btn-default {
+    background-color: #f1f5f9;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+.btn-default:hover {
+    background-color: #e2e8f0;
+    color: var(--text-primary);
+}
+
+.search-box {
+    position: relative;
+    display: flex;
     align-items: center;
 }
 
-/* LỚP 2: HỘP TRẮNG NHẬP LIỆU */
-.hop-nhap-lieu {
-    /* Đóng vai trò làm mốc (0,0) cho nút X bám vào */
-    position: relative; 
-    
-    /* Trang trí vỏ hộp */
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px; /* Bo tròn 4 góc */
-    width: 50%; /* Không choán hết màn hình, chỉ chiếm 1 nửa */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3); /* Tạo bóng đổ 3D cho hộp nổi bần bật */
+.search-box input {
+    padding: 9px 14px 9px 36px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+    width: 220px;
+    transition: all 0.2s;
 }
 
-/* THẰNG CON: NÚT TẮT X */
-.nut-x {
-    /* Tách luồng, bám theo mốc tọa độ của .hop-nhap-lieu */
+.search-box input:focus {
+    border-color: var(--agri-red);
+    width: 260px;
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
+}
+
+.search-icon {
     position: absolute;
-    top: 15px;
-    right: 15px;
-    
-    /* Trang trí nút X cho đẹp */
+    left: 12px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+/* =========================================================
+   5. BẢNG DỮ LIỆU TÀI CHÍNH
+   ========================================================= */
+.table-container {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    max-width: 100%;
+    overflow-x: auto;
+}
+
+.bang-tai-chinh {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 14px;
+}
+
+.bang-tai-chinh th {
+    background-color: var(--agri-red);
+    color: white;
+    padding: 13px 16px;
+    font-weight: 600;
+    font-size: 13.5px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+}
+
+.th-tuy-chinh {
+    position: relative;
+}
+
+.btn-xoa-cot {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    line-height: 18px;
+    font-size: 11px;
+    margin-left: 6px;
+    cursor: pointer;
+    display: inline-block;
+    vertical-align: middle;
+    transition: background 0.2s;
+}
+
+.btn-xoa-cot:hover {
+    background: #ff4d4d;
+}
+
+.bang-tai-chinh td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    white-space: nowrap;
+}
+
+.bang-tai-chinh tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Căn lề số và tiền tệ sang phải */
+.col-so {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-weight: 500;
+}
+
+.col-tong {
+    text-align: right;
+    font-weight: 700;
+    color: var(--agri-red-dark);
+}
+
+.col-actions {
+    text-align: center;
+    width: 100px;
+}
+
+.btn-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.btn-edit:hover { background-color: #dbeafe; }
+.btn-delete:hover { background-color: #fee2e2; }
+
+/* DÒNG TỔNG KẾT BẢNG (TFOOT) */
+.bang-tai-chinh tfoot tr {
+    background-color: #f8fafc;
+    border-top: 2px solid #cbd5e1;
+    font-weight: 700;
+}
+
+.bang-tai-chinh tfoot td {
+    padding: 14px 16px;
+    color: var(--agri-red-dark);
+    font-size: 14px;
+}
+
+/* Ô trống dữ liệu */
+.empty-state {
+    text-align: center;
+    padding: 40px !important;
+    color: var(--text-secondary);
+}
+
+.empty-state p {
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+/* =========================================================
+   6. MODAL CỬA SỔ POPUP
+   ========================================================= */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-box {
+    background: white;
+    border-radius: 14px;
+    padding: 26px 30px;
+    width: 540px;
+    max-width: 92%;
+    position: relative;
+    box-shadow: var(--shadow-lg);
+    animation: scaleUp 0.25s ease-out;
+}
+
+.modal-sm {
+    width: 440px;
+}
+
+.modal-close-btn {
+    position: absolute;
+    top: 18px;
+    right: 20px;
     background: none;
     border: none;
     font-size: 24px;
-    font-weight: bold;
-    color: #ff4d4d; /* Màu đỏ */
-    cursor: pointer; /* Đổi icon chuột thành hình bàn tay khi trỏ vào */
+    color: var(--text-secondary);
+    cursor: pointer;
+    line-height: 1;
 }
 
-/* Hiệu ứng: Trỏ chuột vào nút X thì đổi sang đỏ sậm */
-.nut-x:hover {
-    color: #cc0000;
+.modal-close-btn:hover {
+    color: var(--agri-red);
 }
 
-
-
-/* Ám hiệu cho người dùng biết ô này có thể sửa */
-[contenteditable="true"] {
-    cursor: text; 
+.modal-title {
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--agri-red-dark);
+    margin-bottom: 6px;
+    font-family: 'Lora', serif;
 }
 
-/* Đổi màu nền vàng nhạt và hiện viền cam khi click vào để gõ */
-[contenteditable="true"]:focus {
-    background-color: #fffacd; 
-    outline: 1px dashed #ff9900; 
+.modal-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 18px;
 }
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.form-group input, .form-group select {
+    padding: 9px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus, .form-group select:focus {
+    border-color: var(--agri-red);
+    box-shadow: 0 0 0 3px rgba(153, 27, 27, 0.1);
+}
+
+.modal-total-preview {
+    background-color: var(--agri-red-light);
+    border: 1px dashed #f87171;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+}
+
+.modal-total-preview span {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--agri-red-dark);
+}
+
+.modal-total-preview strong {
+    font-size: 17px;
+    color: var(--agri-red-dark);
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* =========================================================
+   7. TOAST NOTIFICATION
+   ========================================================= */
+.toast-container {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    animation: slideInRight 0.3s ease-out;
+}
+
+.toast-success { background-color: var(--agri-green); }
+.toast-error { background-color: #dc2626; }
+.toast-info { background-color: var(--agri-blue); }
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

@@ -1,65 +1,213 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <!-- Khai báo thư viện SheetJS để đọc file Excel -->
-        <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Tài chính & Bảng lương - Agribank Chi nhánh Hoàn Lão</title>
+    
+    <!-- Thư viện SheetJS xử lý đọc/xuất Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,500;0,700;1,400&display=swap" rel="stylesheet">
 
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body> 
-        <div class="header">
-            <img src="logo_agribank.png" alt="LOGO AGRIBANK" class="logo">
-            <header>Quản lý tài chính cá nhân - Agribank</header>
+    <!-- CSS Chính -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- 1. HEADER CHÍNH -->
+    <header class="app-header">
+        <div class="header-brand">
+            <img src="logo_agribank.png" alt="Logo Agribank" class="app-logo">
+            <div class="brand-text">
+                <h1>AGRIBANK - CHI NHÁNH HOÀN LÃO</h1>
+                <p>Hệ thống Quản lý Tài chính & Bảng lương Nội bộ</p>
+            </div>
         </div>
-        <hr>
-        <main>
-            <section class="ngay_thang">
-                <p>MONTH</p>
-                <a href="thang.html?m=1" target="khung_chinh" class="link-thang">
-                    Tháng 1
-                </a>
-                <a href="thang.html?m=2" target="khung_chinh" class="link-thang">
-                    Tháng 2
-                </a>
-                <a href="thang.html?m=3" target="khung_chinh" class="link-thang">
-                    Tháng 3
-                </a>
-                <a href="thang.html?m=4" target="khung_chinh" class="link-thang">
-                    Tháng 4
-                </a>
-                <a href="thang.html?m=5" target="khung_chinh" class="link-thang">
-                    Tháng 5
-                </a>
-                <a href="thang.html?m=6" target="khung_chinh" class="link-thang">
-                    Tháng 6
-                </a>
-                <a href="thang.html?m=7" target="khung_chinh" class="link-thang">
-                    Tháng 7
-                </a>
-                <a href="thang.html?m=8" target="khung_chinh" class="link-thang">
-                    Tháng 8
-                </a>
-                <a href="thang.html?m=9" target="khung_chinh" class="link-thang">
-                    Tháng 9
-                </a>
-                <a href="thang.html?m=10" target="khung_chinh" class="link-thang">
-                    Tháng 10
-                </a>
-                <a href="thang.html?m=11" target="khung_chinh" class="link-thang">
-                    Tháng 11
-                </a>
-                <a href="thang.html?m=12" target="khung_chinh" class="link-thang">
-                    Tháng 12
-                </a>
+        <div class="header-actions">
+            <div class="nam-select-wrapper">
+                <label for="chon-nam">Năm:</label>
+                <select id="chon-nam">
+                    <option value="2025">2025</option>
+                    <option value="2026" selected>2026</option>
+                    <option value="2027">2027</option>
+                </select>
+            </div>
+            <div class="user-status-badge">
+                <span class="status-dot"></span>
+                <span>Hệ thống Trực tuyến</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. BỐ CỤC CHÍNH (SIDEBAR + NỘI DUNG) -->
+    <div class="app-container">
+        <!-- SIDEBAR CHỌN THÁNG -->
+        <aside class="app-sidebar">
+            <div class="sidebar-title">
+                <span>DANH MỤC THÁNG</span>
+            </div>
+            <nav class="sidebar-months" id="menu-12-thang">
+                <!-- Javascript sẽ tạo 12 nút tháng linh hoạt ở đây -->
+            </nav>
+        </aside>
+
+        <!-- NỘI DUNG CHÍNH (DASHBOARD & BẢNG LƯƠNG) -->
+        <main class="app-main">
+            <!-- PHẦN TIÊU ĐỀ THÁNG VÀ THỐNG KÊ NHANH (KPI CARDS) -->
+            <section class="dashboard-header">
+                <div class="current-month-banner">
+                    <h2 id="tieu-de-thang-hien-tai">BẢNG LƯƠNG THÁNG 1 / 2026</h2>
+                    <span class="badge-chi-nhanh">Chi nhánh Hoàn Lão</span>
+                </div>
+
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-luong">💰</div>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Tổng Lương Cơ Bản</span>
+                            <span class="kpi-value" id="kpi-tong-luong">0 đ</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-thuong">🎁</div>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Tổng Tiền Thưởng</span>
+                            <span class="kpi-value" id="kpi-tong-thuong">0 đ</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card kpi-highlight">
+                        <div class="kpi-icon icon-tong">🏦</div>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Tổng Ngân Sách Chi</span>
+                            <span class="kpi-value" id="kpi-tong-chi">0 đ</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-icon icon-nhansu">👥</div>
+                        <div class="kpi-info">
+                            <span class="kpi-label">Tổng Nhân Sự / Dòng</span>
+                            <span class="kpi-value" id="kpi-so-nhan-su">0 người</span>
+                        </div>
+                    </div>
+                </div>
             </section>
-            <section class="giao_dien">
-                <iframe name="khung_chinh" src="man_hinh_cho.html" style="width: 100%; height: 100%; border: none;"></iframe>
+
+            <!-- THANH CÔNG CỤ (ACTION TOOLBAR) -->
+            <section class="toolbar-section">
+                <div class="toolbar-left">
+                    <button id="btn-mo-modal-them" class="btn btn-primary">
+                        <span>+</span> Thêm Giao Dịch / Nhân Viên
+                    </button>
+                    <!-- Nút Thêm Cột Mới Linh Hoạt -->
+                    <button id="btn-mo-modal-them-cot" class="btn btn-outline">
+                        <span>⚙</span> Thêm Cột Mới
+                    </button>
+                </div>
+
+                <div class="toolbar-right">
+                    <div class="search-box">
+                        <input type="text" id="o-tim-kiem" placeholder="Tìm theo Mã NV, Tên, ID...">
+                        <span class="search-icon">🔍</span>
+                    </div>
+
+                    <label for="input-import-excel" class="btn btn-secondary" title="Nhập dữ liệu hàng loạt từ file Excel">
+                        📥 Nhập Excel
+                        <input type="file" id="input-import-excel" accept=".xlsx, .xls" style="display: none;">
+                    </label>
+
+                    <button id="btn-xuat-excel" class="btn btn-success" title="Xuất dữ liệu tháng ra file Excel">
+                        📤 Xuất Excel
+                    </button>
+                </div>
+            </section>
+
+            <!-- BẢNG DỮ LIỆU TÀI CHÍNH TỰ ĐỘNG CẬP NHẬT -->
+            <section class="table-container">
+                <table class="bang-tai-chinh" id="bang-du-lieu-chinh">
+                    <thead>
+                        <tr id="hang-tieu-de-bang">
+                            <!-- Header cột sẽ được sinh tự động theo các cột mặc định + cột tuỳ chỉnh -->
+                        </tr>
+                    </thead>
+                    <tbody id="than-bang-du-lieu">
+                        <!-- Dữ liệu từng nhân viên được vẽ tại đây -->
+                    </tbody>
+                    <tfoot>
+                        <tr id="hang-tong-ket-bang">
+                            <!-- Dòng tổng cộng cả tháng -->
+                        </tr>
+                    </tfoot>
+                </table>
             </section>
         </main>
-        
-    </body>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- 3. CÁC MODAL HỘP THOẠI POPUP                -->
+    <!-- ========================================== -->
+
+    <!-- MODAL 1: THÊM / CHỈNH SỬA DÒNG DỮ LIỆU -->
+    <div id="modal-nhap-lieu" class="modal-overlay" style="display: none;">
+        <div class="modal-box">
+            <button class="modal-close-btn" id="btn-dong-modal-nhap">&times;</button>
+            <h3 class="modal-title" id="tieu-de-modal-nhap">Thêm Giao Dịch Mới</h3>
+            
+            <form id="form-nhap-lieu">
+                <input type="hidden" id="edit-row-index" value="">
+                
+                <div class="form-grid" id="khung-cac-o-nhap-lieu">
+                    <!-- Các ô nhập (cố định + các cột tự thêm) sẽ được render tự động -->
+                </div>
+
+                <div class="modal-total-preview">
+                    <span>Tổng nhận dự kiến:</span>
+                    <strong id="preview-tong-cong">0 đ</strong>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-default" id="btn-huy-nhap">Hủy Bỏ</button>
+                    <button type="submit" class="btn btn-primary" id="btn-xac-nhan-luu">Lưu Dữ Liệu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: THÊM CỘT MỚI LINH HOẠT (SỐ HOẶC CHỮ) -->
+    <div id="modal-them-cot" class="modal-overlay" style="display: none;">
+        <div class="modal-box modal-sm">
+            <button class="modal-close-btn" id="btn-dong-modal-cot">&times;</button>
+            <h3 class="modal-title">Thêm Cột Tùy Chỉnh Mới</h3>
+            <p class="modal-desc">Thêm một cột mới vào bảng tính tháng này (ví dụ: Phụ cấp, Phòng ban, Khấu trừ...)</p>
+            
+            <form id="form-them-cot">
+                <div class="form-group">
+                    <label for="ten-cot-moi">Tên Cột Mới:</label>
+                    <input type="text" id="ten-cot-moi" placeholder="Ví dụ: Phụ cấp ăn trưa, Họ và tên..." required>
+                </div>
+
+                <div class="form-group">
+                    <label for="kieu-cot-moi">Kiểu Dữ Liệu & Đơn Vị:</label>
+                    <select id="kieu-cot-moi">
+                        <option value="so">Số tiền (Tự động cộng vào Tổng và định dạng VND)</option>
+                        <option value="chu">Văn bản / Chữ (Họ tên, Chức vụ, Ghi chú...)</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-default" id="btn-huy-them-cot">Đóng</button>
+                    <button type="submit" class="btn btn-primary">Thêm Cột</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- KHUNG THÔNG BÁO TOAST POPUP (Góc màn hình) -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- JAVASCRIPT ĐIỀU HÀNH -->
+    <script src="script.js"></script>
+</body>
 </html>
