@@ -1,10 +1,13 @@
 // =========================================================
 // HỆ THỐNG QUẢN LÝ TÀI CHÍNH AGRIBANK (CHI NHÁNH HOÀN LÃO)
-// JAVASCRIPT ĐIỀU HÀNH GIAO DIỆN SPA & BẢNG LƯƠNG ĐỘNG
+// JAVASCRIPT ĐIỀU HÀNH GIAO DIỆN SPA & KẾT NỐI API FASTAPI
 // =========================================================
 
 document.addEventListener("DOMContentLoaded", function() {
     
+    // Đường dẫn API (Tự động thích ứng nếu chạy qua server FastAPI hay mở file trực tiếp)
+    const API_URL = window.location.origin.startsWith("http") ? "" : "http://localhost:8000";
+
     // =====================================================
     // 1. KHỞI TẠO TRẠNG THÁI ỨNG DỤNG (APP STATE)
     // =====================================================
@@ -12,8 +15,9 @@ document.addEventListener("DOMContentLoaded", function() {
         thangHienTai: 1,
         namHienTai: 2026,
         tuKhoaTimKiem: "",
+        backendOnline: false, // Trạng thái kết nối máy chủ
         
-        // Cấu hình danh sách cột (Mặc định + Cột tùy chỉnh do người dùng thêm)
+        // Cấu hình danh sách cột (Mặc định + Cột tùy chỉnh)
         danhSachCot: [
             { id: "ma_nv", ten: "Mã NV / ID", kieu: "chu", macDinh: true },
             { id: "ho_ten", ten: "Họ và Tên", kieu: "chu", macDinh: true },
@@ -21,49 +25,91 @@ document.addEventListener("DOMContentLoaded", function() {
             { id: "luong_thuong", ten: "Lương Thưởng", kieu: "so", macDinh: true }
         ],
         
-        // Bộ nhớ dữ liệu theo tháng: key có dạng "du_lieu_2026_1"
+        // Bộ nhớ dữ liệu theo tháng: key dạng "agribank_data_2026_1"
         duLieu: {}
     };
 
     // =====================================================
     // 2. KHỞI CHẠY VÀ NẠP DỮ LIỆU BAN ĐẦU
     // =====================================================
-    khoiPhucDuLieuTuBoNho();
     khoiTaoMenu12Thang();
     dangKySuKien();
-    capNhatToanBoGiaoDien();
+    khoiDongHeThong();
 
-    // =====================================================
-    // 3. CÁC HÀM LƯU TRỮ VÀ KHÔI PHỤC (LOCAL STORAGE / CACHE)
-    // =====================================================
-    function luuVaoBoNho() {
-        const keyDuLieu = `agribank_data_${appState.namHienTai}_${appState.thangHienTai}`;
-        const keyCot = `agribank_columns_${appState.namHienTai}`;
-        
-        localStorage.setItem(keyCot, JSON.stringify(appState.danhSachCot));
-        localStorage.setItem(keyDuLieu, JSON.stringify(appState.duLieu[keyDuLieu] || []));
+    async function khoiDongHeThong() {
+        // Thử kết nối tới Backend FastAPI trước
+        const daKetNoi = await kiemTraVaNapTuAPI();
+        if (!daKetNoi) {
+            // Nếu chưa chạy server thì dùng LocalStorage dự phòng
+            khoiPhucDuLieuTuBoNho();
+        }
+        capNhatToanBoGiaoDien();
     }
 
-    function khoiPhucDuLieuTuBoNho() {
-        // Nạp cấu hình cột đã lưu (nếu có)
-        const keyCot = `agribank_columns_${appState.namHienTai}`;
-        const cotDaLuu = localStorage.getItem(keyCot);
-        if (cotDaLuu) {
+    // =====================================================
+    // 3. CÁC HÀM GIAO TIẾP VỚI API BACKEND FASTAPI & SQLITE
+    // =====================================================
+    async function kiemTraVaNapTuAPI() {
+        try {
+            const resCot = await fetch(`${API_URL}/api/cot`);
+            if (resCot.ok) {
+                const cotData = await resCot.json();
+                if (Array.isArray(cotData) && cotData.length > 0) {
+                    appState.danhSachCot = cotData.map(c => ({
+                        id: c.id,
+                        ten: c.ten,
+                        kieu: c.kieu,
+                        macDinh: Boolean(c.mac_dinh)
+                    }));
+                }
+                appState.backendOnline = true;
+                capNhatStatusBadge(true);
+
+                // Nạp dữ liệu tháng hiện tại từ SQLite qua API
+                await nạpDuLieuThang(appState.thangHienTai);
+                return true;
+            }
+        } catch (e) {
+            console.log("Server FastAPI chua chay, he thong tu dong chuyen sang che do cuc bo (LocalStorage).");
+            appState.backendOnline = false;
+            capNhatStatusBadge(false);
+        }
+        return false;
+    }
+
+    function capNhatStatusBadge(online) {
+        const badgeSpan = document.querySelector(".user-status-badge span:last-child");
+        const statusDot = document.querySelector(".status-dot");
+        if (badgeSpan && statusDot) {
+            if (online) {
+                badgeSpan.textContent = "Máy chủ: Đã kết nối Database";
+                statusDot.style.backgroundColor = "#34d399";
+                statusDot.style.boxShadow = "0 0 8px #34d399";
+            } else {
+                badgeSpan.textContent = "Chế độ: Cục bộ (Offline)";
+                statusDot.style.backgroundColor = "#fbbf24";
+                statusDot.style.boxShadow = "0 0 8px #fbbf24";
+            }
+        }
+    }
+
+    async function nạpDuLieuThang(thang) {
+        const keyDuLieu = `agribank_data_${appState.namHienTai}_${thang}`;
+
+        if (appState.backendOnline) {
             try {
-                appState.danhSachCot = JSON.parse(cotDaLuu);
-            } catch (e) {
-                console.error("Lỗi nạp cấu hình cột:", e);
+                const res = await fetch(`${API_URL}/api/luong?nam=${appState.namHienTai}&thang=${thang}`);
+                if (res.ok) {
+                    appState.duLieu[keyDuLieu] = await res.json();
+                    return;
+                }
+            } catch (err) {
+                console.error("Loi khi tai du lieu tu API:", err);
             }
         }
 
-        // Nạp dữ liệu tháng hiện tại
-        nạpDuLieuThang(appState.thangHienTai);
-    }
-
-    function nạpDuLieuThang(thang) {
-        const keyDuLieu = `agribank_data_${appState.namHienTai}_${thang}`;
+        // Dự phòng LocalStorage nếu offline
         const duLieuLuu = localStorage.getItem(keyDuLieu);
-        
         if (duLieuLuu) {
             try {
                 appState.duLieu[keyDuLieu] = JSON.parse(duLieuLuu);
@@ -71,18 +117,24 @@ document.addEventListener("DOMContentLoaded", function() {
                 appState.duLieu[keyDuLieu] = [];
             }
         } else {
-            // Nếu là tháng 1 chưa có gì, tạo mẫu 2 dòng ban đầu cho sinh động
-            if (thang === 1 && !localStorage.getItem("agribank_khoi_tao_mau")) {
-                appState.duLieu[keyDuLieu] = [
-                    { ma_nv: "AG001", ho_ten: "Nguyễn Văn An", luong_thang: 18500000, luong_thuong: 3500000 },
-                    { ma_nv: "AG002", ho_ten: "Trần Thị Mai", luong_thang: 16000000, luong_thuong: 2500000 }
-                ];
-                localStorage.setItem("agribank_khoi_tao_mau", "true");
-                luuVaoBoNho();
-            } else {
-                appState.duLieu[keyDuLieu] = [];
-            }
+            appState.duLieu[keyDuLieu] = [];
         }
+    }
+
+    function luuVaoBoNho() {
+        const keyDuLieu = `agribank_data_${appState.namHienTai}_${appState.thangHienTai}`;
+        const keyCot = `agribank_columns_${appState.namHienTai}`;
+        localStorage.setItem(keyCot, JSON.stringify(appState.danhSachCot));
+        localStorage.setItem(keyDuLieu, JSON.stringify(appState.duLieu[keyDuLieu] || []));
+    }
+
+    function khoiPhucDuLieuTuBoNho() {
+        const keyCot = `agribank_columns_${appState.namHienTai}`;
+        const cotDaLuu = localStorage.getItem(keyCot);
+        if (cotDaLuu) {
+            try { appState.danhSachCot = JSON.parse(cotDaLuu); } catch (e) {}
+        }
+        nạpDuLieuThang(appState.thangHienTai);
     }
 
     function layDanhSachHienTai() {
@@ -128,9 +180,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 <span>Tháng ${t}</span>
                 <span class="month-badge">T${t}</span>
             `;
-            btn.addEventListener("click", () => {
+            btn.addEventListener("click", async () => {
                 appState.thangHienTai = t;
-                nạpDuLieuThang(t);
+                await nạpDuLieuThang(t);
                 capNhatToanBoGiaoDien();
             });
             khungMenu.appendChild(btn);
@@ -268,7 +320,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 // Gắn sự kiện nút sửa & xóa
                 tdActions.querySelector(".btn-edit").addEventListener("click", () => moModalChinhSua(item, index));
-                tdActions.querySelector(".btn-delete").addEventListener("click", () => xoaDong(index, item.ma_nv || item.ho_ten));
+                tdActions.querySelector(".btn-delete").addEventListener("click", () => xoaDong(item, index));
 
                 tr.appendChild(tdActions);
                 tbody.appendChild(tr);
@@ -310,7 +362,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // =====================================================
-    // 6. XỬ LÝ MODAL THÊM CỘT TÙY CHỈNH (SỐ HOẶC CHỮ)
+    // 6. XỬ LÝ THÊM & XÓA CỘT TÙY CHỈNH (ĐỒNG BỘ API)
     // =====================================================
     const modalThemCot = document.getElementById("modal-them-cot");
     const btnMoModalThemCot = document.getElementById("btn-mo-modal-them-cot");
@@ -327,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function() {
     btnDongModalCot.addEventListener("click", dongModalCotHandler);
     btnHuyThemCot.addEventListener("click", dongModalCotHandler);
 
-    formThemCot.addEventListener("submit", function(e) {
+    formThemCot.addEventListener("submit", async function(e) {
         e.preventDefault();
         const tenCot = document.getElementById("ten-cot-moi").value.trim();
         const kieuCot = document.getElementById("kieu-cot-moi").value;
@@ -337,9 +389,21 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // Tạo id duy nhất cho cột mới (vd: cot_1741512345)
         const idCot = "cot_" + Date.now();
         
+        // Gọi API lưu vào Database nếu có server
+        if (appState.backendOnline) {
+            try {
+                await fetch(`${API_URL}/api/cot`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: idCot, ten: tenCot, kieu: kieuCot })
+                });
+            } catch (err) {
+                console.error("Lỗi khi lưu cột lên API:", err);
+            }
+        }
+
         appState.danhSachCot.push({
             id: idCot,
             ten: tenCot,
@@ -353,8 +417,17 @@ document.addEventListener("DOMContentLoaded", function() {
         hienThiToast(`Đã thêm cột "${tenCot}" (${kieuCot === 'so' ? 'Số tiền' : 'Văn bản'}) thành công!`);
     });
 
-    function xoaCotTuyChinh(idCot, tenCot) {
+    async function xoaCotTuyChinh(idCot, tenCot) {
         if (!confirm(`Bạn có chắc chắn muốn xóa cột "${tenCot}"? Dữ liệu của cột này sẽ bị ẩn.`)) return;
+
+        // Gọi API xóa trong Database
+        if (appState.backendOnline) {
+            try {
+                await fetch(`${API_URL}/api/cot/${idCot}`, { method: "DELETE" });
+            } catch (err) {
+                console.error("Lỗi khi xóa cột qua API:", err);
+            }
+        }
 
         appState.danhSachCot = appState.danhSachCot.filter(c => c.id !== idCot);
         luuVaoBoNho();
@@ -363,7 +436,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     // =====================================================
-    // 7. XỬ LÝ MODAL THÊM & SỬA DÒNG DỮ LIỆU
+    // 7. XỬ LÝ THÊM & SỬA DÒNG DỮ LIỆU (ĐỒNG BỘ API)
     // =====================================================
     const modalNhapLieu = document.getElementById("modal-nhap-lieu");
     const btnMoModalThem = document.getElementById("btn-mo-modal-them");
@@ -441,29 +514,78 @@ document.addEventListener("DOMContentLoaded", function() {
         modalNhapLieu.style.display = "flex";
     }
 
-    formNhapLieu.addEventListener("submit", function(e) {
+    formNhapLieu.addEventListener("submit", async function(e) {
         e.preventDefault();
         const danhSach = layDanhSachHienTai();
         const editIndex = editRowIndexInput.value;
 
         let banGhiMoi = {};
+        let cotTuyChinhObj = {};
+
         const inputs = khungCacONhap.querySelectorAll("input");
         inputs.forEach(input => {
             const id = input.name;
             const kieu = input.dataset.kieu;
-            if (kieu === "so") {
-                banGhiMoi[id] = Number(input.value) || 0;
-            } else {
-                banGhiMoi[id] = input.value.trim();
+            const val = kieu === "so" ? (Number(input.value) || 0) : input.value.trim();
+            banGhiMoi[id] = val;
+
+            // Nếu là cột tự thêm thì gom vào object tùy chỉnh để gửi API
+            if (!["ma_nv", "ho_ten", "luong_thang", "luong_thuong"].includes(id)) {
+                cotTuyChinhObj[id] = val;
             }
         });
 
         if (editIndex !== "") {
             // Chỉnh sửa dòng cũ
+            const itemCu = danhSach[Number(editIndex)];
+            banGhiMoi.id = itemCu.id; // giữ nguyên ID trong database
+
+            if (appState.backendOnline && itemCu.id) {
+                try {
+                    await fetch(`${API_URL}/api/luong/${itemCu.id}`, {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            ma_nv: banGhiMoi.ma_nv,
+                            ho_ten: banGhiMoi.ho_ten || "",
+                            luong_thang: banGhiMoi.luong_thang || 0,
+                            luong_thuong: banGhiMoi.luong_thuong || 0,
+                            cot_tuy_chinh: cotTuyChinhObj
+                        })
+                    });
+                } catch (err) {
+                    console.error("Lỗi cập nhật qua API:", err);
+                }
+            }
+
             danhSach[Number(editIndex)] = banGhiMoi;
             hienThiToast("Đã cập nhật thông tin thành công!");
         } else {
             // Thêm mới
+            if (appState.backendOnline) {
+                try {
+                    const res = await fetch(`${API_URL}/api/luong`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            nam: appState.namHienTai,
+                            thang: appState.thangHienTai,
+                            ma_nv: banGhiMoi.ma_nv,
+                            ho_ten: banGhiMoi.ho_ten || "",
+                            luong_thang: banGhiMoi.luong_thang || 0,
+                            luong_thuong: banGhiMoi.luong_thuong || 0,
+                            cot_tuy_chinh: cotTuyChinhObj
+                        })
+                    });
+                    if (res.ok) {
+                        const dataRes = await res.json();
+                        banGhiMoi.id = dataRes.id;
+                    }
+                } catch (err) {
+                    console.error("Lỗi thêm qua API:", err);
+                }
+            }
+
             danhSach.push(banGhiMoi);
             hienThiToast("Đã thêm giao dịch mới thành công!");
         }
@@ -473,9 +595,20 @@ document.addEventListener("DOMContentLoaded", function() {
         dongModalNhapHandler();
     });
 
-    function xoaDong(index, tenHienThi) {
+    async function xoaDong(item, index) {
+        const tenHienThi = item.ma_nv || item.ho_ten || `Dòng ${index + 1}`;
         if (confirm(`Bạn có chắc chắn muốn xóa giao dịch (${tenHienThi}) này không?`)) {
             let danhSach = layDanhSachHienTai();
+            
+            // Nếu có API và có ID trong database thì xóa qua API
+            if (appState.backendOnline && item.id) {
+                try {
+                    await fetch(`${API_URL}/api/luong/${item.id}`, { method: "DELETE" });
+                } catch (err) {
+                    console.error("Lỗi khi xóa qua API:", err);
+                }
+            }
+
             danhSach.splice(index, 1);
             ganDanhSachHienTai(danhSach);
             veBangDuLieu();
@@ -495,8 +628,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // =====================================================
     // 9. XUẤT VÀ NHẬP DỮ LIỆU EXCEL (.XLSX)
     // =====================================================
-    
-    // Xuất file Excel bảng lương tháng hiện tại
     document.getElementById("btn-xuat-excel").addEventListener("click", function() {
         const danhSach = layDanhSachHienTai();
         if (danhSach.length === 0) {
@@ -504,15 +635,11 @@ document.addEventListener("DOMContentLoaded", function() {
             return;
         }
 
-        // Tạo mảng 2 chiều cho bảng tính
         let duLieuXuat = [];
-        
-        // 1. Dòng tiêu đề cột
         let tieuDe = appState.danhSachCot.map(c => c.ten);
         tieuDe.push("Tổng Cộng");
         duLieuXuat.push(tieuDe);
 
-        // 2. Các dòng dữ liệu
         let tongCotSo = {};
         appState.danhSachCot.forEach(c => { if (c.kieu === 'so') tongCotSo[c.id] = 0; });
         let tongToanBo = 0;
@@ -535,7 +662,6 @@ document.addEventListener("DOMContentLoaded", function() {
             duLieuXuat.push(dong);
         });
 
-        // 3. Dòng tổng kết
         let dongTong = [];
         let daGhiChu = false;
         appState.danhSachCot.forEach(c => {
@@ -551,7 +677,6 @@ document.addEventListener("DOMContentLoaded", function() {
         dongTong.push(tongToanBo);
         duLieuXuat.push(dongTong);
 
-        // Dùng SheetJS tạo Workbook và tải file
         const ws = XLSX.utils.aoa_to_sheet(duLieuXuat);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, `Thang_${appState.thangHienTai}`);
@@ -570,14 +695,13 @@ document.addEventListener("DOMContentLoaded", function() {
         const reader = new FileReader();
         reader.readAsArrayBuffer(file);
         
-        reader.onload = function(evt) {
+        reader.onload = async function(evt) {
             try {
                 const data = new Uint8Array(evt.target.result);
                 const workbook = XLSX.read(data, { type: "array" });
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
                 
-                // Đọc ra mảng JSON theo dòng (header: 1 là trả về mảng 2 chiều)
                 const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                 
                 if (rows.length < 2) {
@@ -585,13 +709,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     return;
                 }
 
-                // Giả định dòng 0 là Header, từ dòng 1 trở đi là số liệu
                 let danhSachMoi = layDanhSachHienTai().slice();
                 let soDongThem = 0;
 
                 for (let i = 1; i < rows.length; i++) {
                     const row = rows[i];
-                    if (!row || row.length === 0 || !row[0]) continue; // Bỏ qua dòng trống
+                    if (!row || row.length === 0 || !row[0]) continue;
                     
                     let banGhi = {
                         ma_nv: String(row[0] || `AG_${Date.now()}`),
@@ -600,12 +723,39 @@ document.addEventListener("DOMContentLoaded", function() {
                         luong_thuong: Number(row[3]) || 0
                     };
 
-                    // Nếu có thêm các cột tiếp theo, nạp tiếp vào các cột tùy chỉnh
+                    let cotTuyChinhObj = {};
                     for (let cIdx = 4; cIdx < row.length; cIdx++) {
                         const cotTuyChinhIndex = cIdx - 4;
                         if (appState.danhSachCot[4 + cotTuyChinhIndex]) {
                             const cot = appState.danhSachCot[4 + cotTuyChinhIndex];
-                            banGhi[cot.id] = cot.kieu === 'so' ? (Number(row[cIdx]) || 0) : String(row[cIdx] || "");
+                            const val = cot.kieu === 'so' ? (Number(row[cIdx]) || 0) : String(row[cIdx] || "");
+                            banGhi[cot.id] = val;
+                            cotTuyChinhObj[cot.id] = val;
+                        }
+                    }
+
+                    // Nếu có backend online, lưu thẳng vào database
+                    if (appState.backendOnline) {
+                        try {
+                            const res = await fetch(`${API_URL}/api/luong`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({
+                                    nam: appState.namHienTai,
+                                    thang: appState.thangHienTai,
+                                    ma_nv: banGhi.ma_nv,
+                                    ho_ten: banGhi.ho_ten,
+                                    luong_thang: banGhi.luong_thang,
+                                    luong_thuong: banGhi.luong_thuong,
+                                    cot_tuy_chinh: cotTuyChinhObj
+                                })
+                            });
+                            if (res.ok) {
+                                const dataRes = await res.json();
+                                banGhi.id = dataRes.id;
+                            }
+                        } catch (err) {
+                            console.error(err);
                         }
                     }
 
@@ -616,7 +766,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 ganDanhSachHienTai(danhSachMoi);
                 veBangDuLieu();
                 hienThiToast(`Đã nạp thành công ${soDongThem} nhân viên từ file Excel!`);
-                inputImportExcel.value = ""; // Reset input
+                inputImportExcel.value = "";
             } catch (err) {
                 console.error(err);
                 hienThiToast("Lỗi khi đọc file Excel: " + err.message, "error");
@@ -629,9 +779,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // =====================================================
     function dangKySuKien() {
         const chonNam = document.getElementById("chon-nam");
-        chonNam.addEventListener("change", function(e) {
+        chonNam.addEventListener("change", async function(e) {
             appState.namHienTai = Number(e.target.value);
-            khoiPhucDuLieuTuBoNho();
+            await nạpDuLieuThang(appState.thangHienTai);
             capNhatToanBoGiaoDien();
             hienThiToast(`Đã chuyển sang Năm Tài Chính ${appState.namHienTai}!`);
         });
@@ -657,4 +807,5 @@ document.addEventListener("DOMContentLoaded", function() {
         }, 3000);
     }
 
-});
+});
+
