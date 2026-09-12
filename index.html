@@ -27,7 +27,13 @@
             </div>
         </div>
         <div class="header-actions">
-            <div class="nam-select-wrapper">
+            <!-- Khu vực thông tin người dùng & Đăng xuất -->
+            <div class="user-profile-bar" id="khung-user-header" style="display: none;">
+                <span class="user-greeting">👤 <span id="ten-can-bo-header">user</span></span>
+                <button id="btn-dang-xuat" class="btn-logout" title="Đăng xuất khỏi hệ thống">Đăng Xuất</button>
+            </div>
+
+            <div class="nam-select-wrapper" id="khung-chon-nam" style="display: none;">
                 <label for="chon-nam">Năm:</label>
                 <select id="chon-nam">
                     <option value="2025">2025</option>
@@ -42,8 +48,43 @@
         </div>
     </header>
 
-    <!-- 2. BỐ CỤC CHÍNH (SIDEBAR + NỘI DUNG) -->
-    <div class="app-container">
+    <!-- 2. MÀN HÌNH ĐĂNG NHẬP BẢO VỆ (CỔNG AN NINH) -->
+    <div id="man-hinh-dang-nhap" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <img src="logo_agribank.png" alt="Logo Agribank" class="login-logo">
+                <h2>CỔNG ĐĂNG NHẬP NỘI BỘ</h2>
+                <p>Agribank Chi nhánh Hoàn Lão</p>
+            </div>
+
+            <form id="form-dang-nhap">
+                <div class="form-group full-width">
+                    <label for="login-username">Tên Đăng Nhập:</label>
+                    <input type="text" id="login-username" placeholder="Nhập tên tài khoản (user)..." required autocomplete="username">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="login-password">Mật Khẩu:</label>
+                    <input type="password" id="login-password" placeholder="Nhập mật khẩu..." required autocomplete="current-password">
+                </div>
+
+                <div id="login-error-msg" class="login-error" style="display: none;">
+                    ❌ Tên đăng nhập hoặc mật khẩu không chính xác!
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block" id="btn-submit-login">
+                    🔒 Đăng Nhập Vào Hệ Thống
+                </button>
+            </form>
+
+            <div class="login-footer">
+                <p>Hệ thống chỉ dành cho cán bộ được cấp quyền.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. BỐ CỤC CHÍNH (SIDEBAR + NỘI DUNG) - ĐƯỢC BẢO VỆ -->
+    <div class="app-container" id="khung-ung-dung-chinh" style="display: none;">
         <!-- SIDEBAR CHỌN THÁNG -->
         <aside class="app-sidebar">
             <div class="sidebar-title">

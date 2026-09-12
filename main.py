@@ -70,10 +70,31 @@ class CapNhatLuongSchema(BaseModel):
     luong_thuong: Optional[float] = 0.0
     cot_tuy_chinh: Optional[Dict[str, Any]] = {}
 
+class DangNhapSchema(BaseModel):
+    username: str
+    password: str
+
 
 # =========================================================
 # 3. CÁC ĐƯỜNG LINK API (ENDPOINTS)
 # =========================================================
+
+# --- API XÁC THỰC ĐĂNG NHẬP ---
+@app.post("/api/login", tags=["Xác thực & Tài khoản"])
+def api_dang_nhap(req: DangNhapSchema):
+    """Kiểm tra tên đăng nhập và mật khẩu."""
+    user = database.xac_thuc_dang_nhap(req.username, req.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Tên đăng nhập hoặc mật khẩu không chính xác")
+    return {
+        "success": True,
+        "message": "Đăng nhập thành công",
+        "user": {
+            "username": user["username"],
+            "ho_ten": user["ho_ten"]
+        }
+    }
+
 
 # --- API CẤU HÌNH CỘT ---
 @app.get("/api/cot", tags=["Cấu hình Cột"])

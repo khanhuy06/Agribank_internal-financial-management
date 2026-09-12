@@ -59,7 +59,25 @@ def khoi_tao_db():
         )
     """)
 
-    # 3. Nạp sẵn các cột mặc định nếu bảng cột đang trống
+    # 3. Tạo bảng tài khoản quản trị
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tai_khoan (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            ho_ten TEXT NOT NULL
+        )
+    """)
+
+    # Nạp tài khoản mặc định (user / qwerty) nếu chưa có
+    cursor.execute("SELECT COUNT(*) FROM tai_khoan WHERE username = 'user'")
+    if cursor.fetchone()[0] == 0:
+        cursor.execute("""
+            INSERT INTO tai_khoan (username, password, ho_ten)
+            VALUES ('user', 'qwerty', 'Quản Trị Viên Agribank')
+        """)
+
+    # 4. Nạp sẵn các cột mặc định nếu bảng cột đang trống
     cursor.execute("SELECT COUNT(*) FROM cau_hinh_cot")
     if cursor.fetchone()[0] == 0:
         cac_cot_mac_dinh = [
@@ -73,7 +91,7 @@ def khoi_tao_db():
             VALUES (?, ?, ?, ?, ?)
         """, cac_cot_mac_dinh)
 
-    # 4. Nạp dữ liệu mẫu ban đầu cho Tháng 1/2026 nếu bảng lương trống
+    # 5. Nạp dữ liệu mẫu ban đầu cho Tháng 1/2026 nếu bảng lương trống
     cursor.execute("SELECT COUNT(*) FROM bang_luong")
     if cursor.fetchone()[0] == 0:
         du_lieu_mau = [
@@ -206,6 +224,25 @@ def xoa_cot(id_cot: str):
     conn.commit()
     conn.close()
     return True
+
+# =========================================================
+# HÀM XÁC THỰC ĐĂNG NHẬP (AUTHENTICATION)
+# =========================================================
+
+def xac_thuc_dang_nhap(username: str, mat_khau: str):
+    """Kiểm tra tài khoản và mật khẩu đăng nhập."""
+    conn = ket_noi_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, username, ho_ten
+        FROM tai_khoan
+        WHERE username = ? AND password = ?
+    """, (username.strip(), mat_khau.strip()))
+    user = cursor.fetchone()
+    conn.close()
+    if user:
+        return dict(user)
+    return None
 
 
 # Chạy thử nghiệm khởi tạo khi thực thi trực tiếp file này

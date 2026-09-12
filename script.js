@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // =====================================================
     khoiTaoMenu12Thang();
     dangKySuKien();
-    khoiDongHeThong();
+    kiemTraTrangThaiDangNhap();
 
     async function khoiDongHeThong() {
         // Thử kết nối tới Backend FastAPI trước
@@ -775,9 +775,103 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     // =====================================================
-    // 10. CHỌN NĂM TÀI CHÍNH & TOAST NOTIFICATION
+    // 10. QUẢN LÝ ĐĂNG NHẬP & BẢO VỆ HỆ THỐNG
     // =====================================================
+    function kiemTraTrangThaiDangNhap() {
+        const manHinhDangNhap = document.getElementById("man-hinh-dang-nhap");
+        const khungUngDung = document.getElementById("khung-ung-dung-chinh");
+        const khungUserHeader = document.getElementById("khung-user-header");
+        const khungChonNam = document.getElementById("khung-chon-nam");
+        const tenCanBoSpan = document.getElementById("ten-can-bo-header");
+
+        const userLuu = sessionStorage.getItem("agribank_user");
+
+        if (userLuu) {
+            // ĐÃ ĐĂNG NHẬP: Mở khóa giao diện bảng tính
+            try {
+                const userObj = JSON.parse(userLuu);
+                tenCanBoSpan.textContent = userObj.ho_ten || userObj.username || "user";
+            } catch (e) {
+                tenCanBoSpan.textContent = "user";
+            }
+
+            manHinhDangNhap.style.display = "none";
+            khungUngDung.style.display = "flex";
+            khungUserHeader.style.display = "flex";
+            khungChonNam.style.display = "flex";
+
+            khoiDongHeThong();
+        } else {
+            // CHƯA ĐĂNG NHẬP: Khóa chặt hệ thống, chỉ hiện form đăng nhập
+            manHinhDangNhap.style.display = "flex";
+            khungUngDung.style.display = "none";
+            khungUserHeader.style.display = "none";
+            khungChonNam.style.display = "none";
+        }
+    }
+
     function dangKySuKien() {
+        // 1. Xử lý Đăng nhập
+        const formDangNhap = document.getElementById("form-dang-nhap");
+        const inputUsername = document.getElementById("login-username");
+        const inputPassword = document.getElementById("login-password");
+        const errorMsg = document.getElementById("login-error-msg");
+
+        formDangNhap.addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const u = inputUsername.value.trim();
+            const p = inputPassword.value.trim();
+            errorMsg.style.display = "none";
+
+            // Thử xác thực qua Backend API nếu server đang chạy
+            let dangNhapThanhCong = false;
+            let thongTinUser = null;
+
+            try {
+                const res = await fetch(`${API_URL}/api/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    dangNhapThanhCong = true;
+                    thongTinUser = data.user;
+                }
+            } catch (err) {
+                console.log("Khong the ket noi den API login, kiem tra fallback cuc bo");
+            }
+
+            // Fallback nếu chạy offline cục bộ: kiểm tra đúng user / qwerty
+            if (!dangNhapThanhCong) {
+                if (u === "user" && p === "qwerty") {
+                    dangNhapThanhCong = true;
+                    thongTinUser = { username: "user", ho_ten: "Quản Trị Viên Agribank" };
+                }
+            }
+
+            if (dangNhapThanhCong) {
+                sessionStorage.setItem("agribank_user", JSON.stringify(thongTinUser));
+                inputPassword.value = "";
+                kiemTraTrangThaiDangNhap();
+                hienThiToast("Đăng nhập thành công! Chào mừng Quản trị viên.");
+            } else {
+                errorMsg.style.display = "block";
+            }
+        });
+
+        // 2. Xử lý Đăng xuất
+        const btnDangXuat = document.getElementById("btn-dang-xuat");
+        btnDangXuat.addEventListener("click", function() {
+            if (confirm("Bạn có chắc chắn muốn đăng xuất và khóa hệ thống lại không?")) {
+                sessionStorage.removeItem("agribank_user");
+                kiemTraTrangThaiDangNhap();
+                hienThiToast("Đã đăng xuất thành công!", "info");
+            }
+        });
+
+        // 3. Chọn Năm tài chính
         const chonNam = document.getElementById("chon-nam");
         chonNam.addEventListener("change", async function(e) {
             appState.namHienTai = Number(e.target.value);
