@@ -1,0 +1,13 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+env/
+venv/
+
+# SQLite database files (tự động khởi tạo bởi database.py)
+*.db
+*.sqlite3
