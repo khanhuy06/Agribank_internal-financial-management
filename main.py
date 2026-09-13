@@ -189,6 +189,7 @@ app.mount("/", StaticFiles(directory=THU_MUC_HIEN_TAI), name="static")
 
 if __name__ == "__main__":
     import uvicorn
-    print("[INFO] Dang khoi dong Web Server Agribank tai: http://localhost:8000")
-    print("[INFO] Trang kiem tra API tu dong tai: http://localhost:8000/docs")
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    port = int(os.environ.get("PORT", 8000))
+    print(f"[INFO] Dang khoi dong Web Server Agribank tai: http://localhost:{port}")
+    print(f"[INFO] Trang kiem tra API tu dong tai: http://localhost:{port}/docs")
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=False)
