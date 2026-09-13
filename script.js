@@ -51,6 +51,16 @@ document.addEventListener("DOMContentLoaded", function() {
     // =====================================================
     async function kiemTraVaNapTuAPI() {
         try {
+            // Kiểm tra trạng thái database từ backend
+            let dbThongTin = null;
+            try {
+                const resStatus = await fetch(`${API_URL}/api/status`);
+                if (resStatus.ok) {
+                    const statusData = await resStatus.json();
+                    dbThongTin = statusData.database;
+                }
+            } catch (err) {}
+
             const resCot = await fetch(`${API_URL}/api/cot`);
             if (resCot.ok) {
                 const cotData = await resCot.json();
@@ -63,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }));
                 }
                 appState.backendOnline = true;
-                capNhatStatusBadge(true);
+                capNhatStatusBadge(true, dbThongTin);
 
                 // Nạp dữ liệu tháng hiện tại từ SQLite qua API
                 await nạpDuLieuThang(appState.thangHienTai);
@@ -77,16 +87,23 @@ document.addEventListener("DOMContentLoaded", function() {
         return false;
     }
 
-    function capNhatStatusBadge(online) {
+    function capNhatStatusBadge(online, dbThongTin = null) {
         const badgeSpan = document.querySelector(".user-status-badge span:last-child");
         const statusDot = document.querySelector(".status-dot");
         if (badgeSpan && statusDot) {
             if (online) {
-                badgeSpan.textContent = "Máy chủ: Đã kết nối Database";
+                if (dbThongTin && dbThongTin.mode === "cloud_turso") {
+                    badgeSpan.textContent = "Cloud DB: Turso (Lưu vĩnh viễn)";
+                    badgeSpan.title = "Dữ liệu được lưu trên Turso Cloud an toàn 100%";
+                } else {
+                    badgeSpan.textContent = "Máy chủ: Database Cục Bộ";
+                    badgeSpan.title = "Đang chạy SQLite cục bộ. Trên Render cần cấu hình Turso để lưu vĩnh viễn.";
+                }
                 statusDot.style.backgroundColor = "#34d399";
                 statusDot.style.boxShadow = "0 0 8px #34d399";
             } else {
                 badgeSpan.textContent = "Chế độ: Cục bộ (Offline)";
+                badgeSpan.title = "Chưa kết nối máy chủ, dữ liệu lưu tạm trên trình duyệt";
                 statusDot.style.backgroundColor = "#fbbf24";
                 statusDot.style.boxShadow = "0 0 8px #fbbf24";
             }

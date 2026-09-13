@@ -79,6 +79,16 @@ class DangNhapSchema(BaseModel):
 # 3. CÁC ĐƯỜNG LINK API (ENDPOINTS)
 # =========================================================
 
+# --- API TRẠNG THÁI HỆ THỐNG & DATABASE ---
+@app.get("/api/status", tags=["Hệ Thống"])
+def api_trang_thai_he_thong():
+    """Lấy thông tin trạng thái hoạt động và loại Database đang kết nối."""
+    return {
+        "status": "online",
+        "database": database.lay_thong_tin_db()
+    }
+
+
 # --- API XÁC THỰC ĐĂNG NHẬP ---
 @app.post("/api/login", tags=["Xác thực & Tài khoản"])
 def api_dang_nhap(req: DangNhapSchema):
