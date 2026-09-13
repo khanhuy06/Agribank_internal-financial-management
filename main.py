@@ -41,8 +41,12 @@ app.add_middleware(
 # 2. Khởi tạo Database khi server khởi động
 @app.on_event("startup")
 def startup_event():
-    database.khoi_tao_db()
-    print("[SERVER] FastAPI da ket noi va san sang phuc vu!")
+    try:
+        database.khoi_tao_db()
+        print("[SERVER] FastAPI da ket noi va san sang phuc vu!")
+    except Exception as e:
+        print(f"[SERVER CANH BAO] Khoi tao database gap loi: {e}")
+        print("[SERVER] He thong van hoat dong o che do an toan.")
 
 
 # =========================================================

@@ -33,6 +33,13 @@ def is_turso_enabled() -> bool:
     """Kiểm tra xem hệ thống có được cấu hình kết nối Turso Cloud hay không."""
     return bool(HAS_LIBSQL and TURSO_DATABASE_URL)
 
+def get_turso_url() -> str:
+    """Chuyển đổi giao thức libsql:// sang https:// để dùng HTTP pipeline ổn định 100%."""
+    url = TURSO_DATABASE_URL.strip()
+    if url.startswith("libsql://"):
+        url = "https://" + url[len("libsql://"):]
+    return url
+
 def lay_thong_tin_db() -> dict:
     """Trả về thông tin loại Database đang được sử dụng."""
     if is_turso_enabled():
@@ -40,7 +47,7 @@ def lay_thong_tin_db() -> dict:
             "mode": "cloud_turso",
             "ten": "Turso Cloud SQLite",
             "mo_ta": "Lưu trữ đám mây vĩnh viễn (Turso LibSQL)",
-            "url": TURSO_DATABASE_URL.split("@")[-1] if "@" in TURSO_DATABASE_URL else TURSO_DATABASE_URL
+            "url": get_turso_url()
         }
     return {
         "mode": "local_sqlite",
@@ -49,37 +56,28 @@ def lay_thong_tin_db() -> dict:
         "url": "file:agribank.db"
     }
 
-def thuc_thi_sql(query: str, params: list = None) -> dict:
-    """
-    Thực thi câu lệnh SQL thống nhất cho cả Turso Cloud SQLite và SQLite Cục Bộ.
-    Trả về dict:
-      - 'rows': danh sách các dict bản ghi
-      - 'lastrowid': ID bản ghi mới tạo (với INSERT)
-      - 'rowcount': số dòng bị ảnh hưởng
-    """
-    params = params or []
+def _thuc_thi_turso(query: str, params: list) -> dict:
+    """Thực thi câu lệnh qua giao thức HTTP của Turso Cloud."""
+    client = libsql_client.create_client_sync(
+        url=get_turso_url(),
+        auth_token=TURSO_AUTH_TOKEN if TURSO_AUTH_TOKEN else None
+    )
+    try:
+        rs = client.execute(query, params)
+        rows = []
+        if rs.columns:
+            for r in rs.rows:
+                rows.append(dict(zip(rs.columns, r)))
+        return {
+            "rows": rows,
+            "lastrowid": rs.last_insert_rowid,
+            "rowcount": rs.rows_affected
+        }
+    finally:
+        client.close()
 
-    # 1. Nếu cấu hình Turso Cloud
-    if is_turso_enabled():
-        client = libsql_client.create_client_sync(
-            url=TURSO_DATABASE_URL,
-            auth_token=TURSO_AUTH_TOKEN if TURSO_AUTH_TOKEN else None
-        )
-        try:
-            rs = client.execute(query, params)
-            rows = []
-            if rs.columns:
-                for r in rs.rows:
-                    rows.append(dict(zip(rs.columns, r)))
-            return {
-                "rows": rows,
-                "lastrowid": rs.last_insert_rowid,
-                "rowcount": rs.rows_affected
-            }
-        finally:
-            client.close()
-
-    # 2. Ngược lại, dùng SQLite cục bộ
+def _thuc_thi_sqlite(query: str, params: list) -> dict:
+    """Thực thi câu lệnh trên SQLite cục bộ."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
@@ -98,6 +96,22 @@ def thuc_thi_sql(query: str, params: list = None) -> dict:
         }
     finally:
         conn.close()
+
+def thuc_thi_sql(query: str, params: list = None) -> dict:
+    """
+    Thực thi câu lệnh SQL với cơ chế dự phòng tự động (Auto-Fallback).
+    Nếu Turso gặp sự cố, tự động lưu trên SQLite cục bộ để server không bao giờ bị sập.
+    """
+    params = params or []
+
+    if is_turso_enabled():
+        try:
+            return _thuc_thi_turso(query, params)
+        except Exception as err:
+            print(f"[CANH BAO TURSO] {err}. He thong tu dong chuyen sang SQLite cuc bo!")
+            return _thuc_thi_sqlite(query, params)
+
+    return _thuc_thi_sqlite(query, params)
 
 def khoi_tao_db():
     """
