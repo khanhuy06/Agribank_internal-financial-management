@@ -168,15 +168,23 @@ def verify_and_consume_otp(email: str, otp_code: str) -> bool:
 
 def get_columns() -> List[Dict[str, Any]]:
     """Lấy danh sách các cột đang hiển thị."""
-    res = thuc_thi_sql("SELECT id, ten, kieu, mac_dinh FROM cau_hinh_cot ORDER BY thu_tu ASC, rowid ASC")
+    res = thuc_thi_sql("SELECT id, ten, kieu, mac_dinh FROM cau_hinh_cot ORDER BY thu_tu ASC, id ASC")
     return res["rows"]
 
 def add_column(id_cot: str, ten: str, kieu: str) -> bool:
-    """Thêm một cột mới."""
-    thuc_thi_sql("""
-        INSERT OR REPLACE INTO cau_hinh_cot (id, ten, kieu, mac_dinh, thu_tu)
-        VALUES (?, ?, ?, 0, 99)
-    """, [id_cot, ten, kieu])
+    """Thêm một cột mới (tương thích PostgreSQL và SQLite/Turso)."""
+    from backend.app.db.connection import get_database_mode
+    if get_database_mode() == "postgresql":
+        thuc_thi_sql("""
+            INSERT INTO cau_hinh_cot (id, ten, kieu, mac_dinh, thu_tu)
+            VALUES (?, ?, ?, 0, 99)
+            ON CONFLICT (id) DO UPDATE SET ten = EXCLUDED.ten, kieu = EXCLUDED.kieu
+        """, [id_cot, ten, kieu])
+    else:
+        thuc_thi_sql("""
+            INSERT OR REPLACE INTO cau_hinh_cot (id, ten, kieu, mac_dinh, thu_tu)
+            VALUES (?, ?, ?, 0, 99)
+        """, [id_cot, ten, kieu])
     return True
 
 def delete_column(id_cot: str) -> bool:

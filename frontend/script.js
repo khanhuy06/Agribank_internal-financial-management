@@ -440,6 +440,10 @@ document.addEventListener("DOMContentLoaded", function() {
             e.preventDefault();
             const tenCot = document.getElementById("ten-cot-moi").value.trim();
             const kieuCot = document.getElementById("kieu-cot-moi").value;
+            if (!tenCot) {
+                hienThiToast("Vui lòng nhập tên cột!", "error");
+                return;
+            }
             const idCot = "cot_" + Date.now();
 
             try {
@@ -451,13 +455,19 @@ document.addEventListener("DOMContentLoaded", function() {
                     await taiDanhSachCot();
                     veBangDuLieu();
                     dongModalCotHandler();
-                    hienThiToast(`Đã thêm cột "${tenCot}" thành công!`);
+                    document.getElementById("ten-cot-moi").value = "";
+                    hienThiToast(`Đã thêm cột "${tenCot}" thành công!`, "success");
                 } else {
-                    const err = await res.json();
-                    hienThiToast(err.detail || "Không thể thêm cột!", "error");
+                    let errMsg = "Không thể thêm cột!";
+                    try {
+                        const err = await res.json();
+                        errMsg = err.detail || errMsg;
+                    } catch (e) {}
+                    hienThiToast(errMsg, "error");
                 }
             } catch (err) {
-                hienThiToast("Lỗi khi thêm cột!", "error");
+                console.error("Lỗi khi thêm cột:", err);
+                hienThiToast(err.message || "Lỗi khi thêm cột!", "error");
             }
         });
     }
