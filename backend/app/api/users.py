@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Path, Depends
 from typing import List, Dict, Any
 from backend.app.schemas.schemas import DoiQuyenSchema, TaoTaiKhoanThuCongSchema
 from backend.app.db import crud
-from backend.app.core.security import require_admin, hash_password
+from backend.app.core.security import require_admin, hash_password, create_access_token
 
 router = APIRouter(prefix="/api/users", tags=["Quản lý Tài khoản (Admin)"])
 
@@ -122,4 +122,38 @@ def api_xoa_tai_khoan(
     return {
         "success": True,
         "message": f"Đã xóa tài khoản '{user['email']}' thành công! Bàn giao an toàn hoàn tất."
+    }
+
+@router.post("/tu-ha-quyen")
+def api_tu_ha_quyen_admin(admin: dict = Depends(require_admin)):
+    """
+    Quản trị viên tự nguyện hạ cấp vai trò của chính mình về người dùng thông thường ('nhan_vien').
+    BẢO MẬT AN TOÀN: 
+    Nếu hệ thống chỉ còn đúng 1 Admin duy nhất, chặn thao tác để tránh hệ thống bị 'mồ côi' Admin!
+    """
+    so_admin = crud.count_admins()
+    if so_admin <= 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Không thể tự hạ cấp! Bạn là Quản trị viên (Admin) duy nhất còn lại của hệ thống. Vui lòng cấp quyền Admin cho tài khoản khác trước khi từ bỏ quyền."
+        )
+
+    crud.update_user_role(admin["id"], "nhan_vien")
+    user = crud.get_user_by_id(admin["id"])
+    new_token = create_access_token(data={
+        "id": user["id"],
+        "email": user["email"],
+        "ho_ten": user["ho_ten"],
+        "role": "nhan_vien"
+    })
+    return {
+        "success": True,
+        "message": "Bạn đã tự hạ cấp về tài khoản người dùng thông thường thành công.",
+        "access_token": new_token,
+        "user": {
+            "id": user["id"],
+            "email": user["email"],
+            "ho_ten": user["ho_ten"],
+            "role": "nhan_vien"
+        }
     }

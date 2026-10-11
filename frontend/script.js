@@ -944,6 +944,12 @@ document.addEventListener("DOMContentLoaded", function() {
             if (formDoiMk) formDoiMk.reset();
             if (doiMkErr) doiMkErr.style.display = "none";
 
+            // Hiển thị / ẩn khu vực tự hạ cấp quyền Admin (Tuyệt đối không hiển thị cho nhân viên thường)
+            const khuVucAdmin = document.getElementById("khu-vuc-quyen-admin");
+            if (khuVucAdmin) {
+                khuVucAdmin.style.display = (appState.currentUser && appState.currentUser.role === "admin") ? "block" : "none";
+            }
+
             chuyenTabCaiDat("ten");
             if (modalCaiDat) modalCaiDat.style.display = "flex";
         };
@@ -1082,6 +1088,50 @@ document.addEventListener("DOMContentLoaded", function() {
                 } catch (err) {
                     doiMkErr.textContent = "Lỗi hệ thống khi đổi mật khẩu!";
                     doiMkErr.style.display = "block";
+                }
+            });
+        }
+
+        // Nút Admin tự nguyện hạ cấp quyền về người dùng thông thường
+        const btnTuHaQuyen = document.getElementById("btn-tu-ha-quyen-admin");
+        if (btnTuHaQuyen) {
+            btnTuHaQuyen.addEventListener("click", async () => {
+                const xacNhan = confirm("Bạn có chắc chắn muốn tự hạ cấp quyền Admin về người dùng thông thường? Sau khi xác nhận, bạn sẽ không còn quyền quản trị hệ thống.");
+                if (!xacNhan) return;
+
+                btnTuHaQuyen.disabled = true;
+                btnTuHaQuyen.innerHTML = `<span>Đang xử lý...</span>`;
+
+                try {
+                    const res = await fetchAuth("/api/users/tu-ha-quyen", { method: "POST" });
+                    const data = await res.json();
+                    if (res.ok) {
+                        if (data.access_token) {
+                            sessionStorage.setItem("agribank_token", data.access_token);
+                        }
+                        if (data.user) {
+                            appState.currentUser = data.user;
+                            sessionStorage.setItem("agribank_user", JSON.stringify(data.user));
+                        } else if (appState.currentUser) {
+                            appState.currentUser.role = "nhan_vien";
+                            sessionStorage.setItem("agribank_user", JSON.stringify(appState.currentUser));
+                        }
+
+                        dongModalCaiDatHandler();
+                        apDungPhanQuyenGiaoDien();
+                        veBangDuLieu();
+                        hienThiToast("Bạn đã tự hạ cấp về người dùng thông thường thành công!", "success");
+                    } else {
+                        hienThiToast(data.detail || "Không thể hạ cấp!", "error");
+                    }
+                } catch (err) {
+                    hienThiToast("Lỗi kết nối khi gửi yêu cầu hạ cấp!", "error");
+                } finally {
+                    btnTuHaQuyen.disabled = false;
+                    btnTuHaQuyen.innerHTML = `
+                        <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                        <span>Hạ Về Nhân Viên</span>
+                    `;
                 }
             });
         }

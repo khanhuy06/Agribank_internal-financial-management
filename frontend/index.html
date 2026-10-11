@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS Chính (kèm cache-busting) -->
-    <link rel="stylesheet" href="style.css?v=20261011_v5">
+    <link rel="stylesheet" href="style.css?v=20261011_v6">
 </head>
 <body>
     <!-- 1. HEADER CHÍNH (CHUẨN VERCEL / ENTERPRISE SAAS) -->
@@ -351,6 +351,21 @@
                 </form>
             </div>
 
+            <!-- KHU VỰC QUẢN TRỊ VIÊN: TỰ HẠ CẤP VỀ NHÂN VIÊN (CHỈ HIỆN VỚI ADMIN) -->
+            <div id="khu-vuc-quyen-admin" class="admin-privilege-card" style="display: none;">
+                <div class="privilege-header">
+                    <div class="privilege-info">
+                        <span class="privilege-title">Quyền Quản Trị Hệ Thống:</span>
+                        <span class="role-badge role-admin">ADMIN</span>
+                    </div>
+                    <button type="button" id="btn-tu-ha-quyen-admin" class="btn-demote-self" title="Tự nguyện từ bỏ quyền Quản trị viên để trở về người dùng thông thường">
+                        <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                        <span>Hạ Về Nhân Viên</span>
+                    </button>
+                </div>
+                <p class="privilege-desc">Tự nguyện chuyển tài khoản về người dùng thông thường. Thao tác này sẽ tước quyền quản trị của bạn.</p>
+            </div>
+
             <!-- KHU VỰC ĐĂNG XUẤT GOM TRONG SETTINGS -->
             <div style="border-top: 1px solid #e4e4e7; margin-top: 24px; padding-top: 16px; display: flex; justify-content: space-between; align-items: center;">
                 <span style="font-size: 12.5px; color: #71717a;">Thao tác phiên làm việc:</span>
@@ -498,6 +513,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- JAVASCRIPT ĐIỀU HÀNH (kèm cache-busting) -->
-    <script src="script.js?v=20261011_v5"></script>
+    <script src="script.js?v=20261011_v6"></script>
 </body>
 </html>
