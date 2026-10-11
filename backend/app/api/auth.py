@@ -7,13 +7,16 @@ import random
 from fastapi import APIRouter, HTTPException, status, Depends
 from backend.app.schemas.schemas import (
     DangNhapSchema, DangKySchema, DoiMatKhauSchema, DoiTenSchema,
-    QuenMatKhauRequestSchema, DatLaiMatKhauSchema
+    QuenMatKhauRequestSchema, DatLaiMatKhauSchema, YeuCauOtpTaoTaiKhoanSchema
 )
 from backend.app.db import crud
 from backend.app.core.security import (
     hash_password, verify_password, create_access_token, get_current_user
 )
-from backend.app.core.email import send_password_changed_email, send_otp_email, send_change_password_otp_email
+from backend.app.core.email import (
+    send_password_changed_email, send_otp_email, send_change_password_otp_email,
+    check_email_mx, send_account_registration_otp_email
+)
 
 router = APIRouter(prefix="/api/auth", tags=["Xác thực & Bảo mật"])
 
@@ -139,11 +142,10 @@ def api_dang_nhap(req: DangNhapSchema):
         }
     }
 
-@router.post("/register")
-def api_dang_ky(req: DangKySchema):
+@router.post("/send-register-otp")
+def api_gui_otp_dang_ky(req: YeuCauOtpTaoTaiKhoanSchema):
     """
-    Đăng ký tài khoản tự động (Chỉ hoạt động khi Admin BẬT cổng đăng ký).
-    Toàn bộ người tự đăng ký sẽ nhận quyền 'nhan_vien' (chỉ xem).
+    BƯỚC 1 ĐĂNG KÝ: Gửi mã OTP 6 số đến email đăng ký để xác thực email tồn tại thật.
     """
     # 1. Kiểm tra công tắc hệ thống
     if not crud.get_registration_status():
@@ -152,25 +154,77 @@ def api_dang_ky(req: DangKySchema):
             detail="Cổng đăng ký hiện đang ĐÓNG. Vui lòng liên hệ Quản trị viên chi nhánh để được mở cổng!"
         )
 
-    # 2. Kiểm tra email đã tồn tại chưa
-    if crud.get_user_by_email(req.email):
+    clean_email = req.email.strip().lower()
+
+    # 2. Kiểm tra định dạng và MX record
+    hop_le, msg_loi = check_email_mx(clean_email)
+    if not hop_le:
+        raise HTTPException(status_code=400, detail=msg_loi)
+
+    # 3. Kiểm tra email đã có trên hệ thống chưa
+    if crud.get_user_by_email(clean_email):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Địa chỉ Email này đã được đăng ký trên hệ thống!"
         )
 
-    # 3. Băm mật khẩu bằng Bcrypt Salt ngẫu nhiên
+    # 4. Sinh OTP và lưu DB (10 phút)
+    otp_code = f"{random.randint(100000, 999999)}"
+    crud.save_otp(clean_email, otp_code, expire_minutes=10)
+
+    # 5. Gửi email xác thực
+    send_account_registration_otp_email(clean_email, req.ho_ten or "Cán bộ", otp_code)
+
+    return {
+        "success": True,
+        "message": f"Mã OTP 6 số xác thực đã được gửi tới email '{clean_email}'. Vui lòng kiểm tra hộp thư!"
+    }
+
+@router.post("/register")
+def api_dang_ky(req: DangKySchema):
+    """
+    BƯỚC 2 ĐĂNG KÝ: Xác thực mã OTP 6 số trước khi tạo tài khoản.
+    """
+    # 1. Kiểm tra công tắc hệ thống
+    if not crud.get_registration_status():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Cổng đăng ký hiện đang ĐÓNG. Vui lòng liên hệ Quản trị viên chi nhánh để được mở cổng!"
+        )
+
+    clean_email = req.email.strip().lower()
+
+    # 2. Kiểm tra định dạng và MX record
+    hop_le, msg_loi = check_email_mx(clean_email)
+    if not hop_le:
+        raise HTTPException(status_code=400, detail=msg_loi)
+
+    # 3. Kiểm tra email đã tồn tại chưa
+    if crud.get_user_by_email(clean_email):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Địa chỉ Email này đã được đăng ký trên hệ thống!"
+        )
+
+    # 4. Bắt buộc kiểm tra mã OTP xác thực email
+    if not req.otp_code or not crud.verify_and_consume_otp(clean_email, req.otp_code.strip()):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Mã OTP xác thực email không chính xác hoặc đã hết hạn (10 phút)!"
+        )
+
+    # 5. Băm mật khẩu bằng Bcrypt Salt ngẫu nhiên
     hashed = hash_password(req.password)
     new_id = crud.create_user(
-        email=req.email,
-        ho_ten=req.ho_ten,
+        email=clean_email,
+        ho_ten=req.ho_ten.strip(),
         hashed_password=hashed,
         role="nhan_vien"  # Luôn mặc định là nhân viên an toàn
     )
 
     return {
         "success": True,
-        "message": "Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.",
+        "message": "Xác thực email và đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.",
         "user_id": new_id
     }
 

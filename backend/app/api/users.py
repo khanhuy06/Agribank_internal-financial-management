@@ -6,12 +6,47 @@
 import random
 from fastapi import APIRouter, HTTPException, Path, Query, Depends, Body
 from typing import List, Dict, Any, Optional
-from backend.app.schemas.schemas import DoiQuyenSchema, TaoTaiKhoanThuCongSchema, XacNhanOtpSchema
+from backend.app.schemas.schemas import DoiQuyenSchema, TaoTaiKhoanThuCongSchema, XacNhanOtpSchema, YeuCauOtpTaoTaiKhoanSchema
 from backend.app.db import crud
 from backend.app.core.security import require_admin, hash_password, create_access_token
-from backend.app.core.email import send_demote_admin_otp_email, send_delete_account_otp_email
+from backend.app.core.email import (
+    send_demote_admin_otp_email, send_delete_account_otp_email,
+    check_email_mx, send_account_registration_otp_email
+)
 
 router = APIRouter(prefix="/api/users", tags=["Quản lý Tài khoản (Admin)"])
+
+@router.post("/yeu-cau-otp-tao-tk")
+def api_yeu_cau_otp_tao_tk(
+    req: YeuCauOtpTaoTaiKhoanSchema,
+    admin: dict = Depends(require_admin)
+):
+    """
+    BƯỚC 1 TẠO TÀI KHOẢN: Gửi mã OTP 6 số tới email cần tạo để xác minh email tồn tại.
+    """
+    clean_email = req.email.strip().lower()
+    
+    # 1. Kiểm tra định dạng và MX record của tên miền
+    hop_le, msg_loi = check_email_mx(clean_email)
+    if not hop_le:
+        raise HTTPException(status_code=400, detail=msg_loi)
+
+    # 2. Kiểm tra email đã có trên hệ thống chưa
+    existing = crud.get_user_by_email(clean_email)
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Email '{clean_email}' đã tồn tại trên hệ thống!")
+
+    # 3. Tạo mã OTP 6 số lưu DB
+    otp_code = f"{random.randint(100000, 999999)}"
+    crud.save_otp(clean_email, otp_code, expire_minutes=10)
+
+    # 4. Gửi email xác thực kích hoạt
+    send_account_registration_otp_email(clean_email, req.ho_ten or "Người dùng", otp_code)
+
+    return {
+        "success": True,
+        "message": f"Mã xác thực OTP 6 số đã được gửi tới email '{clean_email}'. Vui lòng kiểm tra hộp thư!"
+    }
 
 @router.get("", response_model=List[Dict[str, Any]])
 def api_lay_danh_sach_tai_khoan(admin: dict = Depends(require_admin)):
@@ -27,14 +62,29 @@ def api_tao_tai_khoan_thu_cong(
     admin: dict = Depends(require_admin)
 ):
     """
+    BƯỚC 2 TẠO TÀI KHOẢN:
     Admin chủ động thêm tài khoản thủ công:
-    - Nhập Email, Họ tên, Mật khẩu ban đầu và phân quyền (Admin hoặc Nhân viên).
-    - Mật khẩu băm 1 chiều Bcrypt, sau đó người dùng tự đổi mật khẩu cá nhân, Admin không thể biết.
+    - Bắt buộc phải có mã OTP xác thực email gửi về hòm thư đó.
+    - Đảm bảo email tồn tại 100% để sau này có thể đổi mật khẩu và nhận thông báo an ninh.
     """
     clean_email = req.email.strip().lower()
+
+    # 1. Kiểm tra định dạng và MX record
+    hop_le, msg_loi = check_email_mx(clean_email)
+    if not hop_le:
+        raise HTTPException(status_code=400, detail=msg_loi)
+
+    # 2. Kiểm tra trùng email
     existing = crud.get_user_by_email(clean_email)
     if existing:
         raise HTTPException(status_code=400, detail=f"Email '{clean_email}' đã tồn tại trên hệ thống!")
+
+    # 3. Xác thực OTP email bắt buộc
+    if not req.otp_code or not crud.verify_and_consume_otp(clean_email, req.otp_code.strip()):
+        raise HTTPException(
+            status_code=400,
+            detail="Mã OTP xác thực email không chính xác hoặc đã hết hạn (10 phút)! Vui lòng kiểm tra lại hộp thư."
+        )
 
     hashed = hash_password(req.mat_khau)
     new_user_id = crud.create_user(
@@ -46,7 +96,7 @@ def api_tao_tai_khoan_thu_cong(
     vai_tro_text = "Quản trị viên (Admin)" if req.role == "admin" else "Nhân viên"
     return {
         "success": True,
-        "message": f"Đã tạo thành công tài khoản '{clean_email}' với vai trò {vai_tro_text}!",
+        "message": f"Đã xác thực email và tạo thành công tài khoản '{clean_email}' ({vai_tro_text})!",
         "user_id": new_user_id
     }
 

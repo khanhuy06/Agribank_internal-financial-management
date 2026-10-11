@@ -12,10 +12,15 @@ class DangNhapSchema(BaseModel):
     email: str = Field(..., description="Email đăng nhập hoặc username")
     password: str = Field(..., min_length=4, description="Mật khẩu tài khoản")
 
+class YeuCauOtpTaoTaiKhoanSchema(BaseModel):
+    email: str = Field(..., description="Email cần xác thực tồn tại")
+    ho_ten: Optional[str] = Field("Người dùng", description="Họ và tên người dùng")
+
 class DangKySchema(BaseModel):
     email: str = Field(..., description="Địa chỉ email cá nhân / công vụ")
     ho_ten: str = Field(..., min_length=2, description="Họ và tên cán bộ")
     password: str = Field(..., min_length=6, description="Mật khẩu tối thiểu 6 ký tự")
+    otp_code: str = Field(..., min_length=6, max_length=6, description="Mã OTP 6 số xác thực gửi về email")
 
 class DoiTenSchema(BaseModel):
     ho_ten: str = Field(..., min_length=2, max_length=100, description="Họ và tên / Tên tài khoản mới")
@@ -41,6 +46,7 @@ class TaoTaiKhoanThuCongSchema(BaseModel):
     ho_ten: str = Field(..., min_length=2, description="Họ và tên người dùng")
     mat_khau: str = Field(..., min_length=6, description="Mật khẩu khởi tạo ban đầu (tối thiểu 6 ký tự)")
     role: Literal["admin", "nhan_vien"] = Field("nhan_vien", description="Vai trò tài khoản: admin hoặc nhan_vien")
+    otp_code: str = Field(..., min_length=6, max_length=6, description="Mã OTP 6 số xác thực gửi về email")
 
 class XacNhanOtpSchema(BaseModel):
     otp_code: str = Field(..., min_length=6, max_length=6, description="Mã OTP 6 số xác thực gửi về email")

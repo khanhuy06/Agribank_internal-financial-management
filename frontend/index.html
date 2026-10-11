@@ -18,7 +18,7 @@
     <meta http-equiv="Expires" content="0">
 
     <!-- CSS Chính (kèm cache-busting) -->
-    <link rel="stylesheet" href="style.css?v=20261011_v14">
+    <link rel="stylesheet" href="style.css?v=20261011_v15">
 </head>
 <body>
     <!-- 1. HEADER CHÍNH (CHUẨN VERCEL / ENTERPRISE SAAS) -->
@@ -121,6 +121,19 @@
                 <div class="form-group full-width">
                     <label for="reg-password">Mật khẩu:</label>
                     <input type="password" id="reg-password" placeholder="Mật khẩu" required minlength="6" autocomplete="new-password">
+                </div>
+
+                <div class="form-group full-width">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <label for="reg-otp" style="margin-bottom: 0;">Mã OTP Xác Thực Email:</label>
+                        <button type="button" id="btn-gui-otp-dang-ky" class="btn-resend-otp" style="background: none; border: none; color: #991b1b; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 0; font-weight: 500;">
+                            Gửi mã OTP
+                        </button>
+                    </div>
+                    <input type="text" id="reg-otp" placeholder="Nhập mã OTP 6 số gửi về email" maxlength="6" required style="letter-spacing: 4px; font-weight: bold; text-align: center; font-size: 16px;">
+                    <small id="reg-otp-hint" style="color: #64748b; font-size: 11px; display: block; margin-top: 4px;">
+                        Bắt buộc xác thực email tồn tại thực tế để kích hoạt tài khoản.
+                    </small>
                 </div>
 
                 <div id="reg-error-msg" class="login-error" style="display: none;"></div>
@@ -492,7 +505,21 @@
                         </div>
                     </div>
 
+                    <div class="form-group" style="margin-top: 12px; margin-bottom: 0;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                            <label for="new-user-otp" style="margin-bottom: 0;">Mã OTP Xác Thực Email (6 số):</label>
+                            <button type="button" id="btn-gui-otp-them-user" class="btn-resend-otp" style="background: none; border: none; color: #991b1b; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 0; font-weight: 500;">
+                                Gửi mã xác thực
+                            </button>
+                        </div>
+                        <input type="text" id="new-user-otp" placeholder="Nhập mã OTP 6 số gửi về email" maxlength="6" required style="letter-spacing: 4px; font-weight: bold; text-align: center; font-size: 16px;">
+                        <small id="new-user-otp-hint" style="color: #64748b; font-size: 11px; display: block; margin-top: 4px;">
+                            Bắt buộc xác thực email tồn tại thực tế để đảm bảo sau này có thể nhận OTP đổi mật khẩu.
+                        </small>
+                    </div>
+
                     <div id="new-user-error-msg" class="login-error" style="display: none;"></div>
+                    <div id="new-user-success-msg" class="login-success" style="display: none;"></div>
 
                     <div class="panel-actions">
                         <button type="button" class="btn btn-default" id="btn-huy-them-user" style="padding: 7px 15px; font-size: 13px;">Hủy Bỏ</button>
@@ -602,6 +629,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- JAVASCRIPT ĐIỀU HÀNH (kèm cache-busting) -->
-    <script src="script.js?v=20261011_v14"></script>
+    <script src="script.js?v=20261011_v15"></script>
 </body>
 </html>

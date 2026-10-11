@@ -3,6 +3,7 @@
 # MODULE EMAIL - GỬI THÔNG BÁO VÀ MÃ XÁC THỰC OTP
 # =========================================================
 
+import re
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -217,3 +218,63 @@ def send_delete_account_otp_email(to_email: str, ho_ten: str, otp_code: str, tar
     </div>
     """
     return send_email_notification(to_email, subject, html)
+
+def check_email_mx(email: str) -> tuple:
+    """
+    Kiểm tra tính hợp lệ và sự tồn tại của tên miền email:
+    1. Định dạng cú pháp RFC chuẩn.
+    2. Kiểm tra bản ghi MX (Mail Exchange server) của tên miền qua DNS over HTTPS.
+    """
+    email_clean = email.strip().lower()
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    if not re.match(pattern, email_clean):
+        return False, "Định dạng email không hợp lệ (Ví dụ hợp lệ: canbo@gmail.com)!"
+
+    parts = email_clean.split("@")
+    if len(parts) != 2:
+        return False, "Địa chỉ email không hợp lệ!"
+
+    domain = parts[1]
+    
+    # Cho phép tên miền nội bộ agribank.com.vn
+    if domain == "agribank.com.vn":
+        return True, ""
+
+    # Kiểm tra MX record qua DNS over HTTPS của Google
+    try:
+        url = f"https://dns.google/resolve?name={domain}&type=MX"
+        req = urllib.request.Request(url, headers={"Accept": "application/dns-json", "User-Agent": "Agribank-System"})
+        with urllib.request.urlopen(req, timeout=3) as resp:
+            data = json.loads(resp.read().decode())
+            if data.get("Status") != 0 or "Answer" not in data:
+                return False, f"Tên miền email '@{domain}' không tồn tại hoặc không thể nhận thư (thiếu bản ghi MX)!"
+    except Exception as e:
+        print(f"[DNS CHECK WARN] Không thể tra cứu MX cho {domain}: {e}")
+        if "." not in domain or len(domain.split(".")[-1]) < 2:
+            return False, f"Tên miền email '@{domain}' không hợp lệ!"
+
+    return True, ""
+
+def send_account_registration_otp_email(to_email: str, ho_ten: str, otp_code: str) -> bool:
+    """Gửi mã OTP 6 số để xác thực email tồn tại khi đăng ký hoặc tạo tài khoản mới."""
+    subject = f"✨ Mã OTP xác thực KÍCH HOẠT TÀI KHOẢN Agribank: {otp_code}"
+    html = f"""
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px;">
+        <div style="text-align: center; border-bottom: 2px solid #047857; padding-bottom: 12px; margin-bottom: 20px;">
+            <h2 style="color: #047857; margin: 0;">AGRIBANK - CHI NHÁNH HOÀN LÃO</h2>
+            <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Xác Thực Kích Hoạt Tài Khoản Mới</p>
+        </div>
+        <p>Xin chào <strong>{ho_ten}</strong>,</p>
+        <p>Hệ thống nhận được yêu cầu <strong>KÍCH HOẠT / TẠO TÀI KHOẢN MỚI</strong> với địa chỉ email: <strong>{to_email}</strong>.</p>
+        <p>Để xác nhận email này đang hoạt động thực tế và có thể nhận thông báo bảo mật từ ngân hàng, vui lòng nhập mã xác thực OTP dưới đây:</p>
+        <div style="text-align: center; margin: 24px 0;">
+            <span style="display: inline-block; background: #047857; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 6px; padding: 12px 30px; border-radius: 8px;">
+                {otp_code}
+            </span>
+        </div>
+        <p style="color: #ef4444; font-size: 13px;">* Mã này có hiệu lực trong vòng <strong>10 phút</strong>. Tuyệt đối không chia sẻ mã này cho bất kỳ ai.</p>
+        <p style="color: #888; font-size: 12px; margin-top: 24px;">Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua thư này.</p>
+    </div>
+    """
+    return send_email_notification(to_email, subject, html)
+

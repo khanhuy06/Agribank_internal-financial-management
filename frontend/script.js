@@ -898,30 +898,120 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         });
 
-        // 2. Submit Đăng ký
+        // 2. Nút gửi OTP Đăng ký
+        const btnGuiOtpDangKy = document.getElementById("btn-gui-otp-dang-ky");
+        const regOtpHint = document.getElementById("reg-otp-hint");
+        let countdownRegInterval = null;
+
+        if (btnGuiOtpDangKy) {
+            btnGuiOtpDangKy.addEventListener("click", async () => {
+                const email = document.getElementById("reg-email").value.trim();
+                const ho_ten = document.getElementById("reg-hoten").value.trim();
+                const errMsg = document.getElementById("reg-error-msg");
+                const successMsg = document.getElementById("reg-success-msg");
+
+                if (!email) {
+                    if (errMsg) {
+                        errMsg.textContent = "Vui lòng nhập Email trước khi gửi mã OTP!";
+                        errMsg.style.display = "block";
+                    }
+                    document.getElementById("reg-email").focus();
+                    return;
+                }
+
+                if (errMsg) errMsg.style.display = "none";
+                if (successMsg) successMsg.style.display = "none";
+                btnGuiOtpDangKy.disabled = true;
+                btnGuiOtpDangKy.textContent = "Đang gửi...";
+
+                try {
+                    const res = await fetch(`${API_URL}/api/auth/send-register-otp`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, ho_ten: ho_ten || "Cán bộ" })
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        if (successMsg) {
+                            successMsg.textContent = data.message || "Mã OTP đã được gửi về email!";
+                            successMsg.style.display = "block";
+                        }
+                        if (regOtpHint) {
+                            regOtpHint.textContent = `Mã OTP đã gửi tới ${email}. Vui lòng kiểm tra hộp thư!`;
+                            regOtpHint.style.color = "#15803d";
+                        }
+                        const regOtpInput = document.getElementById("reg-otp");
+                        if (regOtpInput) regOtpInput.focus();
+
+                        let count = 60;
+                        if (countdownRegInterval) clearInterval(countdownRegInterval);
+                        countdownRegInterval = setInterval(() => {
+                            count--;
+                            if (count > 0) {
+                                btnGuiOtpDangKy.textContent = `Gửi lại (${count}s)`;
+                            } else {
+                                clearInterval(countdownRegInterval);
+                                btnGuiOtpDangKy.disabled = false;
+                                btnGuiOtpDangKy.textContent = "Gửi lại mã";
+                            }
+                        }, 1000);
+                    } else {
+                        if (errMsg) {
+                            errMsg.textContent = data.detail || "Không thể gửi mã OTP!";
+                            errMsg.style.display = "block";
+                        }
+                        btnGuiOtpDangKy.disabled = false;
+                        btnGuiOtpDangKy.textContent = "Gửi mã OTP";
+                    }
+                } catch (err) {
+                    if (errMsg) {
+                        errMsg.textContent = "Lỗi kết nối khi gửi mã OTP!";
+                        errMsg.style.display = "block";
+                    }
+                    btnGuiOtpDangKy.disabled = false;
+                    btnGuiOtpDangKy.textContent = "Gửi mã OTP";
+                }
+            });
+        }
+
+        // 3. Submit Đăng ký
         formReg.addEventListener("submit", async function(e) {
             e.preventDefault();
             const email = document.getElementById("reg-email").value.trim();
             const ho_ten = document.getElementById("reg-hoten").value.trim();
             const password = document.getElementById("reg-password").value.trim();
+            const otp_code = document.getElementById("reg-otp") ? document.getElementById("reg-otp").value.trim() : "";
             const errMsg = document.getElementById("reg-error-msg");
             const successMsg = document.getElementById("reg-success-msg");
 
             errMsg.style.display = "none";
             successMsg.style.display = "none";
 
+            if (!otp_code || otp_code.length !== 6) {
+                errMsg.textContent = "Vui lòng bấm 'Gửi mã OTP' và nhập mã OTP 6 số từ email của bạn!";
+                errMsg.style.display = "block";
+                const regOtpInput = document.getElementById("reg-otp");
+                if (regOtpInput) regOtpInput.focus();
+                return;
+            }
+
             try {
                 const res = await fetch(`${API_URL}/api/auth/register`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email, ho_ten, password })
+                    body: JSON.stringify({ email, ho_ten, password, otp_code })
                 });
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
 
                 if (res.ok) {
                     successMsg.textContent = data.message;
                     successMsg.style.display = "block";
                     formReg.reset();
+                    if (countdownRegInterval) clearInterval(countdownRegInterval);
+                    if (btnGuiOtpDangKy) {
+                        btnGuiOtpDangKy.disabled = false;
+                        btnGuiOtpDangKy.textContent = "Gửi mã OTP";
+                    }
                     setTimeout(() => tabLogin.click(), 2000);
                 } else {
                     errMsg.textContent = data.detail || "Đăng ký thất bại!";
@@ -1504,7 +1594,12 @@ document.addEventListener("DOMContentLoaded", function() {
         const inputNewHoTen = document.getElementById("new-user-hoten");
         const inputNewPassword = document.getElementById("new-user-password");
         const selectNewRole = document.getElementById("new-user-role");
+        const inputNewOtp = document.getElementById("new-user-otp");
+        const btnGuiOtpThemUser = document.getElementById("btn-gui-otp-them-user");
+        const newUserOtpHint = document.getElementById("new-user-otp-hint");
         const newUserErrorMsg = document.getElementById("new-user-error-msg");
+        const newUserSuccessMsg = document.getElementById("new-user-success-msg");
+        let countdownThemUserInterval = null;
 
         if (btnMoUsers) {
             btnMoUsers.addEventListener("click", async () => {
@@ -1542,7 +1637,17 @@ document.addEventListener("DOMContentLoaded", function() {
             btnHuyThemUser.addEventListener("click", () => {
                 if (khungThemUser) khungThemUser.style.display = "none";
                 if (formThemUser) formThemUser.reset();
+                if (countdownThemUserInterval) clearInterval(countdownThemUserInterval);
+                if (btnGuiOtpThemUser) {
+                    btnGuiOtpThemUser.disabled = false;
+                    btnGuiOtpThemUser.textContent = "Gửi mã xác thực";
+                }
                 if (newUserErrorMsg) newUserErrorMsg.style.display = "none";
+                if (newUserSuccessMsg) newUserSuccessMsg.style.display = "none";
+                if (newUserOtpHint) {
+                    newUserOtpHint.textContent = "Bắt buộc xác thực email tồn tại thực tế để đảm bảo sau này có thể nhận OTP đổi mật khẩu.";
+                    newUserOtpHint.style.color = "#64748b";
+                }
             });
         }
 
@@ -1559,26 +1664,110 @@ document.addEventListener("DOMContentLoaded", function() {
             btnTaoMkNgauNhien.addEventListener("click", sinhVaDienMatKhauNgauNhien);
         }
 
-        // Xử lý gửi Form tạo tài khoản thủ công
+        // Nút Gửi mã xác thực OTP tới email của tài khoản mới
+        if (btnGuiOtpThemUser) {
+            btnGuiOtpThemUser.addEventListener("click", async () => {
+                const email = inputNewEmail ? inputNewEmail.value.trim() : "";
+                const ho_ten = inputNewHoTen ? inputNewHoTen.value.trim() : "";
+
+                if (!email) {
+                    if (newUserErrorMsg) {
+                        newUserErrorMsg.textContent = "Vui lòng nhập Email trước khi gửi mã xác thực!";
+                        newUserErrorMsg.style.display = "block";
+                    }
+                    if (inputNewEmail) inputNewEmail.focus();
+                    return;
+                }
+
+                if (newUserErrorMsg) newUserErrorMsg.style.display = "none";
+                if (newUserSuccessMsg) newUserSuccessMsg.style.display = "none";
+                btnGuiOtpThemUser.disabled = true;
+                btnGuiOtpThemUser.textContent = "Đang gửi...";
+
+                try {
+                    const res = await fetchAuth("/api/users/yeu-cau-otp-tao-tk", {
+                        method: "POST",
+                        body: JSON.stringify({ email, ho_ten: ho_ten || "Người dùng" })
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        if (newUserSuccessMsg) {
+                            newUserSuccessMsg.textContent = data.message || "Mã xác thực đã được gửi về email!";
+                            newUserSuccessMsg.style.display = "block";
+                        }
+                        if (newUserOtpHint) {
+                            newUserOtpHint.textContent = `Mã OTP đã gửi tới ${email}. Vui lòng kiểm tra hộp thư!`;
+                            newUserOtpHint.style.color = "#15803d";
+                        }
+                        if (inputNewOtp) inputNewOtp.focus();
+
+                        let count = 60;
+                        if (countdownThemUserInterval) clearInterval(countdownThemUserInterval);
+                        countdownThemUserInterval = setInterval(() => {
+                            count--;
+                            if (count > 0) {
+                                btnGuiOtpThemUser.textContent = `Gửi lại (${count}s)`;
+                            } else {
+                                clearInterval(countdownThemUserInterval);
+                                btnGuiOtpThemUser.disabled = false;
+                                btnGuiOtpThemUser.textContent = "Gửi lại mã";
+                            }
+                        }, 1000);
+                    } else {
+                        if (newUserErrorMsg) {
+                            newUserErrorMsg.textContent = data.detail || "Không thể gửi mã xác thực!";
+                            newUserErrorMsg.style.display = "block";
+                        }
+                        btnGuiOtpThemUser.disabled = false;
+                        btnGuiOtpThemUser.textContent = "Gửi mã xác thực";
+                    }
+                } catch (err) {
+                    if (newUserErrorMsg) {
+                        newUserErrorMsg.textContent = "Lỗi kết nối khi gửi mã xác thực!";
+                        newUserErrorMsg.style.display = "block";
+                    }
+                    btnGuiOtpThemUser.disabled = false;
+                    btnGuiOtpThemUser.textContent = "Gửi mã xác thực";
+                }
+            });
+        }
+
+        // Xử lý gửi Form tạo tài khoản thủ công (BẮT BUỘC OTP)
         if (formThemUser) {
             formThemUser.addEventListener("submit", async (e) => {
                 e.preventDefault();
                 if (newUserErrorMsg) newUserErrorMsg.style.display = "none";
+                if (newUserSuccessMsg) newUserSuccessMsg.style.display = "none";
 
                 const email = inputNewEmail.value.trim();
                 const ho_ten = inputNewHoTen.value.trim();
                 const mat_khau = inputNewPassword.value;
                 const role = selectNewRole.value;
+                const otp_code = inputNewOtp ? inputNewOtp.value.trim() : "";
+
+                if (!otp_code || otp_code.length !== 6) {
+                    if (newUserErrorMsg) {
+                        newUserErrorMsg.textContent = "Vui lòng bấm 'Gửi mã xác thực' và nhập đủ 6 số OTP gửi về email!";
+                        newUserErrorMsg.style.display = "block";
+                    }
+                    if (inputNewOtp) inputNewOtp.focus();
+                    return;
+                }
 
                 try {
                     const res = await fetchAuth("/api/users", {
                         method: "POST",
-                        body: JSON.stringify({ email, ho_ten, mat_khau, role })
+                        body: JSON.stringify({ email, ho_ten, mat_khau, role, otp_code })
                     });
-                    const data = await res.json();
+                    const data = await res.json().catch(() => ({}));
                     if (res.ok) {
                         hienThiToast(data.message, "success");
                         formThemUser.reset();
+                        if (countdownThemUserInterval) clearInterval(countdownThemUserInterval);
+                        if (btnGuiOtpThemUser) {
+                            btnGuiOtpThemUser.disabled = false;
+                            btnGuiOtpThemUser.textContent = "Gửi mã xác thực";
+                        }
                         if (khungThemUser) khungThemUser.style.display = "none";
                         await taiDanhSachUsersAdmin();
                     } else {
