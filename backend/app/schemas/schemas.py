@@ -17,6 +17,9 @@ class DangKySchema(BaseModel):
     ho_ten: str = Field(..., min_length=2, description="Họ và tên cán bộ")
     password: str = Field(..., min_length=6, description="Mật khẩu tối thiểu 6 ký tự")
 
+class DoiTenSchema(BaseModel):
+    ho_ten: str = Field(..., min_length=2, max_length=100, description="Họ và tên / Tên tài khoản mới")
+
 class DoiMatKhauSchema(BaseModel):
     mat_khau_cu: str = Field(..., description="Mật khẩu hiện tại")
     mat_khau_moi: str = Field(..., min_length=6, description="Mật khẩu mới tối thiểu 6 ký tự")

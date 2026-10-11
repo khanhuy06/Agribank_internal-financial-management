@@ -727,7 +727,30 @@ body {
 }
 
 .modal-sm { width: 420px; }
+.modal-md { max-width: 480px; width: 92%; }
 .modal-lg { max-width: 780px; width: 95%; }
+
+.btn-logout-modal {
+    background: #fef2f2;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    padding: 7px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap !important;
+}
+
+.btn-logout-modal:hover {
+    background: #fee2e2;
+    border-color: #f87171;
+    color: #dc2626;
+}
 
 .modal-close-btn {
     position: absolute;

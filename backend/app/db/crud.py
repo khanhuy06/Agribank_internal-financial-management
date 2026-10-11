@@ -13,13 +13,15 @@ from backend.app.db.connection import thuc_thi_sql
 # =========================================================
 
 def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
-    """Tìm tài khoản theo email hoặc username (chuẩn hóa chữ thường)."""
+    """Tìm tài khoản theo email, username hoặc họ tên (chuẩn hóa chữ thường)."""
     clean_val = email.strip().lower()
     res = thuc_thi_sql("""
         SELECT id, email, username, ho_ten, hashed_password, role, is_active, ngay_tao
         FROM tai_khoan
-        WHERE LOWER(COALESCE(email, '')) = ? OR LOWER(COALESCE(username, '')) = ?
-    """, [clean_val, clean_val])
+        WHERE LOWER(COALESCE(email, '')) = ? 
+           OR LOWER(COALESCE(username, '')) = ? 
+           OR LOWER(COALESCE(ho_ten, '')) = ?
+    """, [clean_val, clean_val, clean_val])
     if res["rows"]:
         return res["rows"][0]
     return None
@@ -64,6 +66,16 @@ def update_user_role(user_id: int, new_role: str) -> bool:
         SET role = ?
         WHERE id = ?
     """, [new_role, user_id])
+    return True
+
+def update_user_name(user_id: int, new_ho_ten: str) -> bool:
+    """Cập nhật tên tài khoản / họ tên."""
+    clean_name = new_ho_ten.strip()
+    thuc_thi_sql("""
+        UPDATE tai_khoan
+        SET ho_ten = ?
+        WHERE id = ?
+    """, [clean_name, user_id])
     return True
 
 def update_user_password(user_id: int, new_hashed_password: str) -> bool:

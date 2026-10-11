@@ -870,41 +870,122 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         // =====================================================
-        // 9. MODAL ĐỔI MẬT KHẨU CÁ NHÂN
+        // 9. MODAL CÀI ĐẶT TÀI KHOẢN (GỒM: ĐỔI TÊN, ĐỔI MẬT KHẨU, ĐĂNG XUẤT)
         // =====================================================
-        // 9. MODAL ĐỔI MẬT KHẨU CÁ NHÂN (XÁC THỰC EMAIL OTP)
-        // =====================================================
-        const modalDoiMk = document.getElementById("modal-doi-mat-khau");
-        const btnMoDoiMk = document.getElementById("btn-mo-modal-doi-mk");
-        const btnDongDoiMk = document.getElementById("btn-dong-modal-doi-mk");
-        const btnHuyDoiMk = document.getElementById("btn-huy-doi-mk");
+        const modalCaiDat = document.getElementById("modal-cai-dat");
+        const btnMoCaiDat = document.getElementById("btn-mo-modal-cai-dat");
+        const btnHeaderProfile = document.getElementById("btn-header-profile");
+        const btnDongCaiDat = document.getElementById("btn-dong-modal-cai-dat");
+
+        const tabBtnTen = document.getElementById("tab-btn-cai-dat-ten");
+        const tabBtnMk = document.getElementById("tab-btn-cai-dat-mk");
+        const khoiTen = document.getElementById("khoi-cai-dat-ten");
+        const khoiMk = document.getElementById("khoi-cai-dat-mk");
+
+        const formDoiTen = document.getElementById("form-doi-ten");
+        const doiTenErr = document.getElementById("doi-ten-error");
+        const doiTenSuccess = document.getElementById("doi-ten-success");
+
         const formDoiMk = document.getElementById("form-doi-mat-khau");
         const doiMkErr = document.getElementById("doi-mk-error");
         const btnGuiOtpDoiMk = document.getElementById("btn-gui-otp-doi-mk");
-        const textOtpStatus = document.getElementById("text-otp-status");
         const inputOtpDoiMk = document.getElementById("mk-otp-code");
 
         let cooldownDoiMkOtp = 0;
         let timerDoiMkOtp = null;
 
-        if (btnMoDoiMk) {
-            btnMoDoiMk.addEventListener("click", () => {
-                if (formDoiMk) formDoiMk.reset();
-                if (doiMkErr) doiMkErr.style.display = "none";
-                if (textOtpStatus) {
-                    textOtpStatus.textContent = "Bấm 'Gửi Mã OTP' để nhận mã xác thực qua hòm thư Email đăng ký.";
-                    textOtpStatus.style.color = "#64748b";
+        // Chuyển tab trong modal cài đặt
+        const chuyenTabCaiDat = (tab) => {
+            if (tab === "ten") {
+                if (tabBtnTen) tabBtnTen.classList.add("active");
+                if (tabBtnMk) tabBtnMk.classList.remove("active");
+                if (khoiTen) khoiTen.style.display = "block";
+                if (khoiMk) khoiMk.style.display = "none";
+            } else {
+                if (tabBtnMk) tabBtnMk.classList.add("active");
+                if (tabBtnTen) tabBtnTen.classList.remove("active");
+                if (khoiMk) khoiMk.style.display = "block";
+                if (khoiTen) khoiTen.style.display = "none";
+            }
+        };
+
+        if (tabBtnTen) tabBtnTen.addEventListener("click", () => chuyenTabCaiDat("ten"));
+        if (tabBtnMk) tabBtnMk.addEventListener("click", () => chuyenTabCaiDat("mk"));
+
+        // Mở modal cài đặt
+        const moModalCaiDatHandler = () => {
+            if (appState.currentUser) {
+                const tenHienTaiInput = document.getElementById("setting-ten-hien-tai");
+                if (tenHienTaiInput) {
+                    tenHienTaiInput.value = appState.currentUser.ho_ten || appState.currentUser.email || "";
                 }
-                modalDoiMk.style.display = "flex";
+            }
+            const tenMoiInput = document.getElementById("setting-ten-moi");
+            if (tenMoiInput) tenMoiInput.value = "";
+            if (doiTenErr) doiTenErr.style.display = "none";
+            if (doiTenSuccess) doiTenSuccess.style.display = "none";
+
+            if (formDoiMk) formDoiMk.reset();
+            if (doiMkErr) doiMkErr.style.display = "none";
+
+            chuyenTabCaiDat("ten");
+            if (modalCaiDat) modalCaiDat.style.display = "flex";
+        };
+
+        if (btnMoCaiDat) btnMoCaiDat.addEventListener("click", moModalCaiDatHandler);
+        if (btnHeaderProfile) btnHeaderProfile.addEventListener("click", moModalCaiDatHandler);
+
+        // Đóng modal cài đặt
+        const dongModalCaiDatHandler = () => {
+            if (modalCaiDat) modalCaiDat.style.display = "none";
+        };
+        if (btnDongCaiDat) btnDongCaiDat.addEventListener("click", dongModalCaiDatHandler);
+
+        // Submit Đổi tên tài khoản
+        if (formDoiTen) {
+            formDoiTen.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                const tenMoi = document.getElementById("setting-ten-moi").value.trim();
+                if (doiTenErr) doiTenErr.style.display = "none";
+                if (doiTenSuccess) doiTenSuccess.style.display = "none";
+
+                if (tenMoi.length < 2) {
+                    doiTenErr.textContent = "Tên tài khoản phải có độ dài từ 2 ký tự trở lên!";
+                    doiTenErr.style.display = "block";
+                    return;
+                }
+
+                try {
+                    const res = await fetchAuth("/api/auth/doi-ten", {
+                        method: "PUT",
+                        body: JSON.stringify({ ho_ten: tenMoi })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        if (appState.currentUser) {
+                            appState.currentUser.ho_ten = tenMoi;
+                            sessionStorage.setItem("agribank_user", JSON.stringify(appState.currentUser));
+                        }
+                        const tenCanBoSpan = document.getElementById("ten-can-bo-header");
+                        if (tenCanBoSpan) tenCanBoSpan.textContent = tenMoi;
+
+                        const tenHienTaiInput = document.getElementById("setting-ten-hien-tai");
+                        if (tenHienTaiInput) tenHienTaiInput.value = tenMoi;
+                        document.getElementById("setting-ten-moi").value = "";
+
+                        doiTenSuccess.textContent = "Đã cập nhật tên tài khoản thành công!";
+                        doiTenSuccess.style.display = "block";
+                        hienThiToast("Đổi tên tài khoản thành công!", "success");
+                    } else {
+                        doiTenErr.textContent = data.detail || "Không thể đổi tên tài khoản!";
+                        doiTenErr.style.display = "block";
+                    }
+                } catch (err) {
+                    doiTenErr.textContent = "Lỗi kết nối khi cập nhật tên!";
+                    doiTenErr.style.display = "block";
+                }
             });
         }
-
-        const dongModalDoiMkHandler = () => {
-            if (modalDoiMk) modalDoiMk.style.display = "none";
-            if (doiMkErr) doiMkErr.style.display = "none";
-        };
-        if (btnDongDoiMk) btnDongDoiMk.addEventListener("click", dongModalDoiMkHandler);
-        if (btnHuyDoiMk) btnHuyDoiMk.addEventListener("click", dongModalDoiMkHandler);
 
         // Nút Gửi mã OTP xác thực đổi mật khẩu
         if (btnGuiOtpDoiMk) {
@@ -919,10 +1000,6 @@ document.addEventListener("DOMContentLoaded", function() {
                     const data = await res.json();
                     if (res.ok) {
                         hienThiToast(data.message, "success");
-                        if (textOtpStatus) {
-                            textOtpStatus.textContent = data.message;
-                            textOtpStatus.style.color = "#059669";
-                        }
                         if (inputOtpDoiMk) inputOtpDoiMk.focus();
 
                         // Bắt đầu đếm ngược 60 giây
@@ -943,10 +1020,6 @@ document.addEventListener("DOMContentLoaded", function() {
                         btnGuiOtpDoiMk.disabled = false;
                         btnGuiOtpDoiMk.textContent = "Gửi Mã OTP";
                         hienThiToast(data.detail || "Không thể gửi OTP!", "error");
-                        if (textOtpStatus) {
-                            textOtpStatus.textContent = data.detail || "Gửi OTP thất bại.";
-                            textOtpStatus.style.color = "#dc2626";
-                        }
                     }
                 } catch (err) {
                     btnGuiOtpDoiMk.disabled = false;
@@ -956,6 +1029,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
+        // Submit Đổi Mật Khẩu
         if (formDoiMk) {
             formDoiMk.addEventListener("submit", async function(e) {
                 e.preventDefault();
@@ -983,7 +1057,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
                     const data = await res.json();
                     if (res.ok) {
-                        dongModalDoiMkHandler();
+                        dongModalCaiDatHandler();
                         hienThiToast("Đổi mật khẩu thành công! Email thông báo an ninh đã được gửi.", "success");
                     } else {
                         doiMkErr.textContent = data.detail || "Đổi mật khẩu thất bại!";

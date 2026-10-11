@@ -6,7 +6,7 @@
 import random
 from fastapi import APIRouter, HTTPException, status, Depends
 from backend.app.schemas.schemas import (
-    DangNhapSchema, DangKySchema, DoiMatKhauSchema, 
+    DangNhapSchema, DangKySchema, DoiMatKhauSchema, DoiTenSchema,
     QuenMatKhauRequestSchema, DatLaiMatKhauSchema
 )
 from backend.app.db import crud
@@ -71,6 +71,26 @@ def api_doi_mat_khau(req: DoiMatKhauSchema, current_user: dict = Depends(get_cur
     return {
         "success": True,
         "message": "Đổi mật khẩu thành công! Email thông báo an ninh đã được gửi tới hòm thư của bạn."
+    }
+
+@router.put("/doi-ten")
+def api_doi_ten_tai_khoan(req: DoiTenSchema, current_user: dict = Depends(get_current_user)):
+    """
+    Người dùng tự đổi tên tài khoản / họ tên hiển thị.
+    """
+    user = crud.get_user_by_id(current_user["id"])
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản người dùng!")
+
+    new_name = req.ho_ten.strip()
+    if len(new_name) < 2:
+        raise HTTPException(status_code=400, detail="Tên tài khoản phải có độ dài từ 2 ký tự trở lên!")
+
+    crud.update_user_name(user["id"], new_name)
+    return {
+        "success": True,
+        "message": "Cập nhật tên tài khoản thành công!",
+        "ho_ten": new_name
     }
 
 @router.post("/login")
