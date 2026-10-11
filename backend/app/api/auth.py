@@ -32,14 +32,21 @@ def api_gui_otp_doi_mat_khau(current_user: dict = Depends(get_current_user)):
 
     otp_code = f"{random.randint(100000, 999999)}"
     crud.save_otp(user["email"], otp_code, expire_minutes=10)
-    send_change_password_otp_email(user["email"], user.get("ho_ten", "Cán bộ"), otp_code)
+    res = send_change_password_otp_email(user["email"], user.get("ho_ten", "Cán bộ"), otp_code)
 
     parts = user["email"].split("@")
     masked = f"{parts[0][:2]}***@{parts[1]}" if len(parts[0]) > 2 else user["email"]
 
+    if res.forwarded:
+        msg = f"⚠️ [Resend Sandbox] Do tài khoản Resend chưa gắn domain riêng, mã OTP đổi mật khẩu của '{user['email']}' đã được chuyển tiếp tới email: {res.recipient}. Vui lòng mở {res.recipient} để lấy mã!"
+    else:
+        msg = f"Mã xác thực OTP 6 số đã được gửi tới email '{masked}'. Vui lòng kiểm tra hộp thư!"
+
     return {
         "success": True,
-        "message": f"Mã xác thực OTP 6 số đã được gửi tới email '{masked}'. Vui lòng kiểm tra hộp thư!"
+        "message": msg,
+        "forwarded": res.forwarded,
+        "recipient": res.recipient
     }
 
 @router.post("/doi-mat-khau")
@@ -254,11 +261,18 @@ def api_yeu_cau_quen_mat_khau(req: QuenMatKhauRequestSchema):
     crud.save_otp(user["email"], otp_code, expire_minutes=10)
 
     # Gửi mã OTP qua email
-    send_otp_email(user["email"], user["ho_ten"], otp_code)
+    res = send_otp_email(user["email"], user["ho_ten"], otp_code)
+
+    if res.forwarded:
+        msg = f"⚠️ [Resend Sandbox] Do tài khoản Resend chưa gắn domain riêng, mã OTP khôi phục của '{user['email']}' đã được chuyển tiếp tới email: {res.recipient}. Vui lòng mở {res.recipient} để lấy mã!"
+    else:
+        msg = "Mã xác thực OTP 6 số đã được gửi tới hòm thư của bạn. Vui lòng kiểm tra hộp thư đến (hoặc hòm thư rác)!"
 
     return {
         "success": True,
-        "message": "Mã xác thực OTP 6 số đã được gửi tới hòm thư của bạn. Vui lòng kiểm tra hộp thư đến (hoặc hòm thư rác)!"
+        "message": msg,
+        "forwarded": res.forwarded,
+        "recipient": res.recipient
     }
 
 @router.post("/reset-password")

@@ -1211,7 +1211,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     const res = await fetchAuth("/api/auth/send-change-password-otp", { method: "POST" });
                     const data = await res.json();
                     if (res.ok) {
-                        hienThiToast(data.message, "success");
+                        const hintDoiMk = document.getElementById("doi-mk-hint");
+                        if (hintDoiMk) {
+                            hintDoiMk.textContent = data.message;
+                            hintDoiMk.style.color = data.forwarded ? "#b45309" : "#15803d";
+                            hintDoiMk.style.display = "block";
+                        }
+                        hienThiToast(data.message, data.forwarded ? "info" : "success");
                         if (inputOtpDoiMk) inputOtpDoiMk.focus();
 
                         // Bắt đầu đếm ngược 60 giây
