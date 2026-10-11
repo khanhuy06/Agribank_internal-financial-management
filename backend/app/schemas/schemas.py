@@ -32,6 +32,12 @@ class DatLaiMatKhauSchema(BaseModel):
 class DoiQuyenSchema(BaseModel):
     role: Literal["admin", "nhan_vien"] = Field(..., description="Vai trò mới của người dùng")
 
+class TaoTaiKhoanThuCongSchema(BaseModel):
+    email: str = Field(..., min_length=3, description="Email tài khoản mới")
+    ho_ten: str = Field(..., min_length=2, description="Họ và tên người dùng")
+    mat_khau: str = Field(..., min_length=6, description="Mật khẩu khởi tạo ban đầu (tối thiểu 6 ký tự)")
+    role: Literal["admin", "nhan_vien"] = Field("nhan_vien", description="Vai trò tài khoản: admin hoặc nhan_vien")
+
 # --- 2. CÔNG TẮC HỆ THỐNG ---
 
 class CongTacDangKySchema(BaseModel):

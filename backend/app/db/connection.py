@@ -41,8 +41,8 @@ def get_db_info() -> Dict[str, Any]:
     if mode == "postgresql":
         return {
             "mode": "postgresql",
-            "ten": "PostgreSQL Chuyên Nghiệp (Docker/VPS/Cloud)",
-            "mo_ta": "Cơ sở dữ liệu mạnh mẽ, hỗ trợ mở rộng và nhân bản thùng web độc lập.",
+            "ten": "Hệ Thống Trực Tuyến (Cloud PostgreSQL)",
+            "mo_ta": "Cơ sở dữ liệu đám mây bảo mật cao, kết nối mã hóa SSL 256-bit.",
             "url": settings.DATABASE_URL.split("@")[-1] if "@" in settings.DATABASE_URL else "postgresql://..."
         }
     elif mode == "turso":

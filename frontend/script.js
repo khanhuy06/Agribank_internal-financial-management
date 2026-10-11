@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const badgeText = document.getElementById("text-db-status");
                 const dot = document.querySelector(".status-dot");
                 if (badgeText && dot) {
-                    badgeText.textContent = `DB: ${data.database.ten}`;
+                    badgeText.textContent = data.database ? data.database.ten : "Hệ Thống Trực Tuyến";
                     dot.style.backgroundColor = "#34d399";
                     dot.style.boxShadow = "0 0 8px #34d399";
                 }
@@ -1022,8 +1022,21 @@ document.addEventListener("DOMContentLoaded", function() {
         const btnToggleCong = document.getElementById("btn-toggle-cong-dang-ky");
         const badgeGate = document.getElementById("badge-trang-thai-cong");
 
+        // Các nút & form thêm người dùng thủ công
+        const btnHienFormThemUser = document.getElementById("btn-hien-form-them-user");
+        const btnHuyThemUser = document.getElementById("btn-huy-them-user");
+        const khungThemUser = document.getElementById("khung-them-user-thu-cong");
+        const formThemUser = document.getElementById("form-them-user-thu-cong");
+        const btnTaoMkNgauNhien = document.getElementById("btn-tao-mk-ngau-nhien");
+        const inputNewEmail = document.getElementById("new-user-email");
+        const inputNewHoTen = document.getElementById("new-user-hoten");
+        const inputNewPassword = document.getElementById("new-user-password");
+        const selectNewRole = document.getElementById("new-user-role");
+        const newUserErrorMsg = document.getElementById("new-user-error-msg");
+
         if (btnMoUsers) {
             btnMoUsers.addEventListener("click", async () => {
+                if (khungThemUser) khungThemUser.style.display = "none";
                 await taiDanhSachUsersAdmin();
                 await kiemTraCongDangKy();
                 capNhatBadgeCongAdmin();
@@ -1031,9 +1044,85 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        const dongModalUsersHandler = () => modalUsers.style.display = "none";
+        const dongModalUsersHandler = () => {
+            if (modalUsers) modalUsers.style.display = "none";
+            if (khungThemUser) khungThemUser.style.display = "none";
+        };
         if (btnDongUsers) btnDongUsers.addEventListener("click", dongModalUsersHandler);
         if (btnDongUsersBottom) btnDongUsersBottom.addEventListener("click", dongModalUsersHandler);
+
+        // Nút ẩn/hiện form thêm thủ công
+        if (btnHienFormThemUser) {
+            btnHienFormThemUser.addEventListener("click", () => {
+                if (!khungThemUser) return;
+                const isHidden = khungThemUser.style.display === "none";
+                khungThemUser.style.display = isHidden ? "block" : "none";
+                if (isHidden && inputNewEmail) {
+                    inputNewEmail.focus();
+                    if (!inputNewPassword.value) {
+                        sinhVaDienMatKhauNgauNhien();
+                    }
+                }
+            });
+        }
+
+        if (btnHuyThemUser) {
+            btnHuyThemUser.addEventListener("click", () => {
+                if (khungThemUser) khungThemUser.style.display = "none";
+                if (formThemUser) formThemUser.reset();
+                if (newUserErrorMsg) newUserErrorMsg.style.display = "none";
+            });
+        }
+
+        function sinhVaDienMatKhauNgauNhien() {
+            const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$%";
+            let pw = "Agri@2026!";
+            for (let i = 0; i < 3; i++) {
+                pw += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            if (inputNewPassword) inputNewPassword.value = pw;
+        }
+
+        if (btnTaoMkNgauNhien) {
+            btnTaoMkNgauNhien.addEventListener("click", sinhVaDienMatKhauNgauNhien);
+        }
+
+        // Xử lý gửi Form tạo tài khoản thủ công
+        if (formThemUser) {
+            formThemUser.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                if (newUserErrorMsg) newUserErrorMsg.style.display = "none";
+
+                const email = inputNewEmail.value.trim();
+                const ho_ten = inputNewHoTen.value.trim();
+                const mat_khau = inputNewPassword.value;
+                const role = selectNewRole.value;
+
+                try {
+                    const res = await fetchAuth("/api/users", {
+                        method: "POST",
+                        body: JSON.stringify({ email, ho_ten, mat_khau, role })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        hienThiToast(data.message, "success");
+                        formThemUser.reset();
+                        if (khungThemUser) khungThemUser.style.display = "none";
+                        await taiDanhSachUsersAdmin();
+                    } else {
+                        if (newUserErrorMsg) {
+                            newUserErrorMsg.textContent = data.detail || "Không thể tạo tài khoản!";
+                            newUserErrorMsg.style.display = "block";
+                        }
+                    }
+                } catch (err) {
+                    if (newUserErrorMsg) {
+                        newUserErrorMsg.textContent = "Lỗi kết nối máy chủ!";
+                        newUserErrorMsg.style.display = "block";
+                    }
+                }
+            });
+        }
 
         function capNhatBadgeCongAdmin() {
             if (appState.congDangKyOpen) {
@@ -1086,18 +1175,21 @@ document.addEventListener("DOMContentLoaded", function() {
 
                         const tdIdx = document.createElement("td");
                         tdIdx.textContent = idx + 1;
+                        tdIdx.style.textAlign = "center";
                         tr.appendChild(tdIdx);
 
-                        // CHỐNG XSS: Dùng textContent cho email và họ tên
+                        // Email
                         const tdEmail = document.createElement("td");
                         tdEmail.textContent = u.email;
                         tdEmail.style.fontWeight = "600";
                         tr.appendChild(tdEmail);
 
+                        // Họ tên
                         const tdHoTen = document.createElement("td");
                         tdHoTen.textContent = u.ho_ten;
                         tr.appendChild(tdHoTen);
 
+                        // Vai trò
                         const tdRole = document.createElement("td");
                         const spanRole = document.createElement("span");
                         spanRole.className = `role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}`;
@@ -1105,40 +1197,38 @@ document.addEventListener("DOMContentLoaded", function() {
                         tdRole.appendChild(spanRole);
                         tr.appendChild(tdRole);
 
+                        // Ngày tạo
                         const tdNgay = document.createElement("td");
                         tdNgay.textContent = String(u.ngay_tao || "").split("T")[0] || "-";
                         tr.appendChild(tdNgay);
 
+                        // Cột phân quyền & thao tác
                         const tdAction = document.createElement("td");
                         tdAction.className = "col-actions";
 
-                        // Nút đổi quyền Admin / Nhân viên
-                        const btnDoiQuyen = document.createElement("button");
-                        btnDoiQuyen.className = "btn-action";
-                        btnDoiQuyen.style.fontSize = "12px";
-                        btnDoiQuyen.style.padding = "4px 8px";
-                        btnDoiQuyen.style.borderRadius = "4px";
-
                         if (u.role === "admin") {
-                            btnDoiQuyen.textContent = "Hạ Quyền";
-                            btnDoiQuyen.title = "Hạ xuống quyền Nhân viên (chỉ xem)";
-                            btnDoiQuyen.addEventListener("click", () => doiQuyenUser(u.id, "nhan_vien", u.email));
+                            // QUY TẮC AN NINH TỐI CAO: ADMIN BẢO VỆ LẪN NHAU
+                            // Không Admin nào có quyền hạ cấp hay kick Admin khác
+                            const spanShield = document.createElement("span");
+                            spanShield.className = "badge-protected-admin";
+                            const isSelf = (appState.currentUser && u.id === appState.currentUser.id);
+                            spanShield.innerHTML = isSelf ? "👑 <strong>Bạn</strong> (Admin)" : "🛡️ <strong>Admin</strong> (Bảo vệ)";
+                            spanShield.title = "Quy tắc an ninh: Quản trị viên (Admin) không thể bị hạ cấp hay xóa bởi Admin khác!";
+                            tdAction.appendChild(spanShield);
                         } else {
-                            btnDoiQuyen.textContent = "Thăng Chức Admin";
-                            btnDoiQuyen.title = "Nâng cấp lên Quản trị viên toàn quyền";
-                            btnDoiQuyen.style.background = "#fef08a";
-                            btnDoiQuyen.style.color = "#854d0e";
-                            btnDoiQuyen.addEventListener("click", () => doiQuyenUser(u.id, "admin", u.email));
-                        }
-                        tdAction.appendChild(btnDoiQuyen);
+                            // NHÂN VIÊN: CÓ THỂ ĐƯỢC THĂNG CHỨC LÀM ADMIN HOẶC XÓA
+                            const btnThangChuc = document.createElement("button");
+                            btnThangChuc.className = "btn-action btn-promote";
+                            btnThangChuc.innerHTML = "⭐ Thăng Admin";
+                            btnThangChuc.title = "Cấp quyền Quản trị viên (Admin) toàn quyền cho nhân viên này";
+                            btnThangChuc.addEventListener("click", () => doiQuyenUser(u.id, "admin", u.email));
+                            tdAction.appendChild(btnThangChuc);
 
-                        // Nút xóa tài khoản (chống xóa chính mình)
-                        if (u.id !== appState.currentUser.id) {
                             const btnXoa = document.createElement("button");
                             btnXoa.className = "btn-action btn-delete";
-                            btnXoa.title = "Xóa tài khoản này";
+                            btnXoa.title = "Xóa tài khoản nhân viên này khỏi hệ thống";
                             btnXoa.innerHTML = "🗑️";
-                            btnXoa.style.marginLeft = "6px";
+                            btnXoa.style.marginLeft = "8px";
                             btnXoa.addEventListener("click", () => xoaUser(u.id, u.email));
                             tdAction.appendChild(btnXoa);
                         }
@@ -1154,7 +1244,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         async function doiQuyenUser(userId, roleMoi, email) {
             const roleName = roleMoi === 'admin' ? 'Quản Trị Viên' : 'Nhân Viên';
-            if (!confirm(`Bạn có chắc muốn chuyển tài khoản "${email}" sang vai trò ${roleName}?`)) return;
+            if (!confirm(`Bạn có chắc muốn thăng chức tài khoản "${email}" lên ${roleName}? Người này sẽ có toàn quyền quản trị hệ thống.`)) return;
 
             try {
                 const res = await fetchAuth(`/api/users/${userId}/role`, {

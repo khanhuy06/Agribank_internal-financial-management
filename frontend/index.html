@@ -368,11 +368,11 @@
         </div>
     </div>
 
-    <!-- MODAL 5: QUẢN LÝ TÀI KHOẢN & CÔNG TẮC CỔNG ĐĂNG KÝ (DÀNH CHO ADMIN) -->
+    <!-- MODAL 5: QUẢN LÝ TÀI KHOẢN & CỔNG ĐĂNG KÝ (DÀNH CHO ADMIN) -->
     <div id="modal-quan-ly-users" class="modal-overlay" style="display: none;">
         <div class="modal-box modal-lg">
             <button class="modal-close-btn" id="btn-dong-modal-users">&times;</button>
-            <h3 class="modal-title">👥 Quản Lý Tài Khoản & Cổng Đăng Ký (Admin)</h3>
+            <h3 class="modal-title">👥 Quản Trị Hệ Thống & Phân Quyền Tài Khoản</h3>
             
             <!-- Thẻ công tắc cổng đăng ký -->
             <div class="gateway-switch-card">
@@ -386,17 +386,75 @@
                 </div>
             </div>
 
+            <!-- Thanh công cụ quản lý tài khoản: Tiêu đề & Nút thêm thủ công -->
+            <div class="user-mgmt-header-bar">
+                <div class="mgmt-title-group">
+                    <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0;">Danh Sách Tài Khoản Phân Quyền</h4>
+                    <span style="font-size: 12px; color: #64748b;">(Quy tắc an ninh: Các Admin bình đẳng, không được phép hạ cấp hoặc xóa nhau)</span>
+                </div>
+                <button type="button" class="btn btn-primary" id="btn-hien-form-them-user" style="padding: 7px 15px; font-size: 13px;">
+                    ➕ Thêm Tài Khoản Mới
+                </button>
+            </div>
+
+            <!-- FORM THÊM TÀI KHOẢN THỦ CÔNG (Tạo tài khoản & cấp quyền Admin / Nhân viên) -->
+            <div id="khung-them-user-thu-cong" class="add-user-panel" style="display: none;">
+                <div class="panel-header">
+                    <h5>✨ Cấp Tài Khoản Mới Bằng Tay</h5>
+                    <span style="font-size: 12px; color: #64748b;">Chủ động thêm từng cán bộ mà không cần mở cổng tự do</span>
+                </div>
+                <form id="form-them-user-thu-cong">
+                    <div class="form-row-2col">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="new-user-email">Email Cán Bộ: *</label>
+                            <input type="email" id="new-user-email" placeholder="ví dụ: canbo@agribank.com.vn" required>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="new-user-hoten">Họ và Tên: *</label>
+                            <input type="text" id="new-user-hoten" placeholder="Nguyễn Văn A" required>
+                        </div>
+                    </div>
+                    <div class="form-row-2col" style="margin-top: 12px;">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                <label for="new-user-password" style="margin-bottom: 0;">Mật Khẩu Ban Đầu: *</label>
+                                <a href="javascript:void(0)" id="btn-tao-mk-ngau-nhien" class="btn-random-pw">🎲 Tạo Ngẫu Nhiên</a>
+                            </div>
+                            <input type="text" id="new-user-password" placeholder="Tối thiểu 6 ký tự..." required minlength="6">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label for="new-user-role">Phân Quyền / Vai Trò: *</label>
+                            <select id="new-user-role" class="select-role-custom">
+                                <option value="admin">👑 Quản Trị Viên (Admin - Toàn quyền quản lý)</option>
+                                <option value="nhan_vien" selected>👤 Nhân Viên (Chỉ xem bảng lương)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="security-note-box">
+                        🛡️ <strong>Bảo Mật Tuyệt Đối:</strong> Mật khẩu ban đầu sẽ được mã hóa Bcrypt một chiều. Sau khi nhận tài khoản, người dùng có thể tự đăng nhập và đổi mật khẩu riêng tại nút <em>"🔑 Đổi Mật Khẩu"</em>. <strong>Admin tuyệt đối không thể biết mật khẩu mới của họ!</strong>
+                    </div>
+
+                    <div id="new-user-error-msg" class="login-error" style="display: none;"></div>
+
+                    <div class="panel-actions">
+                        <button type="button" class="btn btn-default" id="btn-huy-them-user" style="padding: 7px 15px; font-size: 13px;">Hủy Bỏ</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-them-user" style="padding: 7px 18px; font-size: 13px;">Xác Nhận Tạo Tài Khoản</button>
+                    </div>
+                </form>
+            </div>
+
             <!-- Bảng danh sách các tài khoản -->
-            <div class="table-container" style="max-height: 350px; margin-top: 15px;">
+            <div class="table-container" style="max-height: 320px; margin-top: 10px;">
                 <table class="bang-tai-chinh" id="bang-danh-sach-users">
                     <thead>
                         <tr>
-                            <th>STT</th>
-                            <th>Email</th>
+                            <th style="width: 45px;">STT</th>
+                            <th>Email Đăng Nhập</th>
                             <th>Họ và Tên</th>
                             <th>Vai Trò</th>
                             <th>Ngày Tạo</th>
-                            <th class="col-actions">Phân Quyền & Thao Tác</th>
+                            <th class="col-actions" style="width: 170px;">Phân Quyền & Thao Tác</th>
                         </tr>
                     </thead>
                     <tbody id="than-bang-users">
