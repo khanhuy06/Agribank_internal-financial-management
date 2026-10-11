@@ -156,9 +156,10 @@ document.addEventListener("DOMContentLoaded", function() {
         for (let t = 1; t <= 12; t++) {
             const btn = document.createElement("button");
             btn.className = `month-btn ${t === appState.thangHienTai ? 'active' : ''}`;
+            const padT = String(t).padStart(2, '0');
             btn.innerHTML = `
                 <span>Tháng ${t}</span>
-                <span class="month-badge">T${t}</span>
+                <span class="month-badge">${padT}</span>
             `;
             btn.addEventListener("click", async () => {
                 appState.thangHienTai = t;
@@ -322,8 +323,12 @@ document.addEventListener("DOMContentLoaded", function() {
                     const tdActions = document.createElement("td");
                     tdActions.className = "col-actions";
                     tdActions.innerHTML = `
-                        <button class="btn-action btn-edit" title="Chỉnh sửa">✏️</button>
-                        <button class="btn-action btn-delete" title="Xóa dòng">🗑️</button>
+                        <button class="btn-action btn-edit" title="Chỉnh sửa dòng này">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                        </button>
+                        <button class="btn-action btn-delete" title="Xóa dòng này">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        </button>
                     `;
                     tdActions.querySelector(".btn-edit").addEventListener("click", () => moModalChinhSua(item, index));
                     tdActions.querySelector(".btn-delete").addEventListener("click", () => xoaDong(item, index));
@@ -1293,7 +1298,13 @@ document.addEventListener("DOMContentLoaded", function() {
                                 const btnXoaBanGiao = document.createElement("button");
                                 btnXoaBanGiao.className = "btn-action btn-delete";
                                 btnXoaBanGiao.title = "Xóa tài khoản khởi tạo mặc định (Bàn giao hoàn tất)";
-                                btnXoaBanGiao.innerHTML = "🗑️ Xóa TK Khởi Tạo";
+                                btnXoaBanGiao.innerHTML = `
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    <span>Xóa TK Bàn Giao</span>
+                                `;
+                                btnXoaBanGiao.style.display = "inline-flex";
+                                btnXoaBanGiao.style.alignItems = "center";
+                                btnXoaBanGiao.style.gap = "4px";
                                 btnXoaBanGiao.style.fontSize = "11.5px";
                                 btnXoaBanGiao.style.padding = "3px 8px";
                                 btnXoaBanGiao.addEventListener("click", () => xoaUser(u.id, u.email));
@@ -1302,21 +1313,24 @@ document.addEventListener("DOMContentLoaded", function() {
                                 // ADMIN TỰ XÓA MÌNH (RÚT LUI AN TOÀN NẾU ĐÃ CÓ ADMIN KHÁC)
                                 const spanShield = document.createElement("span");
                                 spanShield.className = "badge-protected-admin";
-                                spanShield.innerHTML = "👑 <strong>Bạn</strong> (Admin)";
+                                spanShield.innerHTML = `<span>Bạn (Admin)</span>`;
                                 tdAction.appendChild(spanShield);
 
                                 const btnRutLui = document.createElement("button");
                                 btnRutLui.className = "btn-action btn-delete";
                                 btnRutLui.title = "Xóa tài khoản của chính bạn (Đã có Admin khác thay thế)";
-                                btnRutLui.innerHTML = "🗑️";
+                                btnRutLui.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
                                 btnRutLui.style.marginLeft = "6px";
                                 btnRutLui.addEventListener("click", () => xoaUser(u.id, u.email));
                                 tdAction.appendChild(btnRutLui);
                             } else {
-                                // ADMIN CHÍNH THỨC: BẢO VỆ TUYỆT ĐỐI (KHÔNG AI ĐƯỢC PHÉP HẠ CẤP HOẶC KICK NHAU)
+                                // ADMIN CHÍNH THỨC: BẢO VỆ TUYỆT ĐỐI
                                 const spanShield = document.createElement("span");
                                 spanShield.className = "badge-protected-admin";
-                                spanShield.innerHTML = isSelf ? "👑 <strong>Bạn</strong> (Admin)" : "🛡️ <strong>Admin</strong> (Bảo vệ)";
+                                spanShield.innerHTML = `
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    <span>${isSelf ? "Bạn (Admin)" : "Admin Bảo Vệ"}</span>
+                                `;
                                 spanShield.title = "Quy tắc an ninh: Quản trị viên (Admin) chính thức được bảo vệ tuyệt đối, không thể bị xóa!";
                                 tdAction.appendChild(spanShield);
                             }
@@ -1324,7 +1338,13 @@ document.addEventListener("DOMContentLoaded", function() {
                             // NHÂN VIÊN: CÓ THỂ ĐƯỢC THĂNG CHỨC LÀM ADMIN HOẶC XÓA
                             const btnThangChuc = document.createElement("button");
                             btnThangChuc.className = "btn-action btn-promote";
-                            btnThangChuc.innerHTML = "⭐ Thăng Admin";
+                            btnThangChuc.innerHTML = `
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                <span>Thăng Admin</span>
+                            `;
+                            btnThangChuc.style.display = "inline-flex";
+                            btnThangChuc.style.alignItems = "center";
+                            btnThangChuc.style.gap = "4px";
                             btnThangChuc.title = "Cấp quyền Quản trị viên (Admin) toàn quyền cho nhân viên này";
                             btnThangChuc.addEventListener("click", () => doiQuyenUser(u.id, "admin", u.email));
                             tdAction.appendChild(btnThangChuc);
@@ -1332,7 +1352,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             const btnXoa = document.createElement("button");
                             btnXoa.className = "btn-action btn-delete";
                             btnXoa.title = "Xóa tài khoản nhân viên này khỏi hệ thống";
-                            btnXoa.innerHTML = "🗑️";
+                            btnXoa.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
                             btnXoa.style.marginLeft = "8px";
                             btnXoa.addEventListener("click", () => xoaUser(u.id, u.email));
                             tdAction.appendChild(btnXoa);

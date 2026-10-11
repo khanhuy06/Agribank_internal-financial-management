@@ -1,34 +1,46 @@
 /* =========================================================
-   HỆ THỐNG GIAO DIỆN QUẢN LÝ TÀI CHÍNH AGRIBANK (CHI NHÁNH HOÀN LÃO)
-   PHIÊN BẢN DOANH NGHIỆP CAO CẤP (ENTERPRISE BANKING STANDARD)
+   HỆ THỐNG GIAO DIỆN QUẢN LÝ TÀI CHÍNH AGRIBANK HOÀN LÃO
+   CHUẨN THIẾT KẾ DOANH NGHIỆP HIỆN ĐẠI (VERCEL & ZALO DESIGN SYSTEM)
+   TỐI GIẢN - SANG TRỌNG - RÕ RÀNG - BẢO MẬT
    ========================================================= */
 
 :root {
-    --agri-red: #7c1419;
-    --agri-red-hover: #630c11;
-    --agri-red-dark: #4e070b;
-    --agri-red-light: #fef2f2;
-    --agri-red-subtle: #fee2e2;
-    --agri-gold: #c59b27;
-    --agri-gold-light: #fef9c3;
-    --agri-green: #0f766e;
-    --agri-green-light: #ccfbf1;
-    --agri-blue: #1d4ed8;
-    --agri-blue-light: #eff6ff;
+    /* Brand Color */
+    --agri-red: #83151b;
+    --agri-red-hover: #6c0e12;
+    --agri-red-subtle: #fef2f2;
+    
+    /* Vercel / Zalo Neutral Tokens */
+    --gray-900: #09090b;
+    --gray-800: #18181b;
+    --gray-700: #27272a;
+    --gray-600: #52525b;
+    --gray-500: #71717a;
+    --gray-400: #a1a1aa;
+    --gray-300: #d4d4d8;
+    --gray-200: #e4e4e7;
+    --gray-100: #f4f4f5;
+    --gray-50:  #fafafa;
+    --white:    #ffffff;
 
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #64748b;
+    --text-primary: #09090b;
+    --text-secondary: #52525b;
+    --text-muted: #71717a;
+
     --bg-main: #f8fafc;
     --bg-card: #ffffff;
-    --border-color: #e2e8f0;
-    --border-light: #f1f5f9;
+    --border-color: #e5e7eb;
+    --border-light: #f4f4f5;
+
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 10px;
 
     --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+    --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.03);
-    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
 }
 
 * {
@@ -36,6 +48,7 @@
     margin: 0;
     padding: 0;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
 body {
@@ -44,21 +57,19 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    -webkit-font-smoothing: antialiased;
 }
 
 /* =========================================================
-   1. APP HEADER (EXECUTIVE REDESIGN)
+   1. APP HEADER (CHUẨN VERCEL DARK ENTERPRISE BAR)
    ========================================================= */
 .app-header {
-    background: linear-gradient(135deg, #6c0e12 0%, #82141a 50%, #55080c 100%);
-    color: white;
-    padding: 10px 28px;
+    background: #09090b;
+    color: #ffffff;
+    padding: 10px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 12px rgba(85, 8, 12, 0.2);
-    border-bottom: 2px solid rgba(197, 155, 39, 0.35);
+    border-bottom: 1px solid #27272a;
     position: sticky;
     top: 0;
     z-index: 100;
@@ -67,56 +78,51 @@ body {
 .header-brand {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 12px;
 }
 
 .app-logo {
-    height: 48px;
+    height: 38px;
     background: #ffffff;
-    padding: 4px 8px;
-    border-radius: 8px;
+    padding: 3px 6px;
+    border-radius: var(--radius-md);
     object-fit: contain;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
 .brand-text h1 {
-    font-size: 18.5px;
-    font-weight: 700;
-    letter-spacing: 0.6px;
-    font-family: 'Lora', serif;
-    color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #fafafa;
+    line-height: 1.2;
 }
 
 .brand-text p {
-    font-size: 12.5px;
-    opacity: 0.9;
+    font-size: 12px;
+    color: #a1a1aa;
     margin-top: 1px;
-    color: #fee2e2;
-    font-weight: 400;
 }
 
 .header-actions {
     display: flex;
     align-items: center;
-    gap: 14px;
-}
-
-/* KHU VỰC THÔNG TIN NGƯỜI DÙNG & NÚT TRÊN HEADER */
-.user-profile-bar {
-    display: flex;
-    align-items: center;
     gap: 10px;
 }
 
+.user-profile-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .user-greeting {
-    font-size: 13px;
+    font-size: 12.5px;
     font-weight: 500;
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.12);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 6px 14px;
+    color: #e4e4e7;
+    background: #18181b;
+    border: 1px solid #27272a;
+    padding: 5px 12px;
     border-radius: 9999px;
     display: inline-flex;
     align-items: center;
@@ -124,117 +130,117 @@ body {
 }
 
 .role-badge {
-    font-size: 11px;
-    padding: 2px 7px;
-    border-radius: 6px;
+    font-size: 10.5px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
     text-transform: uppercase;
-    font-weight: 700;
-    letter-spacing: 0.4px;
+    letter-spacing: 0.3px;
 }
 
 .role-admin {
-    background: linear-gradient(135deg, #fef08a, #fde047);
-    color: #713f12;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    background: rgba(234, 179, 8, 0.15);
+    color: #facc15;
+    border: 1px solid rgba(234, 179, 8, 0.3);
 }
 
 .role-user {
-    background: #e2e8f0;
-    color: #334155;
+    background: #27272a;
+    color: #a1a1aa;
 }
 
 .btn-header-action {
-    background: rgba(255, 255, 255, 0.12);
-    color: #ffffff;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    padding: 6px 13px;
-    border-radius: 8px;
-    font-size: 13px;
+    background: transparent;
+    color: #d4d4d8;
+    border: 1px solid #27272a;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
     display: inline-flex;
     align-items: center;
     gap: 6px;
 }
 
 .btn-header-action:hover {
-    background: rgba(255, 255, 255, 0.22);
-    border-color: rgba(255, 255, 255, 0.45);
-    transform: translateY(-1px);
+    background: #18181b;
+    border-color: #3f3f46;
+    color: #ffffff;
 }
 
 .btn-logout {
-    background: #ffffff;
-    color: var(--agri-red);
-    border: none;
-    padding: 6px 15px;
-    border-radius: 8px;
-    font-size: 13px;
-    font-weight: 700;
+    background: transparent;
+    color: #f87171;
+    border: 1px solid #3f3f46;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    font-size: 12.5px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .btn-logout:hover {
-    background: #fee2e2;
-    color: var(--agri-red-hover);
-    transform: translateY(-1px);
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+    color: #ef4444;
 }
 
 .nam-select-wrapper {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-size: 13px;
-    font-weight: 500;
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 4px 10px;
-    border-radius: 8px;
-}
-
-.nam-select-wrapper label {
     font-size: 12.5px;
-    opacity: 0.9;
+    color: #a1a1aa;
+    background: #18181b;
+    border: 1px solid #27272a;
+    padding: 4px 8px;
+    border-radius: var(--radius-md);
 }
 
 .nam-select-wrapper select {
-    padding: 4px 8px;
-    border-radius: 6px;
+    background: transparent;
+    color: #fafafa;
     border: none;
-    font-weight: 700;
-    color: var(--agri-red-hover);
-    background: #ffffff;
+    font-size: 12.5px;
+    font-weight: 600;
     cursor: pointer;
     outline: none;
-    font-size: 13px;
+}
+
+.nam-select-wrapper select option {
+    background: #18181b;
+    color: #fafafa;
 }
 
 .user-status-badge {
     display: flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    gap: 7px;
+    background: #121214;
+    border: 1px solid #27272a;
     padding: 5px 12px;
     border-radius: 9999px;
     font-size: 12px;
-    color: #e2e8f0;
+    color: #a1a1aa;
 }
 
 .status-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #34d399;
+    width: 6px;
+    height: 6px;
+    background-color: #10b981;
     border-radius: 50%;
-    box-shadow: 0 0 8px #34d399;
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
     display: inline-block;
 }
 
 /* =========================================================
-   2. APP CONTAINER & SIDEBAR
+   2. APP CONTAINER & SIDEBAR (ZALO / VERCEL CLEAN NAV)
    ========================================================= */
 .app-container {
     display: flex;
@@ -242,154 +248,152 @@ body {
 }
 
 .app-sidebar {
-    width: 220px;
+    width: 210px;
     background-color: #ffffff;
     border-right: 1px solid var(--border-color);
-    padding: 20px 14px;
+    padding: 18px 12px;
     display: flex;
     flex-direction: column;
 }
 
 .sidebar-title {
     font-size: 11px;
-    font-weight: 700;
-    color: var(--text-muted);
-    letter-spacing: 0.8px;
+    font-weight: 600;
+    color: var(--gray-500);
+    letter-spacing: 0.06em;
     text-transform: uppercase;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
     padding-left: 8px;
 }
 
 .sidebar-months {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 3px;
 }
 
 .month-btn {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 9px 12px;
+    padding: 8px 12px;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 8px;
-    color: var(--text-secondary);
-    font-size: 13.5px;
+    border-radius: var(--radius-md);
+    color: var(--gray-700);
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition: all 0.15s ease;
     text-align: left;
 }
 
 .month-btn:hover {
-    background-color: #f8fafc;
-    color: var(--agri-red);
+    background-color: var(--gray-100);
+    color: var(--gray-900);
 }
 
 .month-btn.active {
-    background: linear-gradient(135deg, var(--agri-red), var(--agri-red-hover));
+    background-color: var(--gray-900);
     color: #ffffff;
     font-weight: 600;
-    box-shadow: 0 2px 8px rgba(124, 20, 25, 0.22);
 }
 
 .month-btn .month-badge {
     font-size: 11px;
-    background: #f1f5f9;
-    color: var(--text-muted);
-    padding: 2px 7px;
-    border-radius: 9999px;
-    font-weight: 600;
+    background: var(--gray-100);
+    color: var(--gray-500);
+    padding: 1px 6px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
 }
 
 .month-btn.active .month-badge {
-    background: rgba(255, 255, 255, 0.22);
-    color: #ffffff;
+    background: var(--gray-700);
+    color: var(--gray-300);
 }
 
 /* =========================================================
-   3. MAIN CONTENT & DASHBOARD
+   3. MAIN CONTENT & KPI METRICS (SAAS CLEAN TILES)
    ========================================================= */
 .app-main {
     flex: 1;
-    padding: 24px 28px;
+    padding: 22px 26px;
     overflow-y: auto;
 }
 
 .dashboard-header {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
 }
 
 .current-month-banner {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .current-month-banner h2 {
-    font-size: 22px;
-    color: var(--agri-red-hover);
-    font-family: 'Lora', serif;
-    font-weight: 700;
-    letter-spacing: -0.2px;
+    font-size: 18.5px;
+    color: var(--gray-900);
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
 .badge-chi-nhanh {
-    background-color: #fef2f2;
-    color: var(--agri-red);
-    border: 1px solid #fee2e2;
-    padding: 4px 12px;
+    background-color: #ffffff;
+    color: var(--gray-600);
+    border: 1px solid var(--border-color);
+    padding: 3px 10px;
     border-radius: 9999px;
-    font-size: 12.5px;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 500;
 }
 
-/* KPI CARDS (CLEAN FINTECH CARDS) */
+/* KPI CARDS (VERCEL OBSERVABILITY TILES) */
 .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
 }
 
 .kpi-card {
     background: var(--bg-card);
-    border-radius: 12px;
-    padding: 16px 20px;
+    border-radius: var(--radius-lg);
+    padding: 16px 18px;
     display: flex;
     align-items: center;
     gap: 14px;
     box-shadow: var(--shadow-xs);
     border: 1px solid var(--border-color);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
 .kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+    border-color: var(--gray-400);
+    box-shadow: var(--shadow-sm);
 }
 
 .kpi-card.kpi-highlight {
-    background: linear-gradient(180deg, #fffafa, #ffffff);
-    border: 1px solid #fecaca;
-    border-top: 3px solid var(--agri-red);
+    border-top: 2px solid var(--agri-red);
 }
 
 .kpi-icon {
-    font-size: 22px;
-    width: 46px;
-    height: 46px;
+    width: 38px;
+    height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+    flex-shrink: 0;
 }
 
-.icon-luong { background-color: #eff6ff; }
-.icon-thuong { background-color: #fef3c7; }
-.icon-tong { background-color: #fdf2f2; }
-.icon-nhansu { background-color: #f0fdf4; }
+.kpi-highlight .kpi-icon {
+    background-color: var(--agri-red-subtle);
+    color: var(--agri-red);
+}
 
 .kpi-info {
     display: flex;
@@ -397,37 +401,38 @@ body {
 }
 
 .kpi-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
-    margin-bottom: 2px;
+    font-size: 11px;
+    color: var(--gray-500);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    margin-bottom: 3px;
 }
 
 .kpi-value {
     font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
+    font-weight: 600;
+    color: var(--gray-900);
     font-variant-numeric: tabular-nums;
-    letter-spacing: -0.3px;
+    letter-spacing: -0.02em;
 }
 
 .kpi-highlight .kpi-value {
-    color: var(--agri-red-hover);
+    color: var(--agri-red);
 }
 
 /* =========================================================
-   4. TOOLBAR & BUTTONS
+   4. TOOLBAR & BUTTONS (MODERN ACTION BAR)
    ========================================================= */
 .toolbar-section {
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 14px;
     background: #ffffff;
-    padding: 12px 16px;
-    border-radius: 10px;
+    padding: 10px 14px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-xs);
 }
@@ -435,7 +440,7 @@ body {
 .toolbar-left, .toolbar-right {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-wrap: wrap;
 }
 
@@ -443,70 +448,62 @@ body {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 8px 15px;
-    border-radius: 8px;
-    font-size: 13.5px;
+    padding: 7px 14px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
     font-weight: 500;
     cursor: pointer;
     border: 1px solid transparent;
-    transition: all 0.18s ease;
+    transition: all 0.15s ease;
     text-decoration: none;
     line-height: 1.4;
 }
 
 .btn-primary {
-    background: linear-gradient(13deg, var(--agri-red), var(--agri-red-hover));
+    background-color: var(--agri-red);
     color: #ffffff;
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(124, 20, 25, 0.18);
 }
 .btn-primary:hover {
-    background: linear-gradient(135deg, var(--agri-red-hover), var(--agri-red-dark));
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(124, 20, 25, 0.25);
+    background-color: var(--agri-red-hover);
 }
 
 .btn-outline {
-    border-color: #cbd5e1;
-    color: #334155;
+    border-color: var(--border-color);
+    color: var(--gray-700);
     background: #ffffff;
 }
 .btn-outline:hover {
-    background-color: #f8fafc;
-    border-color: #94a3b8;
-    color: #0f172a;
+    background-color: var(--gray-100);
+    color: var(--gray-900);
+    border-color: var(--gray-300);
 }
 
 .btn-secondary {
-    background-color: #f1f5f9;
-    color: #334155;
-    border: 1px solid #cbd5e1;
-    font-weight: 500;
+    background-color: #ffffff;
+    color: var(--gray-700);
+    border: 1px solid var(--border-color);
 }
 .btn-secondary:hover {
-    background-color: #e2e8f0;
-    color: #0f172a;
+    background-color: var(--gray-100);
+    color: var(--gray-900);
 }
 
 .btn-success {
     background-color: #15803d;
     color: white;
-    font-weight: 600;
-    box-shadow: 0 2px 4px rgba(21, 128, 61, 0.18);
 }
 .btn-success:hover {
     background-color: #166534;
-    transform: translateY(-1px);
 }
 
 .btn-default {
-    background-color: #f1f5f9;
-    color: var(--text-secondary);
-    border: 1px solid #cbd5e1;
+    background-color: var(--gray-100);
+    color: var(--gray-700);
+    border: 1px solid var(--border-color);
 }
 .btn-default:hover {
-    background-color: #e2e8f0;
-    color: var(--text-primary);
+    background-color: var(--gray-200);
+    color: var(--gray-900);
 }
 
 .search-box {
@@ -516,36 +513,37 @@ body {
 }
 
 .search-box input {
-    padding: 8px 12px 8px 34px;
+    padding: 7px 12px 7px 32px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 13.5px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
     outline: none;
     width: 220px;
-    background: #ffffff;
-    transition: all 0.2s;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    transition: all 0.15s;
 }
 
 .search-box input:focus {
-    border-color: var(--agri-red);
-    width: 260px;
-    box-shadow: 0 0 0 3px rgba(124, 20, 25, 0.08);
+    background: #ffffff;
+    border-color: var(--gray-500);
+    width: 250px;
+    box-shadow: 0 0 0 2px rgba(9, 9, 11, 0.06);
 }
 
 .search-icon {
     position: absolute;
     left: 10px;
-    font-size: 13px;
-    color: var(--text-muted);
+    color: var(--gray-400);
     pointer-events: none;
 }
 
 /* =========================================================
-   5. BẢNG DỮ LIỆU TÀI CHÍNH (ENTERPRISE CORPORATE REDESIGN)
+   5. BẢNG DỮ LIỆU TÀI CHÍNH (STRIPE / VERCEL STYLE TABLE)
    ========================================================= */
 .table-container {
     background: #ffffff;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-xs);
     overflow: hidden;
@@ -557,32 +555,25 @@ body {
     width: 100%;
     border-collapse: collapse;
     text-align: left;
-    font-size: 13.5px;
+    font-size: 13px;
 }
 
 .bang-tai-chinh th {
-    background: linear-gradient(180deg, #6c0e12 0%, #57090d 100%);
-    color: #ffffff;
-    padding: 12px 14px;
+    background: #fafafa;
+    color: var(--gray-600);
+    padding: 10px 14px;
     font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.2px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
     white-space: nowrap;
-    border-right: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.bang-tai-chinh th:last-child {
-    border-right: none;
-}
-
-.th-tuy-chinh {
-    position: relative;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .btn-xoa-cot {
-    background: rgba(255, 255, 255, 0.2);
+    background: var(--gray-200);
     border: none;
-    color: white;
+    color: var(--gray-600);
     border-radius: 50%;
     width: 16px;
     height: 16px;
@@ -592,26 +583,23 @@ body {
     cursor: pointer;
     display: inline-block;
     vertical-align: middle;
-    transition: background 0.2s;
+    transition: all 0.15s;
 }
 
 .btn-xoa-cot:hover {
     background: #ef4444;
+    color: #ffffff;
 }
 
 .bang-tai-chinh td {
-    padding: 11px 14px;
+    padding: 10px 14px;
     border-bottom: 1px solid var(--border-light);
-    color: var(--text-primary);
+    color: var(--gray-800);
     white-space: nowrap;
 }
 
-.bang-tai-chinh tbody tr:nth-child(even) {
-    background-color: #fafbfc;
-}
-
 .bang-tai-chinh tbody tr:hover {
-    background-color: #f1f5f9;
+    background-color: #f9fafb;
 }
 
 /* Căn lề số và tiền tệ sang phải */
@@ -623,90 +611,87 @@ body {
 
 .col-tong {
     text-align: right;
-    font-weight: 700;
-    color: var(--agri-red-hover);
+    font-weight: 600;
+    color: var(--agri-red);
     font-variant-numeric: tabular-nums;
 }
 
 .col-actions {
     text-align: center;
-    width: 110px;
+    width: 100px;
 }
 
 .btn-action {
-    background: none;
+    background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 14px;
-    padding: 4px 6px;
-    border-radius: 6px;
-    transition: background 0.2s;
+    padding: 5px;
+    border-radius: var(--radius-sm);
+    color: var(--gray-500);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
 }
 
-.btn-edit:hover { background-color: #eff6ff; }
-.btn-delete:hover { background-color: #fee2e2; }
+.btn-edit:hover { 
+    background-color: #eff6ff; 
+    color: #2563eb; 
+}
+.btn-delete:hover { 
+    background-color: #fef2f2; 
+    color: #dc2626; 
+}
 
 /* DÒNG TỔNG KẾT BẢNG (TFOOT) */
 .bang-tai-chinh tfoot tr {
-    background-color: #f8fafc;
-    border-top: 2px solid #cbd5e1;
-    font-weight: 700;
+    background-color: #fafafa;
+    border-top: 2px solid var(--border-color);
+    font-weight: 600;
 }
 
 .bang-tai-chinh tfoot td {
-    padding: 13px 14px;
-    color: var(--agri-red-hover);
-    font-size: 13.5px;
+    padding: 12px 14px;
+    color: var(--gray-900);
+    font-size: 13px;
     font-variant-numeric: tabular-nums;
 }
 
-/* Ô trống dữ liệu */
 .empty-state {
     text-align: center;
-    padding: 36px !important;
-    color: var(--text-muted);
-}
-
-.empty-state p {
-    margin-top: 6px;
-    font-size: 13.5px;
+    padding: 32px !important;
+    color: var(--gray-500);
 }
 
 /* =========================================================
-   6. MODAL CỬA SỔ POPUP & ADMIN FORM
+   6. MODAL CỬA SỔ POPUP & DIALOGS
    ========================================================= */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(15, 23, 42, 0.55);
+    background-color: rgba(9, 9, 11, 0.6);
     backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 1000;
-    animation: fadeIn 0.18s ease-out;
+    animation: fadeIn 0.15s ease-out;
 }
 
 .modal-box {
     background: #ffffff;
-    border-radius: 14px;
-    padding: 24px 28px;
-    width: 540px;
+    border-radius: var(--radius-xl);
+    padding: 22px 24px;
+    width: 520px;
     max-width: 92%;
     position: relative;
-    box-shadow: var(--shadow-xl);
-    animation: scaleUp 0.22s ease-out;
+    box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
+    animation: scaleUp 0.18s ease-out;
 }
 
-.modal-sm {
-    width: 440px;
-}
-
-.modal-lg {
-    max-width: 820px;
-    width: 90%;
-}
+.modal-sm { width: 420px; }
+.modal-lg { max-width: 780px; width: 90%; }
 
 .modal-close-btn {
     position: absolute;
@@ -714,42 +699,42 @@ body {
     right: 18px;
     background: none;
     border: none;
-    font-size: 22px;
-    color: var(--text-muted);
+    font-size: 20px;
+    color: var(--gray-400);
     cursor: pointer;
     line-height: 1;
 }
 
 .modal-close-btn:hover {
-    color: var(--agri-red);
+    color: var(--gray-900);
 }
 
 .modal-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: var(--agri-red-hover);
-    margin-bottom: 6px;
-    font-family: 'Lora', serif;
+    font-size: 16.5px;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
 }
 
 .modal-desc {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-bottom: 16px;
+    font-size: 12.5px;
+    color: var(--gray-500);
+    margin-bottom: 14px;
 }
 
 .form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 12px;
+    gap: 10px;
+    margin-top: 10px;
 }
 
 .form-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
-    margin-bottom: 12px;
+    gap: 4px;
+    margin-bottom: 10px;
 }
 
 .form-group.full-width {
@@ -757,92 +742,92 @@ body {
 }
 
 .form-group label {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-primary);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--gray-700);
 }
 
 .form-group input, .form-group select {
-    padding: 8px 12px;
+    padding: 7px 11px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 13.5px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
     outline: none;
     background: #ffffff;
-    transition: border-color 0.18s, box-shadow 0.18s;
+    color: var(--gray-900);
+    transition: all 0.15s;
 }
 
 .form-group input:focus, .form-group select:focus {
-    border-color: var(--agri-red);
-    box-shadow: 0 0 0 3px rgba(124, 20, 25, 0.08);
+    border-color: var(--gray-800);
+    box-shadow: 0 0 0 2px rgba(9, 9, 11, 0.08);
 }
 
 .modal-total-preview {
-    background-color: var(--agri-red-light);
+    background-color: var(--agri-red-subtle);
     border: 1px dashed #fca5a5;
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     padding: 10px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
 .modal-total-preview span {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--agri-red-hover);
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--agri-red);
 }
 
 .modal-total-preview strong {
-    font-size: 16px;
-    color: var(--agri-red-hover);
+    font-size: 15px;
+    color: var(--agri-red);
 }
 
 .modal-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 10px;
-    margin-top: 18px;
+    gap: 8px;
+    margin-top: 16px;
 }
 
 /* =========================================================
-   7. PHÂN HỆ QUẢN TRỊ TÀI KHOẢN & AN NINH (ADMIN PANEL)
+   7. PHÂN HỆ QUẢN TRỊ TÀI KHOẢN (ADMIN PANEL)
    ========================================================= */
 .gateway-switch-card {
-    background: #f8fafc;
+    background: var(--gray-50);
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 12px 16px;
+    border-radius: var(--radius-lg);
+    padding: 12px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 .switch-info strong {
-    font-size: 13.5px;
-    color: #0f172a;
+    font-size: 13px;
+    color: var(--gray-900);
 }
 
 .switch-info p {
     font-size: 12px;
-    color: var(--text-muted);
+    color: var(--gray-500);
     margin-top: 2px;
 }
 
 .switch-toggle-wrapper {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
 }
 
 .status-gate-badge {
-    padding: 3px 10px;
+    padding: 2px 8px;
     border-radius: 9999px;
-    font-size: 11.5px;
-    font-weight: 700;
-    letter-spacing: 0.4px;
+    font-size: 11px;
+    font-weight: 600;
 }
 
 .gate-open {
@@ -859,49 +844,41 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 14px 0 10px 0;
-    padding-bottom: 8px;
+    margin: 12px 0 8px 0;
+    padding-bottom: 6px;
     border-bottom: 1px solid var(--border-color);
 }
 
 .mgmt-title-group {
     display: flex;
     flex-direction: column;
-    gap: 2px;
 }
 
 .add-user-panel {
-    background: #f8fafc;
-    border: 1px solid #cbd5e1;
-    border-radius: 10px;
-    padding: 16px 18px;
-    margin-bottom: 14px;
-    box-shadow: var(--shadow-xs);
-    animation: fadeIn 0.2s ease-out;
-}
-
-.panel-header {
+    background: var(--gray-50);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
     margin-bottom: 12px;
 }
 
 .panel-header h5 {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--agri-red-hover);
-    margin-bottom: 2px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--gray-900);
 }
 
 .form-row-2col {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 10px;
 }
 
 .btn-random-pw {
-    font-size: 12px;
+    font-size: 11.5px;
     color: #2563eb;
     text-decoration: none;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
 }
 
@@ -911,10 +888,10 @@ body {
 
 .select-role-custom {
     width: 100%;
-    padding: 8px 12px;
+    padding: 7px 10px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 13.5px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
     background: #ffffff;
     outline: none;
 }
@@ -923,150 +900,128 @@ body {
     background: #f0fdf4;
     border: 1px solid #bbf7d0;
     color: #166534;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 12px;
-    margin-top: 12px;
-    line-height: 1.5;
+    padding: 9px 12px;
+    border-radius: var(--radius-md);
+    font-size: 11.5px;
+    margin-top: 10px;
+    line-height: 1.45;
 }
 
 .panel-actions {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 12px;
+    margin-top: 10px;
 }
 
-/* HUY HIỆU VÀ NÚT BẢO VỆ ADMIN */
 .badge-protected-admin {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 4px 10px;
-    background: #fef3c7;
-    color: #92400e;
-    border: 1px solid #fde68a;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: default;
+    padding: 3px 8px;
+    background: rgba(234, 179, 8, 0.1);
+    color: #a16207;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+    border-radius: var(--radius-sm);
+    font-size: 11.5px;
+    font-weight: 500;
 }
 
 .btn-promote {
-    background: #ecfdf5;
-    color: #065f46;
+    background: #ffffff;
+    color: #047857;
     border: 1px solid #a7f3d0;
-    border-radius: 6px;
-    padding: 4px 10px;
-    font-size: 12px;
-    font-weight: 600;
+    border-radius: var(--radius-sm);
+    padding: 3px 8px;
+    font-size: 11.5px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
 }
 
 .btn-promote:hover {
-    background: #d1fae5;
-    color: #047857;
-    transform: translateY(-1px);
-}
-
-.btn-delete {
-    background: #fef2f2;
-    color: #991b1b;
-    border: 1px solid #fecaca;
-    border-radius: 6px;
-    padding: 4px 8px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-}
-
-.btn-delete:hover {
-    background: #fee2e2;
-    color: #7f1d1d;
-    transform: translateY(-1px);
+    background: #ecfdf5;
 }
 
 /* =========================================================
-   8. MÀN HÌNH ĐĂNG NHẬP (LOGIN GATEWAY)
+   8. MÀN HÌNH ĐĂNG NHẬP (MINIMALIST GATEWAY)
    ========================================================= */
 .login-container {
-    min-height: calc(100vh - 75px);
+    min-height: calc(100vh - 65px);
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 30px 20px;
-    background: radial-gradient(circle at center, #ffffff 0%, var(--bg-main) 100%);
+    padding: 24px;
+    background-color: var(--bg-main);
 }
 
 .login-card {
-    background: white;
-    width: 440px;
+    background: #ffffff;
+    width: 400px;
     max-width: 95%;
-    border-radius: 16px;
-    padding: 34px 30px;
-    box-shadow: 0 15px 35px -5px rgba(124, 20, 25, 0.12), 0 5px 15px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(124, 20, 25, 0.12);
-    animation: scaleUp 0.28s ease-out;
+    border-radius: var(--radius-xl);
+    padding: 30px 26px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
 }
 
 .login-header {
     text-align: center;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
 }
 
 .login-logo {
-    height: 58px;
-    margin-bottom: 10px;
+    height: 48px;
+    margin-bottom: 8px;
     object-fit: contain;
 }
 
 .login-header h2 {
-    font-size: 19px;
-    color: var(--agri-red-hover);
-    font-family: 'Lora', serif;
-    font-weight: 700;
-    letter-spacing: 0.4px;
+    font-size: 17px;
+    color: var(--gray-900);
+    font-weight: 600;
+    letter-spacing: -0.01em;
 }
 
 .login-header p {
-    font-size: 12.5px;
-    color: var(--text-muted);
-    margin-top: 3px;
+    font-size: 12px;
+    color: var(--gray-500);
+    margin-top: 2px;
 }
 
 .auth-tabs {
     display: flex;
-    border-bottom: 2px solid #e2e8f0;
-    margin-bottom: 18px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 16px;
 }
 
 .auth-tab-btn {
     flex: 1;
-    padding: 9px;
+    padding: 8px;
     background: none;
     border: none;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-500);
     cursor: pointer;
-    transition: all 0.2s;
-    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    border-bottom: 2px solid transparent;
 }
 
 .auth-tab-btn.active {
-    color: var(--agri-red);
-    border-bottom-color: var(--agri-red);
+    color: var(--gray-900);
+    font-weight: 600;
+    border-bottom-color: var(--gray-900);
 }
 
 .forgot-link {
-    font-size: 12.5px;
-    color: var(--agri-red);
+    font-size: 12px;
+    color: var(--gray-600);
     text-decoration: none;
-    font-weight: 500;
 }
 
 .forgot-link:hover {
+    color: var(--gray-900);
     text-decoration: underline;
 }
 
@@ -1074,40 +1029,38 @@ body {
     background-color: #fef2f2;
     color: #b91c1c;
     border: 1px solid #fecaca;
-    padding: 9px 12px;
-    border-radius: 8px;
-    font-size: 12.5px;
-    margin-bottom: 12px;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    margin-bottom: 10px;
     text-align: center;
-    font-weight: 500;
-    animation: fadeIn 0.18s ease-out;
 }
 
 .btn-block {
     width: 100%;
     justify-content: center;
-    padding: 11px;
-    font-size: 14.5px;
-    font-weight: 600;
-    margin-top: 8px;
+    padding: 9px;
+    font-size: 13.5px;
+    font-weight: 500;
+    margin-top: 6px;
 }
 
 .login-footer {
-    margin-top: 22px;
+    margin-top: 18px;
     text-align: center;
-    font-size: 12px;
-    color: var(--text-muted);
+    font-size: 11.5px;
+    color: var(--gray-500);
     border-top: 1px solid var(--border-color);
-    padding-top: 14px;
+    padding-top: 12px;
 }
 
 /* =========================================================
-   9. TOAST NOTIFICATIONS & ANIMATIONS
+   9. TOAST NOTIFICATIONS
    ========================================================= */
 .toast-container {
     position: fixed;
-    top: 24px;
-    right: 24px;
+    top: 20px;
+    right: 20px;
     z-index: 9999;
     display: flex;
     flex-direction: column;
@@ -1117,19 +1070,19 @@ body {
 .toast {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 11px 16px;
-    border-radius: 8px;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
     color: white;
-    font-size: 13.5px;
+    font-size: 13px;
     font-weight: 500;
-    box-shadow: var(--shadow-lg);
-    animation: slideInRight 0.25s ease-out;
+    box-shadow: var(--shadow-md);
+    animation: slideInRight 0.2s ease-out;
 }
 
-.toast-success { background-color: #0f766e; }
+.toast-success { background-color: #09090b; border: 1px solid #27272a; }
 .toast-error { background-color: #b91c1c; }
-.toast-info { background-color: #1d4ed8; }
+.toast-info { background-color: #18181b; border: 1px solid #27272a; }
 
 @keyframes fadeIn {
     from { opacity: 0; }
@@ -1137,7 +1090,7 @@ body {
 }
 
 @keyframes scaleUp {
-    from { transform: scale(0.96); opacity: 0; }
+    from { transform: scale(0.98); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
 

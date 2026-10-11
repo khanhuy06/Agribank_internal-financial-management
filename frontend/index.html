@@ -8,21 +8,21 @@
     <!-- Thư viện SheetJS xử lý đọc/xuất Excel -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
-    <!-- Google Fonts -->
+    <!-- Google Fonts: Inter font (Chuẩn Vercel / SaaS) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Lora:ital,wght@0,500;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS Chính -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- 1. HEADER CHÍNH -->
+    <!-- 1. HEADER CHÍNH (CHUẨN VERCEL / ENTERPRISE SAAS) -->
     <header class="app-header">
         <div class="header-brand">
             <img src="logo_agribank.png" alt="Logo Agribank" class="app-logo">
             <div class="brand-text">
-                <h1>AGRIBANK - CHI NHÁNH HOÀN LÃO</h1>
+                <h1>AGRIBANK HOÀN LÃO</h1>
                 <p>Hệ thống Quản lý Tài chính & Bảng lương Nội bộ</p>
             </div>
         </div>
@@ -30,21 +30,27 @@
             <!-- Khu vực thông tin người dùng, đổi mật khẩu & quản lý tài khoản -->
             <div class="user-profile-bar" id="khung-user-header" style="display: none;">
                 <span class="user-greeting">
-                    👤 <span id="ten-can-bo-header">Quản trị viên</span> 
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span id="ten-can-bo-header">Quản trị viên</span> 
                     <span id="badge-vai-tro" class="role-badge role-admin">Admin</span>
                 </span>
                 
                 <!-- Nút Quản lý tài khoản (Chỉ Admin mới thấy) -->
-                <button id="btn-mo-modal-users" class="btn-header-action" style="display: none;" title="Quản lý tài khoản & công tắc mở cổng">
-                    👥 Quản Lý Tài Khoản
+                <button id="btn-mo-modal-users" class="btn-header-action" style="display: none;" title="Quản lý tài khoản & phân quyền">
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span>Quản Trị</span>
                 </button>
 
                 <!-- Nút Đổi mật khẩu cá nhân -->
                 <button id="btn-mo-modal-doi-mk" class="btn-header-action" title="Đổi mật khẩu tài khoản">
-                    🔑 Đổi Mật Khẩu
+                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <span>Đổi Mật Khẩu</span>
                 </button>
 
-                <button id="btn-dang-xuat" class="btn-logout" title="Đăng xuất khỏi hệ thống">Đăng Xuất</button>
+                <button id="btn-dang-xuat" class="btn-logout" title="Đăng xuất khỏi hệ thống">
+                    <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <span>Đăng Xuất</span>
+                </button>
             </div>
 
             <div class="nam-select-wrapper" id="khung-chon-nam" style="display: none;">
@@ -58,7 +64,7 @@
 
             <div class="user-status-badge">
                 <span class="status-dot"></span>
-                <span id="text-db-status">Đang kết nối...</span>
+                <span id="text-db-status">Hệ Thống Trực Tuyến</span>
             </div>
         </div>
     </header>
@@ -155,30 +161,38 @@
 
                 <div class="kpi-grid">
                     <div class="kpi-card">
-                        <div class="kpi-icon icon-luong">💰</div>
+                        <div class="kpi-icon icon-luong">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                        </div>
                         <div class="kpi-info">
-                            <span class="kpi-label">Tổng Lương Cơ Bản</span>
-                            <span class="kpi-value" id="kpi-tong-luong">0 đ</span>
+                            <span class="kpi-label">LƯƠNG CƠ BẢN</span>
+                            <span class="kpi-value" id="kpi-tong-luong">0 ₫</span>
                         </div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-icon icon-thuong">🎁</div>
+                        <div class="kpi-icon icon-thuong">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+                        </div>
                         <div class="kpi-info">
-                            <span class="kpi-label">Tổng Tiền Thưởng</span>
-                            <span class="kpi-value" id="kpi-tong-thuong">0 đ</span>
+                            <span class="kpi-label">TIỀN THƯỞNG</span>
+                            <span class="kpi-value" id="kpi-tong-thuong">0 ₫</span>
                         </div>
                     </div>
                     <div class="kpi-card kpi-highlight">
-                        <div class="kpi-icon icon-tong">🏦</div>
+                        <div class="kpi-icon icon-tong">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M3 10h18"/><path d="m12 3 9 7H3Z"/><path d="M6 10v11"/><path d="M10 10v11"/><path d="M14 10v11"/><path d="M18 10v11"/></svg>
+                        </div>
                         <div class="kpi-info">
-                            <span class="kpi-label">Tổng Ngân Sách Chi</span>
-                            <span class="kpi-value" id="kpi-tong-chi">0 đ</span>
+                            <span class="kpi-label">TỔNG NGÂN SÁCH CHI</span>
+                            <span class="kpi-value" id="kpi-tong-chi">0 ₫</span>
                         </div>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-icon icon-nhansu">👥</div>
+                        <div class="kpi-icon icon-nhansu">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
                         <div class="kpi-info">
-                            <span class="kpi-label">Tổng Nhân Sự / Dòng</span>
+                            <span class="kpi-label">NHÂN SỰ / DÒNG</span>
                             <span class="kpi-value" id="kpi-so-nhan-su">0 người</span>
                         </div>
                     </div>
@@ -190,28 +204,32 @@
                 <!-- Nhóm nút sửa/thêm - CHỈ ADMIN MỚI THẤY -->
                 <div class="toolbar-left" id="toolbar-admin-actions">
                     <button id="btn-mo-modal-them" class="btn btn-primary">
-                        <span>+</span> Thêm Giao Dịch / Nhân Viên
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                        <span>Thêm Bản Ghi</span>
                     </button>
                     <button id="btn-mo-modal-them-cot" class="btn btn-outline">
-                        <span>⚙</span> Thêm Cột Mới
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+                        <span>Thêm Cột</span>
                     </button>
                 </div>
 
                 <div class="toolbar-right">
                     <div class="search-box">
+                        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
                         <input type="text" id="o-tim-kiem" placeholder="Tìm theo Mã NV, Tên, ID...">
-                        <span class="search-icon">🔍</span>
                     </div>
 
                     <!-- Nút Nhập Excel - CHỈ ADMIN MỚI THẤY -->
                     <label for="input-import-excel" class="btn btn-secondary" id="btn-wrapper-import-excel" title="Nhập dữ liệu hàng loạt từ file Excel">
-                        📥 Nhập Excel
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <span>Nhập Excel</span>
                         <input type="file" id="input-import-excel" accept=".xlsx, .xls" style="display: none;">
                     </label>
 
                     <!-- Nút Xuất Excel - TẤT CẢ ĐỀU DÙNG ĐƯỢC -->
                     <button id="btn-xuat-excel" class="btn btn-success" title="Xuất dữ liệu tháng ra file Excel">
-                        📤 Xuất Excel
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span>Xuất Excel</span>
                     </button>
                 </div>
             </section>
