@@ -741,45 +741,235 @@ document.addEventListener("DOMContentLoaded", function() {
                     const data = new Uint8Array(evt.target.result);
                     const workbook = XLSX.read(data, { type: "array" });
                     const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                                        hienThiToast("Đang phân tích cấu trúc hàng & cột file Excel...", "info");
+                    const rows = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: "" });
                     
-                    if (rows.length < 2) {
+                    if (!rows || rows.length < 2) {
                         hienThiToast("File Excel không có dữ liệu hợp lệ!", "error");
+                        inputImportExcel.value = "";
                         return;
                     }
 
-                    let soDongThem = 0;
-                    for (let i = 1; i < rows.length; i++) {
-                        const row = rows[i];
-                        if (!row || row.length === 0 || !row[0]) continue;
-
-                        let ma_nv = String(row[0]);
-                        let ho_ten = String(row[1] || "");
-                        let luong_thang = Number(row[2]) || 0;
-                        let luong_thuong = Number(row[3]) || 0;
-
-                        await fetchAuth("/api/luong", {
-                            method: "POST",
-                            body: JSON.stringify({
-                                nam: appState.namHienTai,
-                                thang: appState.thangHienTai,
-                                ma_nv: ma_nv,
-                                ho_ten: ho_ten,
-                                luong_thang: luong_thang,
-                                luong_thuong: luong_thuong,
-                                cot_tuy_chinh: {}
-                            })
-                        });
-                        soDongThem++;
+                    // 1. Chuẩn hóa chuỗi tiếng Việt không dấu để so khớp tiêu đề cột
+                    function chuanHoaText(str) {
+                        if (!str) return "";
+                        return String(str)
+                            .normalize("NFD")
+                            .replace(/[\u0300-\u036f]/g, "")
+                            .replace(/đ/g, "d")
+                            .replace(/Đ/g, "D")
+                            .toLowerCase()
+                            .replace(/[^a-z0-9]/g, " ")
+                            .trim()
+                            .replace(/\s+/g, " ");
                     }
 
-                    await napDuLieuThang(appState.thangHienTai);
-                    veBangDuLieu();
-                    hienThiToast(`Đã nạp thành công ${soDongThem} nhân viên từ Excel!`);
+                    // 2. Hàm xử lý linh hoạt mọi định dạng số tiền kế toán
+                    function parseTienExcel(val) {
+                        if (val === null || val === undefined || val === "") return 0;
+                        if (typeof val === "number") return isNaN(val) ? 0 : val;
+                        let s = String(val).trim();
+                        if (s === "-" || s === "—" || s === "–" || s === "N/A" || s === "null" || s === "none") return 0;
+                        s = s.replace(/[₫đVNĐvnd\s]/gi, "").trim();
+                        if (!s) return 0;
+
+                        if (s.includes(".") && s.includes(",")) {
+                            if (s.lastIndexOf(".") > s.lastIndexOf(",")) {
+                                s = s.replace(/,/g, "");
+                            } else {
+                                s = s.replace(/\./g, "").replace(",", ".");
+                            }
+                        } else if (s.includes(",")) {
+                            const parts = s.split(",");
+                            if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+                                s = s.replace(/,/g, "");
+                            } else {
+                                s = s.replace(",", ".");
+                            }
+                        } else if (s.includes(".")) {
+                            const parts = s.split(".");
+                            if (parts.length > 2 || (parts.length === 2 && parts[1].length === 3)) {
+                                s = s.replace(/\./g, "");
+                            }
+                        }
+                        const num = parseFloat(s);
+                        return isNaN(num) ? 0 : num;
+                    }
+
+                    // 3. Quét tìm dòng tiêu đề thật (Smart Header Detection) trong 15 dòng đầu
+                    let indexDongTieuDe = -1;
+                    let diemCaoNhat = 0;
+                    const maxScanRows = Math.min(15, rows.length);
+
+                    for (let r = 0; r < maxScanRows; r++) {
+                        const row = rows[r];
+                        if (!Array.isArray(row)) continue;
+                        let diem = 0;
+                        const rowText = row.map(c => chuanHoaText(c)).join(" ");
+                        if (rowText.includes("ma nv") || rowText.includes("manv") || rowText.includes("ma nhan vien") || rowText.includes("msnv") || rowText.includes("ma can bo") || rowText.includes("id")) diem += 3;
+                        if (rowText.includes("ho ten") || rowText.includes("ho va ten") || rowText.includes("ten can bo") || rowText.includes("ten nv") || rowText.includes("ho ten nhan vien") || rowText.includes("fullname")) diem += 3;
+                        if (rowText.includes("luong") || rowText.includes("luong thang") || rowText.includes("luong co ban") || rowText.includes("tien luong")) diem += 2;
+                        if (rowText.includes("thuong") || rowText.includes("tien thuong") || rowText.includes("bonus")) diem += 2;
+                        if (rowText.includes("stt") || rowText.includes("so thu tu")) diem += 1;
+
+                        if (diem > diemCaoNhat) {
+                            diemCaoNhat = diem;
+                            indexDongTieuDe = r;
+                        }
+                    }
+
+                    if (indexDongTieuDe === -1 || diemCaoNhat < 2) {
+                        indexDongTieuDe = 0;
+                    }
+
+                    const dongHeader = rows[indexDongTieuDe] || [];
+                    
+                    // 4. Tự động nhận diện chỉ số các cột
+                    let colMaNV = -1;
+                    let colHoTen = -1;
+                    let colLuongThang = -1;
+                    let colLuongThuong = -1;
+                    let colSTT = -1;
+                    const mapCotTuyChinh = {};
+
+                    dongHeader.forEach((cellVal, cIdx) => {
+                        const norm = chuanHoaText(cellVal);
+                        if (!norm) return;
+
+                        if (colMaNV === -1 && (norm === "ma nv" || norm === "manv" || norm === "ma nhan vien" || norm === "ma so" || norm === "msnv" || norm === "id" || norm === "ma can bo" || norm === "ma cb")) {
+                            colMaNV = cIdx;
+                        } else if (colHoTen === -1 && (norm === "ho ten" || norm === "ho va ten" || norm === "ten" || norm === "ten can bo" || norm === "ho va chu lot" || norm === "fullname" || norm === "full name" || norm === "ten nhan vien" || norm === "can bo")) {
+                            colHoTen = cIdx;
+                        } else if (colLuongThang === -1 && (norm === "luong thang" || norm === "luong co ban" || norm === "luong cb" || norm === "tien luong" || norm === "muc luong" || norm === "luong" || norm === "thu nhap")) {
+                            colLuongThang = cIdx;
+                        } else if (colLuongThuong === -1 && (norm === "luong thuong" || norm === "tien thuong" || norm === "thuong" || norm === "thuong thi dua" || norm === "bonus" || norm === "thuong thang")) {
+                            colLuongThuong = cIdx;
+                        } else if (colSTT === -1 && (norm === "stt" || norm === "so thu tu" || norm === "no")) {
+                            colSTT = cIdx;
+                        } else {
+                            if (appState.danhSachCot && Array.isArray(appState.danhSachCot)) {
+                                const matchedCot = appState.danhSachCot.find(c => !c.macDinh && (chuanHoaText(c.ten) === norm || chuanHoaText(c.id) === norm));
+                                if (matchedCot) {
+                                    mapCotTuyChinh[matchedCot.id] = { index: cIdx, kieu: matchedCot.kieu };
+                                }
+                            }
+                        }
+                    });
+
+                    // Dự phòng vị trí cột nếu không khớp tên tiêu đề
+                    if (colMaNV === -1) {
+                        if (colSTT === 0 && dongHeader.length > 1) {
+                            colMaNV = 1;
+                            if (colHoTen === -1 && dongHeader.length > 2) colHoTen = 2;
+                            if (colLuongThang === -1 && dongHeader.length > 3) colLuongThang = 3;
+                            if (colLuongThuong === -1 && dongHeader.length > 4) colLuongThuong = 4;
+                        } else {
+                            colMaNV = 0;
+                            if (colHoTen === -1 && dongHeader.length > 1) colHoTen = 1;
+                            if (colLuongThang === -1 && dongHeader.length > 2) colLuongThang = 2;
+                            if (colLuongThuong === -1 && dongHeader.length > 3) colLuongThuong = 3;
+                        }
+                    }
+
+                    // 5. Quét và lọc sạch các dòng dữ liệu nhân viên
+                    const danhSachImport = [];
+                    for (let i = indexDongTieuDe + 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (!row || !Array.isArray(row) || row.length === 0) continue;
+
+                        const firstFewCellsText = row.slice(0, 4).map(c => chuanHoaText(c)).join(" ");
+                        if (
+                            firstFewCellsText.startsWith("tong cong") ||
+                            firstFewCellsText.startsWith("tong") ||
+                            firstFewCellsText.startsWith("cong") ||
+                            firstFewCellsText.includes("nguoi lap bieu") ||
+                            firstFewCellsText.includes("ke toan") ||
+                            firstFewCellsText.includes("giam doc") ||
+                            firstFewCellsText.includes("truong phong") ||
+                            firstFewCellsText.includes("xac nhan")
+                        ) {
+                            continue; // Bỏ qua dòng tổng kết hoặc chữ ký
+                        }
+
+                        let rawMaNV = colMaNV >= 0 && row[colMaNV] !== undefined ? String(row[colMaNV]).trim() : "";
+                        let rawHoTen = colHoTen >= 0 && row[colHoTen] !== undefined ? String(row[colHoTen]).trim() : "";
+
+                        if (!rawMaNV && !rawHoTen) continue;
+
+                        if (!rawMaNV && rawHoTen) {
+                            rawMaNV = "NV" + String(danhSachImport.length + 1).padStart(3, "0");
+                        }
+
+                        const normMa = chuanHoaText(rawMaNV);
+                        if (normMa === "tong cong" || normMa === "tong" || normMa === "cong") continue;
+
+                        let luongThang = colLuongThang >= 0 ? parseTienExcel(row[colLuongThang]) : 0;
+                        let luongThuong = colLuongThuong >= 0 ? parseTienExcel(row[colLuongThuong]) : 0;
+
+                        const cotTuyChinh = {};
+                        Object.keys(mapCotTuyChinh).forEach(colId => {
+                            const info = mapCotTuyChinh[colId];
+                            const rawVal = row[info.index];
+                            if (info.kieu === "so") {
+                                cotTuyChinh[colId] = parseTienExcel(rawVal);
+                            } else {
+                                cotTuyChinh[colId] = rawVal !== undefined && rawVal !== null ? String(rawVal).trim() : "";
+                            }
+                        });
+
+                        danhSachImport.push({
+                            nam: appState.namHienTai,
+                            thang: appState.thangHienTai,
+                            ma_nv: rawMaNV,
+                            ho_ten: rawHoTen,
+                            luong_thang: luongThang,
+                            luong_thuong: luongThuong,
+                            cot_tuy_chinh: cotTuyChinh
+                        });
+                    }
+
+                    if (danhSachImport.length === 0) {
+                        hienThiToast("Không tìm thấy dòng dữ liệu nhân viên nào hợp lệ trong file!", "warning");
+                        inputImportExcel.value = "";
+                        return;
+                    }
+
+                    // 6. Gửi dữ liệu nạp hàng loạt cực nhanh qua Batch API
+                    hienThiToast(`Đang nạp ${danhSachImport.length} nhân viên vào Tháng ${appState.thangHienTai}...`, "info");
+                    const res = await fetchAuth("/api/luong/batch", {
+                        method: "POST",
+                        body: JSON.stringify(danhSachImport)
+                    });
+
+                    if (res.ok) {
+                        const resData = await res.json().catch(() => ({}));
+                        const soLuongThanhCong = resData.count || danhSachImport.length;
+                        await napDuLieuThang(appState.thangHienTai);
+                        veBangDuLieu();
+                        hienThiToast(`Nhập Excel thành công! Đã thêm ${soLuongThanhCong} cán bộ nhân viên vào Tháng ${appState.thangHienTai}.`, "success");
+                    } else {
+                        // Dự phòng gửi từng dòng nếu endpoint batch gặp sự cố
+                        let fallbackCount = 0;
+                        for (const item of danhSachImport) {
+                            try {
+                                await fetchAuth("/api/luong", {
+                                    method: "POST",
+                                    body: JSON.stringify(item)
+                                });
+                                fallbackCount++;
+                            } catch (_) {}
+                        }
+                        await napDuLieuThang(appState.thangHienTai);
+                        veBangDuLieu();
+                        hienThiToast(`Đã nạp ${fallbackCount}/${danhSachImport.length} nhân viên từ file Excel!`, "success");
+                    }
                     inputImportExcel.value = "";
                 } catch (err) {
-                    hienThiToast("Lỗi đọc file Excel!", "error");
+                    console.error("Lỗi đọc file Excel:", err);
+                    hienThiToast("Lỗi khi đọc file Excel! Vui lòng kiểm tra lại định dạng file.", "error");
+                    inputImportExcel.value = "";
                 }
+
             };
         });
     }
@@ -949,13 +1139,21 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
                     const data = await res.json().catch(() => ({}));
                     if (res.ok) {
+                        if (regOtpHint) regOtpHint.style.display = "none";
                         if (successMsg) {
                             successMsg.textContent = data.message || "Mã OTP đã được gửi về email!";
                             successMsg.style.display = "block";
-                        }
-                        if (regOtpHint) {
-                            regOtpHint.textContent = data.message || `Mã OTP đã gửi tới ${email}. Vui lòng kiểm tra hộp thư!`;
-                            regOtpHint.style.color = data.forwarded ? "#b45309" : "#15803d";
+                            successMsg.style.fontSize = "12px";
+                            successMsg.style.lineHeight = "1.45";
+                            if (data.forwarded) {
+                                successMsg.style.background = "#fffbeb";
+                                successMsg.style.color = "#92400e";
+                                successMsg.style.borderColor = "#fef3c7";
+                            } else {
+                                successMsg.style.background = "#f0fdf4";
+                                successMsg.style.color = "#166534";
+                                successMsg.style.borderColor = "#bbf7d0";
+                            }
                         }
                         const regOtpInput = document.getElementById("reg-otp");
                         if (regOtpInput) regOtpInput.focus();
@@ -1714,13 +1912,21 @@ document.addEventListener("DOMContentLoaded", function() {
                     });
                     const data = await res.json().catch(() => ({}));
                     if (res.ok) {
+                        if (newUserOtpHint) newUserOtpHint.style.display = "none";
                         if (newUserSuccessMsg) {
                             newUserSuccessMsg.textContent = data.message || "Mã xác thực đã được gửi về email!";
                             newUserSuccessMsg.style.display = "block";
-                        }
-                        if (newUserOtpHint) {
-                            newUserOtpHint.textContent = data.message || `Mã OTP đã gửi tới ${email}. Vui lòng kiểm tra hộp thư!`;
-                            newUserOtpHint.style.color = data.forwarded ? "#b45309" : "#15803d";
+                            newUserSuccessMsg.style.fontSize = "12px";
+                            newUserSuccessMsg.style.lineHeight = "1.45";
+                            if (data.forwarded) {
+                                newUserSuccessMsg.style.background = "#fffbeb";
+                                newUserSuccessMsg.style.color = "#92400e";
+                                newUserSuccessMsg.style.borderColor = "#fef3c7";
+                            } else {
+                                newUserSuccessMsg.style.background = "#f0fdf4";
+                                newUserSuccessMsg.style.color = "#166534";
+                                newUserSuccessMsg.style.borderColor = "#bbf7d0";
+                            }
                         }
                         if (inputNewOtp) inputNewOtp.focus();
 

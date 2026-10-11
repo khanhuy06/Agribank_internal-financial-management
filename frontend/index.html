@@ -18,7 +18,7 @@
     <meta http-equiv="Expires" content="0">
 
     <!-- CSS Chính (kèm cache-busting) -->
-    <link rel="stylesheet" href="style.css?v=20261011_v15">
+    <link rel="stylesheet" href="style.css?v=20261011_v18">
 </head>
 <body>
     <!-- 1. HEADER CHÍNH (CHUẨN VERCEL / ENTERPRISE SAAS) -->
@@ -130,7 +130,7 @@
                             Gửi mã OTP
                         </button>
                     </div>
-                    <input type="text" id="reg-otp" placeholder="Nhập mã OTP 6 số gửi về email" maxlength="6" required style="letter-spacing: 4px; font-weight: bold; text-align: center; font-size: 16px;">
+                    <input type="text" id="reg-otp" placeholder="Nhập 6 số OTP" maxlength="6" required autocomplete="one-time-code">
                     <small id="reg-otp-hint" style="color: #64748b; font-size: 11px; display: block; margin-top: 4px;">
                         Bắt buộc xác thực email tồn tại thực tế để kích hoạt tài khoản.
                     </small>
@@ -513,7 +513,7 @@
                                 Gửi mã xác thực
                             </button>
                         </div>
-                        <input type="text" id="new-user-otp" placeholder="Nhập mã OTP 6 số gửi về email" maxlength="6" required style="letter-spacing: 4px; font-weight: bold; text-align: center; font-size: 16px;">
+                        <input type="text" id="new-user-otp" placeholder="Nhập 6 số OTP" maxlength="6" required autocomplete="one-time-code">
                         <small id="new-user-otp-hint" style="color: #64748b; font-size: 11px; display: block; margin-top: 4px;">
                             Bắt buộc xác thực email tồn tại thực tế để đảm bảo sau này có thể nhận OTP đổi mật khẩu.
                         </small>
@@ -630,6 +630,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- JAVASCRIPT ĐIỀU HÀNH (kèm cache-busting) -->
-    <script src="script.js?v=20261011_v17"></script>
+    <script src="script.js?v=20261011_v18"></script>
 </body>
 </html>

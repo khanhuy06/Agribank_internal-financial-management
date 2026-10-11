@@ -250,3 +250,24 @@ def delete_salary(id_ban_ghi: int) -> bool:
     """Xóa một dòng lương."""
     thuc_thi_sql("DELETE FROM bang_luong WHERE id = ?", [id_ban_ghi])
     return True
+
+def add_salaries_batch(danh_sach: List[Dict[str, Any]]) -> int:
+    """Thêm hàng loạt bản ghi lương từ Excel/CSV trong một chu kỳ."""
+    count = 0
+    for item in danh_sach:
+        ma_nv = str(item.get("ma_nv", "")).strip()
+        if not ma_nv:
+            continue
+        ho_ten = str(item.get("ho_ten", "")).strip()
+        nam = int(item.get("nam", 2026))
+        thang = int(item.get("thang", 1))
+        luong_thang = float(item.get("luong_thang", 0) or 0)
+        luong_thuong = float(item.get("luong_thuong", 0) or 0)
+        cot_tuy_chinh = item.get("cot_tuy_chinh") or {}
+        json_extra = json.dumps(cot_tuy_chinh, ensure_ascii=False)
+        thuc_thi_sql("""
+            INSERT INTO bang_luong (nam, thang, ma_nv, ho_ten, luong_thang, luong_thuong, cot_tuy_chinh)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        """, [nam, thang, ma_nv, ho_ten, luong_thang, luong_thuong, json_extra])
+        count += 1
+    return count

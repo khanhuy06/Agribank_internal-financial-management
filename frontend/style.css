@@ -153,9 +153,10 @@ body {
 }
 
 .role-admin {
-    background: #18181b;
-    color: #ffffff;
-    border: 1px solid #27272a;
+    background: #f4f4f5;
+    color: #27272a;
+    border: 1px solid #e4e4e7;
+    font-weight: 600;
 }
 
 .role-user {
@@ -331,9 +332,10 @@ body {
 }
 
 .month-btn.active {
-    background-color: var(--gray-900);
+    background-color: #7c1419;
     color: #ffffff;
     font-weight: 600;
+    box-shadow: 0 2px 6px rgba(124, 20, 25, 0.25);
 }
 
 .month-btn .month-badge {
@@ -346,8 +348,8 @@ body {
 }
 
 .month-btn.active .month-badge {
-    background: var(--gray-700);
-    color: var(--gray-300);
+    background: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
 }
 
 /* =========================================================
@@ -977,9 +979,9 @@ td.col-actions {
 }
 
 .gate-open {
-    background: #ecfdf5;
-    color: #047857;
-    border: 1px solid #a7f3d0;
+    background: #f4f4f5;
+    color: #3f3f46;
+    border: 1px solid #d4d4d8;
 }
 
 .gate-closed {
@@ -1019,14 +1021,41 @@ td.col-actions {
 
 .btn-random-pw {
     font-size: 11.5px;
-    color: #2563eb;
+    color: #71717a;
     text-decoration: none;
     font-weight: 500;
     cursor: pointer;
+    transition: color 0.15s ease;
 }
 
 .btn-random-pw:hover {
+    color: #18181b;
     text-decoration: underline;
+}
+
+/* Kiểu dáng tối giản cho ô nhập OTP: Placeholder nhỏ, mờ, không bị tràn */
+#reg-otp::placeholder,
+#new-user-otp::placeholder,
+#otp-xoa-user-input::placeholder,
+#otp-ha-quyen-input::placeholder,
+#otp-code-input::placeholder,
+#mk-otp-code::placeholder {
+    letter-spacing: normal !important;
+    font-weight: 400 !important;
+    font-size: 12px !important;
+    color: #a1a1aa !important;
+    opacity: 0.75 !important;
+}
+
+#reg-otp,
+#new-user-otp,
+#otp-xoa-user-input,
+#otp-ha-quyen-input,
+#otp-code-input {
+    letter-spacing: 4px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 15px;
 }
 
 .select-role-custom {
@@ -1235,6 +1264,18 @@ td.col-actions {
     padding: 8px 12px;
     border-radius: var(--radius-md);
     font-size: 12px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.login-success {
+    background-color: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    font-size: 12px;
+    line-height: 1.45;
     margin-bottom: 10px;
     text-align: center;
 }

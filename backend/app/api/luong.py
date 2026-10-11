@@ -44,6 +44,19 @@ def api_them_ban_ghi(req: BanGhiLuongSchema, admin: dict = Depends(require_admin
     )
     return {"message": "Đã thêm giao dịch thành công", "id": moi_id}
 
+@router.post("/batch")
+def api_them_ban_ghi_hang_loat(req: List[BanGhiLuongSchema], admin: dict = Depends(require_admin)):
+    """
+    Thêm hàng loạt bản ghi lương từ file Excel/CSV.
+    CHỈ ADMIN mới có quyền.
+    """
+    if not req:
+        raise HTTPException(status_code=400, detail="Danh sách bản ghi trống!")
+
+    records = [r.model_dump() for r in req]
+    so_luong = crud.add_salaries_batch(records)
+    return {"message": f"Đã nhập thành công {so_luong} bản ghi vào bảng lương!", "count": so_luong}
+
 @router.put("/{id_ban_ghi}")
 def api_cap_nhat_ban_ghi(
     id_ban_ghi: int = Path(..., description="ID dòng cần sửa"),
