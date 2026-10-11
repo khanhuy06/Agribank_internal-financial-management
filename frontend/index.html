@@ -23,27 +23,27 @@
             <img src="logo_agribank.png" alt="Logo Agribank" class="app-logo">
             <div class="brand-text">
                 <h1>AGRIBANK HOÀN LÃO</h1>
-                <p>Hệ thống Quản lý Tài chính & Bảng lương Nội bộ</p>
+                <p>Quản Lý Bảng Lương</p>
             </div>
         </div>
         <div class="header-actions">
             <!-- Khu vực thông tin người dùng, đổi mật khẩu & quản lý tài khoản -->
             <div class="user-profile-bar" id="khung-user-header" style="display: none;">
                 <span class="user-greeting">
-                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     <span id="ten-can-bo-header">Quản trị viên</span> 
                     <span id="badge-vai-tro" class="role-badge role-admin">Admin</span>
                 </span>
                 
                 <!-- Nút Quản lý tài khoản (Chỉ Admin mới thấy) -->
                 <button id="btn-mo-modal-users" class="btn-header-action" style="display: none;" title="Quản lý tài khoản & phân quyền">
-                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     <span>Quản Trị</span>
                 </button>
 
                 <!-- Nút Đổi mật khẩu cá nhân -->
                 <button id="btn-mo-modal-doi-mk" class="btn-header-action" title="Đổi mật khẩu tài khoản">
-                    <svg class="icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                     <span>Đổi Mật Khẩu</span>
                 </button>
 
@@ -64,7 +64,7 @@
 
             <div class="user-status-badge">
                 <span class="status-dot"></span>
-                <span id="text-db-status">Hệ Thống Trực Tuyến</span>
+                <span id="text-db-status">Trực Tuyến</span>
             </div>
         </div>
     </header>
@@ -103,7 +103,7 @@
                 <div id="login-error-msg" class="login-error" style="display: none;"></div>
 
                 <button type="submit" class="btn btn-primary btn-block" id="btn-submit-login">
-                    🔒 Đăng Nhập Vào Hệ Thống
+                    Đăng Nhập
                 </button>
             </form>
 
@@ -128,7 +128,7 @@
                 <div id="reg-success-msg" class="login-success" style="display: none;"></div>
 
                 <button type="submit" class="btn btn-primary btn-block" id="btn-submit-reg">
-                    ✍️ Hoàn Tất Đăng Ký Tài Khoản
+                    Đăng Ký Tài Khoản
                 </button>
             </form>
 
@@ -161,40 +161,20 @@
 
                 <div class="kpi-grid">
                     <div class="kpi-card">
-                        <div class="kpi-icon icon-luong">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-                        </div>
-                        <div class="kpi-info">
-                            <span class="kpi-label">LƯƠNG CƠ BẢN</span>
-                            <span class="kpi-value" id="kpi-tong-luong">0 ₫</span>
-                        </div>
+                        <span class="kpi-label">LƯƠNG CƠ BẢN</span>
+                        <span class="kpi-value" id="kpi-tong-luong">0 ₫</span>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-icon icon-thuong">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
-                        </div>
-                        <div class="kpi-info">
-                            <span class="kpi-label">TIỀN THƯỞNG</span>
-                            <span class="kpi-value" id="kpi-tong-thuong">0 ₫</span>
-                        </div>
+                        <span class="kpi-label">TIỀN THƯỞNG</span>
+                        <span class="kpi-value" id="kpi-tong-thuong">0 ₫</span>
                     </div>
                     <div class="kpi-card kpi-highlight">
-                        <div class="kpi-icon icon-tong">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M3 10h18"/><path d="m12 3 9 7H3Z"/><path d="M6 10v11"/><path d="M10 10v11"/><path d="M14 10v11"/><path d="M18 10v11"/></svg>
-                        </div>
-                        <div class="kpi-info">
-                            <span class="kpi-label">TỔNG NGÂN SÁCH CHI</span>
-                            <span class="kpi-value" id="kpi-tong-chi">0 ₫</span>
-                        </div>
+                        <span class="kpi-label">TỔNG NGÂN SÁCH CHI</span>
+                        <span class="kpi-value" id="kpi-tong-chi">0 ₫</span>
                     </div>
                     <div class="kpi-card">
-                        <div class="kpi-icon icon-nhansu">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                        </div>
-                        <div class="kpi-info">
-                            <span class="kpi-label">NHÂN SỰ / DÒNG</span>
-                            <span class="kpi-value" id="kpi-so-nhan-su">0 người</span>
-                        </div>
+                        <span class="kpi-label">TỔNG NHÂN SỰ</span>
+                        <span class="kpi-value" id="kpi-so-nhan-su">0 người</span>
                     </div>
                 </div>
             </section>
@@ -204,31 +184,31 @@
                 <!-- Nhóm nút sửa/thêm - CHỈ ADMIN MỚI THẤY -->
                 <div class="toolbar-left" id="toolbar-admin-actions">
                     <button id="btn-mo-modal-them" class="btn btn-primary">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                        <span>Thêm Bản Ghi</span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                        <span>Thêm Dòng</span>
                     </button>
                     <button id="btn-mo-modal-them-cot" class="btn btn-outline">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M12 3v18"/></svg>
                         <span>Thêm Cột</span>
                     </button>
                 </div>
 
                 <div class="toolbar-right">
                     <div class="search-box">
-                        <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-                        <input type="text" id="o-tim-kiem" placeholder="Tìm theo Mã NV, Tên, ID...">
+                        <svg class="search-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                        <input type="text" id="o-tim-kiem" placeholder="Tìm kiếm...">
                     </div>
 
                     <!-- Nút Nhập Excel - CHỈ ADMIN MỚI THẤY -->
                     <label for="input-import-excel" class="btn btn-secondary" id="btn-wrapper-import-excel" title="Nhập dữ liệu hàng loạt từ file Excel">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         <span>Nhập Excel</span>
                         <input type="file" id="input-import-excel" accept=".xlsx, .xls" style="display: none;">
                     </label>
 
                     <!-- Nút Xuất Excel - TẤT CẢ ĐỀU DÙNG ĐƯỢC -->
-                    <button id="btn-xuat-excel" class="btn btn-success" title="Xuất dữ liệu tháng ra file Excel">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <button id="btn-xuat-excel" class="btn btn-secondary" title="Xuất dữ liệu tháng ra file Excel">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                         <span>Xuất Excel</span>
                     </button>
                 </div>
@@ -315,8 +295,8 @@
     <div id="modal-doi-mat-khau" class="modal-overlay" style="display: none;">
         <div class="modal-box modal-sm">
             <button class="modal-close-btn" id="btn-dong-modal-doi-mk">&times;</button>
-            <h3 class="modal-title">🔐 Đổi Mật Khẩu & Xác Thực OTP</h3>
-            <p class="modal-desc">Bảo mật ngân hàng 2 lớp (2FA): Mã OTP 6 số sẽ được gửi về Email để xác nhận trước khi thay đổi mật khẩu.</p>
+            <h3 class="modal-title">Đổi Mật Khẩu Cá Nhân</h3>
+            <p class="modal-desc">Xác thực 2 lớp qua Email (2FA): Mã OTP 6 số sẽ được gửi về email để bảo vệ an toàn tài khoản.</p>
             
             <form id="form-doi-mat-khau">
                 <div class="form-group">
@@ -338,10 +318,10 @@
                     <div style="display: flex; gap: 8px;">
                         <input type="text" id="mk-otp-code" placeholder="123456" maxlength="6" required style="letter-spacing: 3px; font-weight: bold; text-align: center; font-size: 16px; flex: 1;">
                         <button type="button" class="btn btn-outline" id="btn-gui-otp-doi-mk" style="white-space: nowrap; font-size: 13px; padding: 7px 12px;">
-                            📩 Gửi Mã OTP
+                            Gửi Mã OTP
                         </button>
                     </div>
-                    <small id="text-otp-status" style="font-size: 11.5px; color: #64748b; margin-top: 3px;">Bấm "Gửi Mã OTP" để nhận mã xác thực qua hòm thư Email đăng ký.</small>
+                    <small id="text-otp-status" style="font-size: 11.5px; color: #64748b; margin-top: 3px;">Bấm "Gửi Mã OTP" để nhận mã xác thực qua email đăng ký.</small>
                 </div>
 
                 <div id="doi-mk-error" class="login-error" style="display: none;"></div>
@@ -358,7 +338,7 @@
     <div id="modal-quen-mat-khau" class="modal-overlay" style="display: none;">
         <div class="modal-box modal-sm">
             <button class="modal-close-btn" id="btn-dong-modal-quen-mk">&times;</button>
-            <h3 class="modal-title">🔑 Khôi Phục Mật Khẩu Qua Email</h3>
+            <h3 class="modal-title">Khôi Phục Mật Khẩu</h3>
             
             <!-- Bước 1: Gửi OTP -->
             <div id="khoi-quen-mk-b1">
@@ -402,7 +382,7 @@
     <div id="modal-quan-ly-users" class="modal-overlay" style="display: none;">
         <div class="modal-box modal-lg">
             <button class="modal-close-btn" id="btn-dong-modal-users">&times;</button>
-            <h3 class="modal-title">👥 Quản Trị Hệ Thống & Phân Quyền Tài Khoản</h3>
+            <h3 class="modal-title">Quản Trị Người Dùng & Phân Quyền</h3>
             
             <!-- Thẻ công tắc cổng đăng ký -->
             <div class="gateway-switch-card">
@@ -419,25 +399,25 @@
             <!-- Thanh công cụ quản lý tài khoản: Tiêu đề & Nút thêm thủ công -->
             <div class="user-mgmt-header-bar">
                 <div class="mgmt-title-group">
-                    <h4 style="font-size: 15px; font-weight: 700; color: #1e293b; margin: 0;">Danh Sách Tài Khoản Phân Quyền</h4>
+                    <h4 style="font-size: 14px; font-weight: 600; color: #1e293b; margin: 0;">Danh Sách Tài Khoản Phân Quyền</h4>
                     <span style="font-size: 12px; color: #64748b;">(Quy tắc an ninh: Các Admin bình đẳng, không được phép hạ cấp hoặc xóa nhau)</span>
                 </div>
-                <button type="button" class="btn btn-primary" id="btn-hien-form-them-user" style="padding: 7px 15px; font-size: 13px;">
-                    ➕ Thêm Tài Khoản Mới
+                <button type="button" class="btn btn-primary" id="btn-hien-form-them-user" style="padding: 6px 14px; font-size: 12.5px;">
+                    Thêm Tài Khoản
                 </button>
             </div>
 
             <!-- FORM THÊM TÀI KHOẢN THỦ CÔNG (Tạo tài khoản & cấp quyền Admin / Nhân viên) -->
             <div id="khung-them-user-thu-cong" class="add-user-panel" style="display: none;">
                 <div class="panel-header">
-                    <h5>✨ Cấp Tài Khoản Mới Bằng Tay</h5>
+                    <h5>Cấp Tài Khoản Mới</h5>
                     <span style="font-size: 12px; color: #64748b;">Chủ động thêm từng cán bộ mà không cần mở cổng tự do</span>
                 </div>
                 <form id="form-them-user-thu-cong">
                     <div class="form-row-2col">
                         <div class="form-group" style="margin-bottom: 0;">
                             <label for="new-user-email">Email Cán Bộ: *</label>
-                            <input type="email" id="new-user-email" placeholder="ví dụ: canbo@agribank.com.vn" required>
+                            <input type="email" id="new-user-email" placeholder="canbo@agribank.com.vn" required>
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label for="new-user-hoten">Họ và Tên: *</label>
@@ -448,21 +428,21 @@
                         <div class="form-group" style="margin-bottom: 0;">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
                                 <label for="new-user-password" style="margin-bottom: 0;">Mật Khẩu Ban Đầu: *</label>
-                                <a href="javascript:void(0)" id="btn-tao-mk-ngau-nhien" class="btn-random-pw">🎲 Tạo Ngẫu Nhiên</a>
+                                <a href="javascript:void(0)" id="btn-tao-mk-ngau-nhien" class="btn-random-pw">Tạo ngẫu nhiên</a>
                             </div>
                             <input type="text" id="new-user-password" placeholder="Tối thiểu 6 ký tự..." required minlength="6">
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label for="new-user-role">Phân Quyền / Vai Trò: *</label>
                             <select id="new-user-role" class="select-role-custom">
-                                <option value="admin">👑 Quản Trị Viên (Admin - Toàn quyền quản lý)</option>
-                                <option value="nhan_vien" selected>👤 Nhân Viên (Chỉ xem bảng lương)</option>
+                                <option value="admin">Quản Trị Viên (Admin)</option>
+                                <option value="nhan_vien" selected>Nhân Viên (Xem)</option>
                             </select>
                         </div>
                     </div>
                     
                     <div class="security-note-box">
-                        🛡️ <strong>Bảo Mật Tuyệt Đối:</strong> Mật khẩu ban đầu sẽ được mã hóa Bcrypt một chiều. Sau khi nhận tài khoản, người dùng có thể tự đăng nhập và đổi mật khẩu riêng tại nút <em>"🔑 Đổi Mật Khẩu"</em>. <strong>Admin tuyệt đối không thể biết mật khẩu mới của họ!</strong>
+                        <strong>Bảo Mật:</strong> Mật khẩu ban đầu sẽ được mã hóa Bcrypt một chiều. Sau khi nhận tài khoản, người dùng có thể tự đăng nhập và đổi mật khẩu riêng qua Email OTP. <strong>Admin tuyệt đối không thể biết mật khẩu mới của họ.</strong>
                     </div>
 
                     <div id="new-user-error-msg" class="login-error" style="display: none;"></div>

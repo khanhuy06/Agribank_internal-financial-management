@@ -283,7 +283,9 @@ document.addEventListener("DOMContentLoaded", function() {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="${tongSoCot}" class="empty-state">
-                        <div style="font-size: 30px;">📂</div>
+                        <div style="margin-bottom: 8px;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#a1a1aa" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+                        </div>
                         <p>Chưa có dữ liệu nào trong Tháng ${appState.thangHienTai}.</p>
                     </td>
                 </tr>
@@ -715,10 +717,10 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 if (data.is_open) {
                     if (tabReg) tabReg.style.display = "inline-block";
-                    if (lblStatus) lblStatus.innerHTML = `🟢 <strong style="color: #059669;">Cổng đăng ký đang MỞ:</strong> Nhân viên mới có thể tự đăng ký tài khoản.`;
+                    if (lblStatus) lblStatus.innerHTML = `<strong style="color: #059669;">Cổng đăng ký đang mở:</strong> Nhân viên mới có thể tự đăng ký tài khoản.`;
                 } else {
                     if (tabReg) tabReg.style.display = "none";
-                    if (lblStatus) lblStatus.innerHTML = `🔒 <em>Cổng đăng ký đang đóng. Hệ thống chỉ dành cho cán bộ được cấp quyền.</em>`;
+                    if (lblStatus) lblStatus.innerHTML = `<em>Cổng đăng ký đang đóng. Hệ thống chỉ dành cho cán bộ được cấp quyền.</em>`;
                 }
             }
         } catch (e) {}
@@ -805,11 +807,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     kiemTraTrangThaiDangNhap();
                     hienThiToast(`Chào mừng ${data.user.ho_ten}! (${data.user.role === 'admin' ? 'Quản trị viên' : 'Nhân viên'})`);
                 } else {
-                    errorMsg.textContent = "❌ " + (data.detail || "Đăng nhập thất bại!");
+                    errorMsg.textContent = data.detail || "Đăng nhập thất bại!";
                     errorMsg.style.display = "block";
                 }
             } catch (err) {
-                errorMsg.textContent = "❌ Không thể kết nối tới máy chủ!";
+                errorMsg.textContent = "Không thể kết nối tới máy chủ!";
                 errorMsg.style.display = "block";
             }
         });
@@ -835,16 +837,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 const data = await res.json();
 
                 if (res.ok) {
-                    successMsg.textContent = "✅ " + data.message;
+                    successMsg.textContent = data.message;
                     successMsg.style.display = "block";
                     formReg.reset();
                     setTimeout(() => tabLogin.click(), 2000);
                 } else {
-                    errMsg.textContent = "❌ " + (data.detail || "Đăng ký thất bại!");
+                    errMsg.textContent = data.detail || "Đăng ký thất bại!";
                     errMsg.style.display = "block";
                 }
             } catch (err) {
-                errMsg.textContent = "❌ Lỗi kết nối tới máy chủ!";
+                errMsg.textContent = "Lỗi kết nối tới máy chủ!";
                 errMsg.style.display = "block";
             }
         });
@@ -908,7 +910,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (cooldownDoiMkOtp > 0) return;
 
                 btnGuiOtpDoiMk.disabled = true;
-                btnGuiOtpDoiMk.textContent = "⏳ Đang gửi...";
+                btnGuiOtpDoiMk.textContent = "Đang gửi...";
 
                 try {
                     const res = await fetchAuth("/api/auth/send-change-password-otp", { method: "POST" });
@@ -916,7 +918,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (res.ok) {
                         hienThiToast(data.message, "success");
                         if (textOtpStatus) {
-                            textOtpStatus.textContent = "✅ " + data.message;
+                            textOtpStatus.textContent = data.message;
                             textOtpStatus.style.color = "#059669";
                         }
                         if (inputOtpDoiMk) inputOtpDoiMk.focus();
@@ -930,23 +932,23 @@ document.addEventListener("DOMContentLoaded", function() {
                             if (cooldownDoiMkOtp <= 0) {
                                 clearInterval(timerDoiMkOtp);
                                 btnGuiOtpDoiMk.disabled = false;
-                                btnGuiOtpDoiMk.textContent = "📩 Gửi Mã OTP";
+                                btnGuiOtpDoiMk.textContent = "Gửi Mã OTP";
                             } else {
                                 btnGuiOtpDoiMk.textContent = `Gửi lại (${cooldownDoiMkOtp}s)`;
                             }
                         }, 1000);
                     } else {
                         btnGuiOtpDoiMk.disabled = false;
-                        btnGuiOtpDoiMk.textContent = "📩 Gửi Mã OTP";
+                        btnGuiOtpDoiMk.textContent = "Gửi Mã OTP";
                         hienThiToast(data.detail || "Không thể gửi OTP!", "error");
                         if (textOtpStatus) {
-                            textOtpStatus.textContent = "❌ " + (data.detail || "Gửi OTP thất bại.");
+                            textOtpStatus.textContent = data.detail || "Gửi OTP thất bại.";
                             textOtpStatus.style.color = "#dc2626";
                         }
                     }
                 } catch (err) {
                     btnGuiOtpDoiMk.disabled = false;
-                    btnGuiOtpDoiMk.textContent = "📩 Gửi Mã OTP";
+                    btnGuiOtpDoiMk.textContent = "Gửi Mã OTP";
                     hienThiToast("Lỗi kết nối khi gửi OTP!", "error");
                 }
             });
@@ -961,13 +963,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 const otp = document.getElementById("mk-otp-code").value.trim();
 
                 if (moi !== confirm) {
-                    doiMkErr.textContent = "❌ Mật khẩu mới và xác nhận mật khẩu không khớp nhau!";
+                    doiMkErr.textContent = "Mật khẩu mới và xác nhận mật khẩu không khớp nhau!";
                     doiMkErr.style.display = "block";
                     return;
                 }
 
                 if (!otp || otp.length !== 6) {
-                    doiMkErr.textContent = "❌ Vui lòng nhập đúng mã OTP 6 chữ số nhận từ email!";
+                    doiMkErr.textContent = "Vui lòng nhập đúng mã OTP 6 chữ số nhận từ email!";
                     doiMkErr.style.display = "block";
                     return;
                 }
@@ -982,11 +984,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         dongModalDoiMkHandler();
                         hienThiToast("Đổi mật khẩu thành công! Email thông báo an ninh đã được gửi.", "success");
                     } else {
-                        doiMkErr.textContent = "❌ " + (data.detail || "Đổi mật khẩu thất bại!");
+                        doiMkErr.textContent = data.detail || "Đổi mật khẩu thất bại!";
                         doiMkErr.style.display = "block";
                     }
                 } catch (err) {
-                    doiMkErr.textContent = "❌ Lỗi hệ thống khi đổi mật khẩu!";
+                    doiMkErr.textContent = "Lỗi hệ thống khi đổi mật khẩu!";
                     doiMkErr.style.display = "block";
                 }
             });
@@ -1052,13 +1054,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     khoiB2.style.display = "block";
                     hienThiToast("Mã OTP đã được gửi về email của bạn!");
                 } else {
-                    otpB1Msg.textContent = "❌ " + (data.detail || "Không thể gửi OTP!");
+                    otpB1Msg.textContent = data.detail || "Không thể gửi OTP!";
                     otpB1Msg.style.display = "block";
                 }
             } catch (err) {
                 btnSubmit.textContent = "Gửi Mã OTP";
                 btnSubmit.disabled = false;
-                otpB1Msg.textContent = "❌ Không thể kết nối tới máy chủ!";
+                otpB1Msg.textContent = "Không thể kết nối tới máy chủ!";
                 otpB1Msg.style.display = "block";
             }
         });
@@ -1084,11 +1086,11 @@ document.addEventListener("DOMContentLoaded", function() {
                     hienThiToast("Đặt lại mật khẩu thành công! Bạn có thể đăng nhập ngay.");
                     document.getElementById("login-email").value = email;
                 } else {
-                    otpB2Msg.textContent = "❌ " + (data.detail || "Mã OTP không hợp lệ!");
+                    otpB2Msg.textContent = data.detail || "Mã OTP không hợp lệ!";
                     otpB2Msg.style.display = "block";
                 }
             } catch (err) {
-                otpB2Msg.textContent = "❌ Lỗi hệ thống khi xác nhận OTP!";
+                otpB2Msg.textContent = "Lỗi hệ thống khi xác nhận OTP!";
                 otpB2Msg.style.display = "block";
             }
         });
@@ -1423,12 +1425,8 @@ document.addEventListener("DOMContentLoaded", function() {
         const toastContainer = document.getElementById("toast-container");
         const toast = document.createElement("div");
         toast.className = `toast toast-${loai}`;
-        
-        let icon = "✅";
-        if (loai === "error") icon = "❌";
-        if (loai === "info") icon = "ℹ️";
 
-        toast.innerHTML = `<span>${icon}</span> <span>${tinNhan}</span>`;
+        toast.innerHTML = `<span class="toast-dot toast-dot-${loai}"></span> <span>${tinNhan}</span>`;
         toastContainer.appendChild(toast);
 
         setTimeout(() => {
