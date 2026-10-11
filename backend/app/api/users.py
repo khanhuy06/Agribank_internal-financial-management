@@ -41,11 +41,18 @@ def api_yeu_cau_otp_tao_tk(
     crud.save_otp(clean_email, otp_code, expire_minutes=10)
 
     # 4. Gửi email xác thực kích hoạt
-    send_account_registration_otp_email(clean_email, req.ho_ten or "Người dùng", otp_code)
+    res = send_account_registration_otp_email(clean_email, req.ho_ten or "Người dùng", otp_code)
+
+    if res.forwarded:
+        msg = f"⚠️ [Lưu ý Resend Sandbox] Do tài khoản Resend chưa gắn domain riêng, mã OTP của '{clean_email}' đã được chuyển tiếp an toàn tới hòm thư Quản trị viên: {res.recipient}. Vui lòng mở {res.recipient} để lấy mã!"
+    else:
+        msg = f"Mã xác thực OTP 6 số đã được gửi tới email '{clean_email}'. Vui lòng kiểm tra hộp thư!"
 
     return {
         "success": True,
-        "message": f"Mã xác thực OTP 6 số đã được gửi tới email '{clean_email}'. Vui lòng kiểm tra hộp thư!"
+        "message": msg,
+        "recipient": res.recipient,
+        "forwarded": res.forwarded
     }
 
 @router.get("", response_model=List[Dict[str, Any]])
@@ -145,12 +152,23 @@ def api_yeu_cau_otp_ha_quyen(admin: dict = Depends(require_admin)):
             detail="Hệ thống bắt buộc phải có ít nhất 1 Quản trị viên! Bạn là Admin duy nhất nên không thể hạ cấp."
         )
 
+    admin_email = admin.get("email") or admin.get("sub", "")
+    admin_ho_ten = admin.get("ho_ten") or "Quản trị viên"
+
     otp_code = f"{random.randint(100000, 999999)}"
-    crud.save_otp(admin["email"], otp_code, expire_minutes=10)
-    send_demote_admin_otp_email(admin["email"], admin.get("ho_ten", "Quản trị viên"), otp_code)
+    crud.save_otp(admin_email, otp_code, expire_minutes=10)
+    res = send_demote_admin_otp_email(admin_email, admin_ho_ten, otp_code)
+
+    if res.forwarded:
+        msg = f"⚠️ [Resend Sandbox] Do tài khoản Resend chưa gắn domain riêng, mã OTP hạ quyền đã được chuyển tiếp tới email: {res.recipient}. Vui lòng mở {res.recipient} để lấy mã!"
+    else:
+        msg = f"Mã OTP 6 số xác thực hạ cấp quyền đã được gửi về email {res.recipient}!"
+
     return {
         "success": True,
-        "message": f"Mã OTP 6 số xác thực hạ cấp quyền đã được gửi về email {admin['email']}!"
+        "message": msg,
+        "recipient": res.recipient,
+        "forwarded": res.forwarded
     }
 
 @router.post("/tu-ha-quyen")
@@ -170,7 +188,8 @@ def api_tu_ha_quyen_admin(
             detail="Không thể tự hạ cấp! Bạn là Quản trị viên (Admin) duy nhất còn lại của hệ thống. Vui lòng cấp quyền Admin cho tài khoản khác trước khi từ bỏ quyền."
         )
 
-    hop_le = crud.verify_and_consume_otp(admin["email"], req.otp_code)
+    admin_email = admin.get("email") or admin.get("sub", "")
+    hop_le = crud.verify_and_consume_otp(admin_email, req.otp_code)
     if not hop_le:
         raise HTTPException(
             status_code=400,
@@ -182,6 +201,7 @@ def api_tu_ha_quyen_admin(
     new_token = create_access_token(data={
         "id": user["id"],
         "email": user["email"],
+        "sub": user["email"],
         "ho_ten": user["ho_ten"],
         "role": "nhan_vien"
     })
@@ -231,17 +251,28 @@ def api_yeu_cau_otp_xoa_tai_khoan(
                 "skip_otp": True
             }
 
+    admin_email = admin.get("email") or admin.get("sub", "")
+    admin_ho_ten = admin.get("ho_ten") or "Quản trị viên"
+
     otp_code = f"{random.randint(100000, 999999)}"
-    crud.save_otp(admin["email"], otp_code, expire_minutes=10)
-    send_delete_account_otp_email(
-        admin["email"], 
-        admin.get("ho_ten", "Quản trị viên"), 
+    crud.save_otp(admin_email, otp_code, expire_minutes=10)
+    res = send_delete_account_otp_email(
+        admin_email, 
+        admin_ho_ten, 
         otp_code, 
         target["email"]
     )
+
+    if res.forwarded:
+        msg = f"⚠️ [Resend Sandbox] Do tài khoản Resend chưa gắn domain riêng, mã OTP xác thực xóa tài khoản đã được chuyển tiếp tới email: {res.recipient}. Vui lòng mở {res.recipient} để lấy mã!"
+    else:
+        msg = f"Mã OTP 6 số xác thực xóa tài khoản đã được gửi tới email {res.recipient}!"
+
     return {
         "success": True,
-        "message": f"Mã OTP 6 số xác thực xóa tài khoản đã được gửi tới email {admin['email']}!",
+        "message": msg,
+        "recipient": res.recipient,
+        "forwarded": res.forwarded,
         "target_email": target["email"]
     }
 
@@ -286,7 +317,8 @@ def api_xoa_tai_khoan(
                 detail="Bắt buộc phải nhập mã OTP 6 số để xác nhận xóa tài khoản!"
             )
 
-        hop_le = crud.verify_and_consume_otp(admin["email"], ma_otp.strip())
+        admin_email = admin.get("email") or admin.get("sub", "")
+        hop_le = crud.verify_and_consume_otp(admin_email, ma_otp.strip())
         if not hop_le:
             raise HTTPException(
                 status_code=400,

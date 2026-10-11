@@ -823,6 +823,10 @@ document.addEventListener("DOMContentLoaded", function() {
             khungChonNam.style.display = "flex";
             khoiDongHeThong();
         } else {
+            // Đóng tất cả modal còn mở để tránh đè lên màn hình đăng nhập
+            document.querySelectorAll(".modal-overlay").forEach(m => {
+                m.style.display = "none";
+            });
             manHinhDangNhap.style.display = "flex";
             khungUngDung.style.display = "none";
             khungUserHeader.style.display = "none";
@@ -831,11 +835,24 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function dangXuat(xacNhan = true) {
+        if (!appState.token && !sessionStorage.getItem("agribank_token")) {
+            return;
+        }
         if (!xacNhan || confirm("Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?")) {
+            // Đóng toàn bộ các modal ngay lập tức
+            document.querySelectorAll(".modal-overlay").forEach(m => {
+                m.style.display = "none";
+            });
+
             sessionStorage.removeItem("agribank_token");
             sessionStorage.removeItem("agribank_user");
             appState.token = "";
             appState.currentUser = null;
+
+            if (typeof countdownXoaUserInterval !== "undefined" && countdownXoaUserInterval) clearInterval(countdownXoaUserInterval);
+            if (typeof countdownThemUserInterval !== "undefined" && countdownThemUserInterval) clearInterval(countdownThemUserInterval);
+            if (typeof countdownRegInterval !== "undefined" && countdownRegInterval) clearInterval(countdownRegInterval);
+
             kiemTraTrangThaiDangNhap();
             kiemTraCongDangKy();
             if (xacNhan) hienThiToast("Đã đăng xuất thành công!", "info");
@@ -937,8 +954,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             successMsg.style.display = "block";
                         }
                         if (regOtpHint) {
-                            regOtpHint.textContent = `Mã OTP đã gửi tới ${email}. Vui lòng kiểm tra hộp thư!`;
-                            regOtpHint.style.color = "#15803d";
+                            regOtpHint.textContent = data.message || `Mã OTP đã gửi tới ${email}. Vui lòng kiểm tra hộp thư!`;
+                            regOtpHint.style.color = data.forwarded ? "#b45309" : "#15803d";
                         }
                         const regOtpInput = document.getElementById("reg-otp");
                         if (regOtpInput) regOtpInput.focus();
@@ -1696,8 +1713,8 @@ document.addEventListener("DOMContentLoaded", function() {
                             newUserSuccessMsg.style.display = "block";
                         }
                         if (newUserOtpHint) {
-                            newUserOtpHint.textContent = `Mã OTP đã gửi tới ${email}. Vui lòng kiểm tra hộp thư!`;
-                            newUserOtpHint.style.color = "#15803d";
+                            newUserOtpHint.textContent = data.message || `Mã OTP đã gửi tới ${email}. Vui lòng kiểm tra hộp thư!`;
+                            newUserOtpHint.style.color = data.forwarded ? "#b45309" : "#15803d";
                         }
                         if (inputNewOtp) inputNewOtp.focus();
 
@@ -2041,8 +2058,8 @@ document.addEventListener("DOMContentLoaded", function() {
                         sucBox.style.display = "block";
                     }
                     if (hint) {
-                        hint.textContent = `Mã OTP 6 số đã được gửi tới email ${appState.currentUser ? appState.currentUser.email : ''}. Vui lòng kiểm tra hộp thư!`;
-                        hint.style.color = "#15803d";
+                        hint.textContent = data.message || `Mã OTP 6 số đã được gửi tới email ${appState.currentUser ? appState.currentUser.email : ''}. Vui lòng kiểm tra hộp thư!`;
+                        hint.style.color = data.forwarded ? "#b45309" : "#15803d";
                     }
                     let count = 60;
                     if (countdownXoaUserInterval) clearInterval(countdownXoaUserInterval);
@@ -2119,7 +2136,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                         if (appState.currentUser && String(appState.currentUser.id) === String(targetId)) {
                             hienThiToast("Bạn đã xóa tài khoản đang đăng nhập. Đang đăng xuất...", "info");
-                            setTimeout(xuLyDangXuat, 1500);
+                            setTimeout(() => dangXuat(false), 1500);
                         } else {
                             await taiDanhSachUsersAdmin();
                         }

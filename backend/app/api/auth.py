@@ -123,6 +123,7 @@ def api_dang_nhap(req: DangNhapSchema):
     # Cấp JWT Token có chứa Email và Vai trò (Role)
     payload = {
         "sub": user["email"],
+        "email": user["email"],
         "id": user["id"],
         "role": user["role"],
         "ho_ten": user["ho_ten"]
@@ -173,11 +174,18 @@ def api_gui_otp_dang_ky(req: YeuCauOtpTaoTaiKhoanSchema):
     crud.save_otp(clean_email, otp_code, expire_minutes=10)
 
     # 5. Gửi email xác thực
-    send_account_registration_otp_email(clean_email, req.ho_ten or "Cán bộ", otp_code)
+    res = send_account_registration_otp_email(clean_email, req.ho_ten or "Cán bộ", otp_code)
+
+    if res.forwarded:
+        msg = f"⚠️ [Lưu ý Resend Sandbox] Do tài khoản Resend chưa gắn domain riêng, mã OTP của '{clean_email}' đã được chuyển tiếp an toàn tới email Quản trị viên: {res.recipient}. Vui lòng mở {res.recipient} để lấy mã!"
+    else:
+        msg = f"Mã OTP 6 số xác thực đã được gửi tới email '{clean_email}'. Vui lòng kiểm tra hộp thư!"
 
     return {
         "success": True,
-        "message": f"Mã OTP 6 số xác thực đã được gửi tới email '{clean_email}'. Vui lòng kiểm tra hộp thư!"
+        "message": msg,
+        "recipient": res.recipient,
+        "forwarded": res.forwarded
     }
 
 @router.post("/register")

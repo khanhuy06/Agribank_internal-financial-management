@@ -71,6 +71,9 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Secur
             headers={"WWW-Authenticate": "Bearer"},
         )
     
+    if "email" not in payload and "sub" in payload:
+        payload["email"] = payload["sub"]
+    
     return payload
 
 def require_admin(current_user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, Any]:

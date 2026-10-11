@@ -12,21 +12,35 @@ import json
 import urllib.request
 from backend.app.core.config import settings
 
-def send_email_notification(to_email: str, subject: str, html_content: str) -> bool:
+class EmailSendResult:
+    def __init__(self, success: bool, recipient: str, forwarded: bool = False, note: str = ""):
+        self.success = success
+        self.recipient = recipient
+        self.forwarded = forwarded
+        self.note = note
+
+    def __bool__(self):
+        return bool(self.success)
+
+    def __repr__(self):
+        return f"<EmailSendResult success={self.success} recipient={self.recipient} forwarded={self.forwarded}>"
+
+def send_email_notification(to_email: str, subject: str, html_content: str) -> EmailSendResult:
     """
     Gửi email qua:
     1. Resend API (nếu có mã RESEND_API_KEY bắt đầu bằng 're_...')
     2. Giao thức SMTP (nếu có SMTP_HOST & SMTP_USER)
     3. Dự phòng in ra Console (nếu chưa cấu hình dịch vụ ngoài)
     """
-    # 1. Ưu tiên gửi qua Resend API nếu có key re_...
+    clean_to = to_email.strip().lower()
+
+    # 1. Thử gửi qua Resend API nếu có key
     if settings.RESEND_API_KEY:
         try:
-            # Domain gửi: nếu chưa xác thực domain riêng thì dùng onboarding@resend.dev của Resend
             from_email = settings.EMAILS_FROM if "@" in settings.EMAILS_FROM and not "agribank.com.vn" in settings.EMAILS_FROM else "Agribank Hoàn Lão <onboarding@resend.dev>"
             payload = {
                 "from": from_email,
-                "to": [to_email],
+                "to": [clean_to],
                 "subject": subject,
                 "html": html_content
             }
@@ -42,15 +56,36 @@ def send_email_notification(to_email: str, subject: str, html_content: str) -> b
             )
             with urllib.request.urlopen(req, timeout=5) as resp:
                 if resp.status in (200, 201):
-                    print(f"[RESEND EMAIL] Đã gửi thư thành công tới {to_email} qua Resend API.")
-                    return True
+                    print(f"[RESEND EMAIL] Đã gửi thư thành công trực tiếp tới {clean_to} qua Resend API.")
+                    return EmailSendResult(True, clean_to, forwarded=False)
         except urllib.error.HTTPError as he:
-            print(f"[RESEND HTTP ERROR {he.code}]: {he.read().decode('utf-8', errors='ignore')}")
-            # Nếu tài khoản Resend giới hạn chỉ gửi tới owner email (khanhhuyphamnguyen1@gmail.com)
-            if he.code == 403 and to_email != "khanhhuyphamnguyen1@gmail.com":
+            err_body = he.read().decode('utf-8', errors='ignore')
+            print(f"[RESEND HTTP ERROR {he.code}]: {err_body}")
+
+            # Thử SMTP trước nếu có cấu hình SMTP
+            if settings.SMTP_HOST and settings.SMTP_USER:
                 try:
-                    payload["to"] = ["khanhhuyphamnguyen1@gmail.com"]
-                    payload["subject"] = f"[{to_email}] " + subject
+                    msg = MIMEMultipart("alternative")
+                    msg["Subject"] = subject
+                    msg["From"] = settings.EMAILS_FROM
+                    msg["To"] = clean_to
+                    part = MIMEText(html_content, "html", "utf-8")
+                    msg.attach(part)
+                    with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                        server.starttls()
+                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                        server.sendmail(settings.EMAILS_FROM, clean_to, msg.as_string())
+                    print(f"[SMTP EMAIL] Đã gửi thư thành công tới {clean_to} qua SMTP sau khi Resend 403.")
+                    return EmailSendResult(True, clean_to, forwarded=False)
+                except Exception as ex_smtp:
+                    print(f"[SMTP SAU RESEND LỖI]: {ex_smtp}")
+
+            # Nếu tài khoản Resend giới hạn chỉ gửi tới owner email (khanhhuyphamnguyen1@gmail.com)
+            owner_email = "khanhhuyphamnguyen1@gmail.com"
+            if he.code == 403 and clean_to != owner_email:
+                try:
+                    payload["to"] = [owner_email]
+                    payload["subject"] = f"[{clean_to}] " + subject
                     req_fwd = urllib.request.Request(
                         "https://api.resend.com/emails",
                         data=json.dumps(payload).encode("utf-8"),
@@ -63,8 +98,9 @@ def send_email_notification(to_email: str, subject: str, html_content: str) -> b
                     )
                     with urllib.request.urlopen(req_fwd, timeout=5) as resp_fwd:
                         if resp_fwd.status in (200, 201):
-                            print(f"[RESEND EMAIL] Đã gửi thư chuyển tiếp tới khanhhuyphamnguyen1@gmail.com thành công.")
-                            return True
+                            print(f"[RESEND EMAIL] Đã chuyển tiếp thư của {clean_to} tới {owner_email} thành công.")
+                            note = f"Do Resend đang dùng tài khoản thử nghiệm chưa gắn tên miền riêng, Resend chỉ cho phép gửi về email chủ tài khoản ({owner_email})"
+                            return EmailSendResult(True, owner_email, forwarded=True, note=note)
                 except Exception as ex_fwd:
                     print(f"[RESEND CHUYỂN TIẾP THẤT BẠI]: {ex_fwd}")
         except Exception as e:
@@ -76,7 +112,7 @@ def send_email_notification(to_email: str, subject: str, html_content: str) -> b
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
             msg["From"] = settings.EMAILS_FROM
-            msg["To"] = to_email
+            msg["To"] = clean_to
 
             part = MIMEText(html_content, "html", "utf-8")
             msg.attach(part)
@@ -84,20 +120,20 @@ def send_email_notification(to_email: str, subject: str, html_content: str) -> b
             with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
                 server.starttls()
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                server.sendmail(settings.EMAILS_FROM, to_email, msg.as_string())
+                server.sendmail(settings.EMAILS_FROM, clean_to, msg.as_string())
             
-            print(f"[SMTP EMAIL] Đã gửi thư thành công tới {to_email}")
-            return True
+            print(f"[SMTP EMAIL] Đã gửi thư thành công tới {clean_to}")
+            return EmailSendResult(True, clean_to, forwarded=False)
         except Exception as e:
-            print(f"[SMTP EMAIL LỖI] Không thể gửi email tới {to_email}: {e}")
+            print(f"[SMTP EMAIL LỖI] Không thể gửi email tới {clean_to}: {e}")
 
     # 3. Chế độ phát triển & kiểm thử: In mô phỏng ra Console
     print("\n" + "="*60)
-    print(f"[MÔ PHỎNG EMAIL] Gửi tới: {to_email}")
+    print(f"[MÔ PHỎNG EMAIL] Gửi tới: {clean_to}")
     print(f"[TIÊU ĐỀ]: {subject}")
     print(f"[NỘI DUNG]:\n{html_content}")
     print("="*60 + "\n")
-    return True
+    return EmailSendResult(True, clean_to, forwarded=False)
 
 def send_password_changed_email(to_email: str, ho_ten: str) -> bool:
     """Gửi email cảnh báo khi mật khẩu tài khoản vừa bị thay đổi."""
