@@ -1209,11 +1209,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
         function capNhatBadgeCongAdmin() {
             if (appState.congDangKyOpen) {
-                badgeGate.textContent = "ĐANG MỞ";
+                badgeGate.textContent = "Đang mở";
                 badgeGate.className = "status-gate-badge gate-open";
+                if (btnToggleCong) btnToggleCong.textContent = "Khóa Cổng";
             } else {
-                badgeGate.textContent = "ĐANG KHÓA";
+                badgeGate.textContent = "Đã khóa";
                 badgeGate.className = "status-gate-badge gate-closed";
+                if (btnToggleCong) btnToggleCong.textContent = "Mở Cổng";
             }
         }
 
@@ -1233,7 +1235,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         hienThiToast(data.message);
                     }
                 } catch (err) {
-                    hienThiToast("Lỗi khi gạt công tắc cổng!", "error");
+                    hienThiToast("Lỗi khi thay đổi trạng thái cổng!", "error");
                 }
             });
         }
