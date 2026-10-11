@@ -1719,7 +1719,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 }
                                 btnHaQuyen.innerHTML = `
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
-                                    <span>Hạ về Nhân Viên</span>
+                                    <span>Hạ quyền</span>
                                 `;
                                 tdAction.appendChild(btnHaQuyen);
 
