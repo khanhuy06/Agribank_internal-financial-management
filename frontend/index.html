@@ -18,7 +18,7 @@
     <meta http-equiv="Expires" content="0">
 
     <!-- CSS Chính (kèm cache-busting) -->
-    <link rel="stylesheet" href="style.css?v=20261011_v10">
+    <link rel="stylesheet" href="style.css?v=20261011_v11">
 </head>
 <body>
     <!-- 1. HEADER CHÍNH (CHUẨN VERCEL / ENTERPRISE SAAS) -->
@@ -391,6 +391,9 @@
                     </button>
                 </div>
                 <p class="privilege-desc">Tự nguyện chuyển tài khoản về người dùng thông thường. Thao tác này sẽ tước quyền quản trị của bạn.</p>
+                <p id="sole-admin-warning-setting" style="display: none; color: #b45309; font-size: 11.5px; margin-top: 6px; font-weight: 500;">
+                    ⚠️ Bạn là Quản trị viên duy nhất trong hệ thống. Không thể hạ cấp để đảm bảo luôn có người quản trị.
+                </p>
             </div>
 
             <!-- KHU VỰC ĐĂNG XUẤT GOM TRONG SETTINGS -->
@@ -542,10 +545,82 @@
         </div>
     </div>
 
+    <!-- MODAL 6: XÁC THỰC OTP TỰ HẠ CẤP QUẢN TRỊ VIÊN -->
+    <div id="modal-xac-thuc-ha-quyen" class="modal-overlay" style="display: none;">
+        <div class="modal-box modal-sm">
+            <button class="modal-close-btn" id="btn-dong-modal-ha-quyen">&times;</button>
+            <h3 class="modal-title" style="color: #b45309;">Xác Thực Tự Hạ Cấp Admin</h3>
+            <p style="font-size: 12.5px; color: #64748b; margin-top: 6px; margin-bottom: 14px; line-height: 1.45;">
+                Thao tác này sẽ chuyển tài khoản của bạn về Nhân viên thông thường và tước toàn bộ quyền Quản trị hệ thống.
+            </p>
+            
+            <form id="form-xac-thuc-ha-quyen">
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label for="otp-ha-quyen-input" style="margin-bottom: 0;">Mã OTP (6 số):</label>
+                        <button type="button" id="btn-gui-lai-otp-ha-quyen" class="btn-resend-otp" style="background: none; border: none; color: #991b1b; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 0;">
+                            Gửi lại mã
+                        </button>
+                    </div>
+                    <input type="text" id="otp-ha-quyen-input" placeholder="000000" maxlength="6" required style="letter-spacing: 6px; font-weight: bold; text-align: center; font-size: 20px;">
+                    <small id="otp-ha-quyen-hint" style="color: #64748b; font-size: 11.5px; display: block; margin-top: 6px;">
+                        Mã OTP đang được gửi về email Quản trị viên của bạn...
+                    </small>
+                </div>
+                <div id="ha-quyen-error-msg" class="login-error" style="display: none;"></div>
+                <div id="ha-quyen-success-msg" class="login-success" style="display: none;"></div>
+                <div class="modal-actions" style="margin-top: 18px;">
+                    <button type="button" class="btn btn-default" id="btn-huy-ha-quyen">Hủy Bỏ</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-ha-quyen" style="background: #b45309; border-color: #b45309;">
+                        Xác Nhận Hạ Cấp
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 7: XÁC THỰC OTP XÓA TÀI KHOẢN -->
+    <div id="modal-xac-thuc-xoa-user" class="modal-overlay" style="display: none;">
+        <div class="modal-box modal-sm">
+            <button class="modal-close-btn" id="btn-dong-modal-xoa-user">&times;</button>
+            <h3 class="modal-title" style="color: #dc2626;">Xác Thực Xóa Tài Khoản</h3>
+            <p style="font-size: 12.5px; color: #64748b; margin-top: 6px; margin-bottom: 10px;">
+                Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản:
+            </p>
+            <div style="background: #fef2f2; border: 1px solid #fee2e2; border-radius: 6px; padding: 8px 12px; margin-bottom: 14px;">
+                <strong id="xoa-user-target-email" style="color: #991b1b; font-size: 13.5px; word-break: break-all;"></strong>
+            </div>
+            
+            <form id="form-xac-thuc-xoa-user">
+                <input type="hidden" id="xoa-user-target-id" value="">
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <label for="otp-xoa-user-input" style="margin-bottom: 0;">Mã OTP (6 số):</label>
+                        <button type="button" id="btn-gui-lai-otp-xoa-user" class="btn-resend-otp" style="background: none; border: none; color: #991b1b; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 0;">
+                            Gửi lại mã
+                        </button>
+                    </div>
+                    <input type="text" id="otp-xoa-user-input" placeholder="000000" maxlength="6" required style="letter-spacing: 6px; font-weight: bold; text-align: center; font-size: 20px;">
+                    <small id="otp-xoa-user-hint" style="color: #64748b; font-size: 11.5px; display: block; margin-top: 6px;">
+                        Mã OTP đang được gửi về email Quản trị viên của bạn...
+                    </small>
+                </div>
+                <div id="xoa-user-error-msg" class="login-error" style="display: none;"></div>
+                <div id="xoa-user-success-msg" class="login-success" style="display: none;"></div>
+                <div class="modal-actions" style="margin-top: 18px;">
+                    <button type="button" class="btn btn-default" id="btn-huy-xoa-user">Hủy Bỏ</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-xoa-user" style="background: #dc2626; border-color: #dc2626;">
+                        Xác Nhận Xóa
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- KHUNG THÔNG BÁO TOAST POPUP (Góc màn hình) -->
     <div id="toast-container" class="toast-container"></div>
 
     <!-- JAVASCRIPT ĐIỀU HÀNH (kèm cache-busting) -->
-    <script src="script.js?v=20261011_v10"></script>
+    <script src="script.js?v=20261011_v11"></script>
 </body>
 </html>

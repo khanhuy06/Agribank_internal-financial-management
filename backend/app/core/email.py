@@ -118,6 +118,8 @@ def send_otp_email(to_email: str, ho_ten: str, otp_code: str) -> bool:
         <p style="color: #888; font-size: 12px; margin-top: 24px;">Nếu bạn không yêu cầu khôi phục mật khẩu, vui lòng bỏ qua email này.</p>
     </div>
     """
+    return send_email_notification(to_email, subject, html)
+
 def send_change_password_otp_email(to_email: str, ho_ten: str, otp_code: str) -> bool:
     """Gửi mã OTP 6 số để xác thực việc đổi mật khẩu tài khoản."""
     subject = f"🔐 Mã OTP xác thực ĐỔI MẬT KHẨU Agribank: {otp_code}"
@@ -137,6 +139,58 @@ def send_change_password_otp_email(to_email: str, ho_ten: str, otp_code: str) ->
         </div>
         <p style="color: #ef4444; font-size: 13px;">* Mã này có hiệu lực trong vòng <strong>10 phút</strong>. Tuyệt đối không chia sẻ mã này cho bất kỳ ai.</p>
         <p style="color: #888; font-size: 12px; margin-top: 24px;">Nếu bạn KHÔNG thực hiện yêu cầu đổi mật khẩu, vui lòng liên hệ ngay với Quản trị viên để kiểm tra an ninh tài khoản.</p>
+    </div>
+    """
+    return send_email_notification(to_email, subject, html)
+
+def send_demote_admin_otp_email(to_email: str, ho_ten: str, otp_code: str) -> bool:
+    """Gửi mã OTP 6 số để xác thực việc tự hạ cấp quyền Quản trị viên về Nhân viên."""
+    subject = f"⚠️ Mã OTP xác thực HẠ CẤP QUẢN TRỊ VIÊN Agribank: {otp_code}"
+    html = f"""
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px;">
+        <div style="text-align: center; border-bottom: 2px solid #b45309; padding-bottom: 12px; margin-bottom: 20px;">
+            <h2 style="color: #b45309; margin: 0;">AGRIBANK - CHI NHÁNH HOÀN LÃO</h2>
+            <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Xác Thực An Ninh: Tự Hạ Cấp Quản Trị Viên</p>
+        </div>
+        <p>Xin chào <strong>{ho_ten}</strong>,</p>
+        <p>Bạn vừa thực hiện thao tác yêu cầu <strong>TỰ HẠ CẤP VAI TRÒ TÀI KHOẢN ({to_email})</strong> từ Quản trị viên (Admin) xuống Nhân viên thông thường.</p>
+        <div style="background: #fffbeb; border-left: 4px solid #f59e0b; padding: 12px; margin: 16px 0;">
+            <p style="margin: 0; color: #92400e; font-size: 13.5px;">
+                <strong>CẢNH BÁO:</strong> Sau khi hạ cấp, bạn sẽ mất toàn bộ quyền quản trị người dùng, quản trị cột và chỉnh sửa dữ liệu tài chính.
+            </p>
+        </div>
+        <p>Để hoàn tất xác nhận, vui lòng nhập mã OTP 6 chữ số dưới đây:</p>
+        <div style="text-align: center; margin: 24px 0;">
+            <span style="display: inline-block; background: #b45309; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 6px; padding: 12px 30px; border-radius: 8px;">
+                {otp_code}
+            </span>
+        </div>
+        <p style="color: #ef4444; font-size: 13px;">* Mã có hiệu lực trong vòng <strong>10 phút</strong>. Nếu không phải bạn thực hiện, vui lòng bỏ qua thư này.</p>
+    </div>
+    """
+    return send_email_notification(to_email, subject, html)
+
+def send_delete_account_otp_email(to_email: str, ho_ten: str, otp_code: str, target_email: str) -> bool:
+    """Gửi mã OTP 6 số để xác thực việc xóa vĩnh viễn một tài khoản."""
+    subject = f"🗑️ Mã OTP xác thực XÓA TÀI KHOẢN ({target_email}): {otp_code}"
+    html = f"""
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px;">
+        <div style="text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 12px; margin-bottom: 20px;">
+            <h2 style="color: #dc2626; margin: 0;">AGRIBANK - CHI NHÁNH HOÀN LÃO</h2>
+            <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Xác Thực An Ninh: Xóa Tài Khoản Khỏi Hệ Thống</p>
+        </div>
+        <p>Xin chào Quản trị viên <strong>{ho_ten}</strong>,</p>
+        <p>Hệ thống nhận được yêu cầu <strong>XÓA VĨNH VIỄN TÀI KHOẢN</strong>:</p>
+        <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 6px; padding: 12px; margin: 12px 0;">
+            <strong style="color: #991b1b; font-size: 15px;">{target_email}</strong>
+        </div>
+        <p>Thao tác này là không thể hoàn tác. Để xác nhận xóa tài khoản này, vui lòng nhập mã OTP:</p>
+        <div style="text-align: center; margin: 24px 0;">
+            <span style="display: inline-block; background: #dc2626; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 6px; padding: 12px 30px; border-radius: 8px;">
+                {otp_code}
+            </span>
+        </div>
+        <p style="color: #ef4444; font-size: 13px;">* Mã có hiệu lực trong vòng <strong>10 phút</strong>. Tuyệt đối không cung cấp cho người khác.</p>
     </div>
     """
     return send_email_notification(to_email, subject, html)

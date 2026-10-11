@@ -3,11 +3,13 @@
 # API ROUTER: QUẢN LÝ TÀI KHOẢN & PHÂN QUYỀN (DÀNH CHO ADMIN)
 # =========================================================
 
-from fastapi import APIRouter, HTTPException, Path, Depends
-from typing import List, Dict, Any
-from backend.app.schemas.schemas import DoiQuyenSchema, TaoTaiKhoanThuCongSchema
+import random
+from fastapi import APIRouter, HTTPException, Path, Query, Depends, Body
+from typing import List, Dict, Any, Optional
+from backend.app.schemas.schemas import DoiQuyenSchema, TaoTaiKhoanThuCongSchema, XacNhanOtpSchema
 from backend.app.db import crud
 from backend.app.core.security import require_admin, hash_password, create_access_token
+from backend.app.core.email import send_demote_admin_otp_email, send_delete_account_otp_email
 
 router = APIRouter(prefix="/api/users", tags=["Quản lý Tài khoản (Admin)"])
 
@@ -63,9 +65,8 @@ def api_thay_doi_vai_tro(
     if not user:
         raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản người dùng!")
 
-    # Chống tự hạ quyền của chính mình
     if user["id"] == admin["id"]:
-        raise HTTPException(status_code=400, detail="Bạn không thể tự thay đổi vai trò của chính mình!")
+        raise HTTPException(status_code=400, detail="Vui lòng dùng tính năng 'Tự Hạ Cấp' kèm OTP để hạ quyền chính mình!")
 
     # AN NINH TỐI CAO: Các Admin bình đẳng - Không ai được phép hạ cấp Admin khác
     if user.get("role") == "admin":
@@ -81,53 +82,34 @@ def api_thay_doi_vai_tro(
         "message": f"Đã thay đổi vai trò của '{user['email']}' thành {vai_tro_text} thành công!"
     }
 
-@router.delete("/{user_id}")
-def api_xoa_tai_khoan(
-    user_id: int = Path(..., description="ID của tài khoản cần xóa"),
-    admin: dict = Depends(require_admin)
-):
+@router.post("/yeu-cau-otp-ha-quyen")
+def api_yeu_cau_otp_ha_quyen(admin: dict = Depends(require_admin)):
     """
-    Xóa tài khoản người dùng:
-    - Cho phép xóa tài khoản nhân viên thông thường.
-    - Cho phép xóa tài khoản bàn giao ban đầu ('admin@agribank.com.vn') khi đã có Admin khác (hoàn tất bàn giao).
-    - Cho phép Admin tự xóa chính mình khi hệ thống còn ít nhất 1 Admin khác.
-    - BẢO MẬT AN NINH: Các Admin chính thức tuyệt đối không thể kick lẫn nhau!
+    BƯỚC 1 TỰ HẠ CẤP: Gửi mã OTP 6 số về email của Admin để chuẩn bị xác thực tự hạ cấp.
+    KIỂM TRA AN TOÀN: Chặn ngay nếu hệ thống chỉ còn đúng 1 Admin duy nhất!
     """
-    user = crud.get_user_by_id(user_id)
-    if not user:
-        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản người dùng!")
+    so_admin = crud.count_admins()
+    if so_admin <= 1:
+        raise HTTPException(
+            status_code=400,
+            detail="Hệ thống bắt buộc phải có ít nhất 1 Quản trị viên! Bạn là Admin duy nhất nên không thể hạ cấp."
+        )
 
-    so_admin_hien_tai = crud.count_admins()
-
-    # Kiểm tra trường hợp tài khoản là Admin
-    if user.get("role") == "admin":
-        # Không được để hệ thống mất hết Admin
-        if so_admin_hien_tai <= 1:
-            raise HTTPException(
-                status_code=400,
-                detail="Không thể xóa! Đây là Quản trị viên (Admin) duy nhất còn lại của hệ thống. Hãy tạo Admin mới trước khi xóa."
-            )
-
-        la_tai_khoan_ban_giao = (user["email"].strip().lower() == "admin@agribank.com.vn")
-        la_chinh_minh = (user["id"] == admin["id"])
-
-        # Nếu không phải tài khoản bàn giao ban đầu và cũng không phải tự xóa chính mình -> Cấm kick Admin khác!
-        if not la_tai_khoan_ban_giao and not la_chinh_minh:
-            raise HTTPException(
-                status_code=403,
-                detail="Bảo mật cấp cao: Không thể xóa tài khoản của Quản trị viên (Admin) chính thức khác!"
-            )
-
-    crud.delete_user(user_id)
+    otp_code = f"{random.randint(100000, 999999)}"
+    crud.save_otp(admin["email"], otp_code, expire_minutes=10)
+    send_demote_admin_otp_email(admin["email"], admin.get("ho_ten", "Quản trị viên"), otp_code)
     return {
         "success": True,
-        "message": f"Đã xóa tài khoản '{user['email']}' thành công! Bàn giao an toàn hoàn tất."
+        "message": f"Mã OTP 6 số xác thực hạ cấp quyền đã được gửi về email {admin['email']}!"
     }
 
 @router.post("/tu-ha-quyen")
-def api_tu_ha_quyen_admin(admin: dict = Depends(require_admin)):
+def api_tu_ha_quyen_admin(
+    req: XacNhanOtpSchema,
+    admin: dict = Depends(require_admin)
+):
     """
-    Quản trị viên tự nguyện hạ cấp vai trò của chính mình về người dùng thông thường ('nhan_vien').
+    BƯỚC 2 TỰ HẠ CẤP: Quản trị viên nhập mã OTP 6 số để xác nhận từ bỏ quyền Admin.
     BẢO MẬT AN TOÀN: 
     Nếu hệ thống chỉ còn đúng 1 Admin duy nhất, chặn thao tác để tránh hệ thống bị 'mồ côi' Admin!
     """
@@ -136,6 +118,13 @@ def api_tu_ha_quyen_admin(admin: dict = Depends(require_admin)):
         raise HTTPException(
             status_code=400,
             detail="Không thể tự hạ cấp! Bạn là Quản trị viên (Admin) duy nhất còn lại của hệ thống. Vui lòng cấp quyền Admin cho tài khoản khác trước khi từ bỏ quyền."
+        )
+
+    hop_le = crud.verify_and_consume_otp(admin["email"], req.otp_code)
+    if not hop_le:
+        raise HTTPException(
+            status_code=400,
+            detail="Mã OTP xác thực không chính xác hoặc đã hết hạn (hiệu lực 10 phút)!"
         )
 
     crud.update_user_role(admin["id"], "nhan_vien")
@@ -156,4 +145,95 @@ def api_tu_ha_quyen_admin(admin: dict = Depends(require_admin)):
             "ho_ten": user["ho_ten"],
             "role": "nhan_vien"
         }
+    }
+
+@router.post("/{user_id}/yeu-cau-otp-xoa")
+def api_yeu_cau_otp_xoa_tai_khoan(
+    user_id: int = Path(..., description="ID của tài khoản muốn xóa"),
+    admin: dict = Depends(require_admin)
+):
+    """
+    BƯỚC 1 XÓA TÀI KHOẢN: Gửi mã OTP 6 số về email của Admin trước khi thực hiện xóa.
+    """
+    target = crud.get_user_by_id(user_id)
+    if not target:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản người dùng cần xóa!")
+
+    so_admin = crud.count_admins()
+    if target.get("role") == "admin":
+        if so_admin <= 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Không thể xóa! Đây là Quản trị viên (Admin) duy nhất còn lại của hệ thống."
+            )
+        la_tai_khoan_ban_giao = (target["email"].strip().lower() == "admin@agribank.com.vn")
+        la_chinh_minh = (target["id"] == admin["id"])
+        if not la_tai_khoan_ban_giao and not la_chinh_minh:
+            raise HTTPException(
+                status_code=403,
+                detail="Bảo mật cấp cao: Không thể xóa tài khoản của Quản trị viên (Admin) chính thức khác!"
+            )
+
+    otp_code = f"{random.randint(100000, 999999)}"
+    crud.save_otp(admin["email"], otp_code, expire_minutes=10)
+    send_delete_account_otp_email(
+        admin["email"], 
+        admin.get("ho_ten", "Quản trị viên"), 
+        otp_code, 
+        target["email"]
+    )
+    return {
+        "success": True,
+        "message": f"Mã OTP 6 số xác thực xóa tài khoản đã được gửi tới email {admin['email']}!",
+        "target_email": target["email"]
+    }
+
+@router.delete("/{user_id}")
+def api_xoa_tai_khoan(
+    user_id: int = Path(..., description="ID của tài khoản cần xóa"),
+    otp_code: Optional[str] = Query(None, description="Mã OTP 6 số xác thực gửi về email Admin"),
+    req: Optional[XacNhanOtpSchema] = Body(None),
+    admin: dict = Depends(require_admin)
+):
+    """
+    BƯỚC 2 XÓA TÀI KHOẢN: Yêu cầu mã OTP 6 số gửi về email của Admin để xác nhận xóa.
+    """
+    ma_otp = (req.otp_code if req else None) or otp_code
+    if not ma_otp:
+        raise HTTPException(
+            status_code=400,
+            detail="Bắt buộc phải nhập mã OTP 6 số để xác nhận xóa tài khoản!"
+        )
+
+    # Xác thực OTP thuộc về email của Admin đang yêu cầu xóa
+    hop_le = crud.verify_and_consume_otp(admin["email"], ma_otp.strip())
+    if not hop_le:
+        raise HTTPException(
+            status_code=400,
+            detail="Mã OTP xác thực không chính xác hoặc đã hết hạn (hiệu lực 10 phút)!"
+        )
+
+    user = crud.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản người dùng!")
+
+    so_admin_hien_tai = crud.count_admins()
+    if user.get("role") == "admin":
+        if so_admin_hien_tai <= 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Không thể xóa! Đây là Quản trị viên (Admin) duy nhất còn lại của hệ thống."
+            )
+        la_tai_khoan_ban_giao = (user["email"].strip().lower() == "admin@agribank.com.vn")
+        la_chinh_minh = (user["id"] == admin["id"])
+        if not la_tai_khoan_ban_giao and not la_chinh_minh:
+            raise HTTPException(
+                status_code=403,
+                detail="Bảo mật cấp cao: Không thể xóa tài khoản của Quản trị viên (Admin) chính thức khác!"
+            )
+
+    crud.delete_user(user_id)
+    return {
+        "success": True,
+        "message": f"Đã xóa tài khoản '{user['email']}' thành công!"
     }

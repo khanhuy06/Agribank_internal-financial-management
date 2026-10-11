@@ -1343,3 +1343,20 @@ td.col-actions {
         padding-bottom: 2px;
     }
 }
+
+/* NÚT TỰ HẠ CẤP BỊ VÔ HIỆU HÓA KHI CHỈ CÒN 1 ADMIN */
+.btn-demote-self:disabled,
+.btn-table-demote:disabled {
+    opacity: 0.45 !important;
+    cursor: not-allowed !important;
+    background: #f4f4f5 !important;
+    border-color: #e4e4e7 !important;
+    color: #a1a1aa !important;
+    box-shadow: none !important;
+}
+
+.btn-resend-otp:disabled {
+    color: #a1a1aa !important;
+    cursor: not-allowed !important;
+    text-decoration: none !important;
+}

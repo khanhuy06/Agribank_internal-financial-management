@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
         token: sessionStorage.getItem("agribank_token") || "",
         currentUser: null,
         congDangKyOpen: false,
+        soLuongAdmin: 1,
         
         // Cấu hình danh sách cột (Mặc định + Cột tùy chỉnh)
         danhSachCot: [
@@ -97,6 +98,22 @@ document.addEventListener("DOMContentLoaded", function() {
         await taiDanhSachCot();
         await napDuLieuThang(appState.thangHienTai);
         capNhatToanBoGiaoDien();
+        await kiemTraSoLuongAdmin();
+    }
+
+    async function kiemTraSoLuongAdmin() {
+        if (!appState.currentUser || appState.currentUser.role !== 'admin') return;
+        try {
+            const res = await fetchAuth("/api/users");
+            if (res.ok) {
+                const users = await res.json();
+                const tongSoAdmin = users.filter(usr => usr.role === 'admin').length;
+                appState.soLuongAdmin = tongSoAdmin;
+                if (typeof capNhatCacNutHaQuyen === "function") {
+                    capNhatCacNutHaQuyen(tongSoAdmin);
+                }
+            }
+        } catch (e) {}
     }
 
     async function layThongTinServer() {
@@ -1160,53 +1177,215 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        // Hàm chung: Admin tự nguyện hạ cấp quyền về người dùng thông thường
-        async function thucHienTuHaQuyenAdmin() {
-            const xacNhan = confirm("Bạn có chắc chắn muốn tự hạ cấp quyền Admin về người dùng thông thường? Sau khi xác nhận, bạn sẽ không còn quyền quản trị hệ thống.");
-            if (!xacNhan) return;
+        // CẬP NHẬT TRẠNG THÁI CÁC NÚT TỰ HẠ CẤP KHI HỆ THỐNG CHỈ CÒN 1 ADMIN
+        function capNhatCacNutHaQuyen(soAdmin) {
+            const btnTuHaQuyen = document.getElementById("btn-tu-ha-quyen-admin");
+            const btnTuHaQuyenTab = document.getElementById("btn-tu-ha-quyen-admin-tab");
+            const btnDemoteMgmtBar = document.getElementById("btn-demote-user-mgmt-bar");
+            const soleWarningSetting = document.getElementById("sole-admin-warning-setting");
 
-            try {
-                const res = await fetchAuth("/api/users/tu-ha-quyen", { method: "POST" });
-                const data = await res.json();
-                if (res.ok) {
-                    if (data.access_token) {
-                        sessionStorage.setItem("agribank_token", data.access_token);
-                        appState.token = data.access_token;
+            const isSole = soAdmin <= 1;
+            [btnTuHaQuyen, btnTuHaQuyenTab, btnDemoteMgmtBar].forEach(btn => {
+                if (btn) {
+                    btn.disabled = isSole;
+                    if (isSole) {
+                        btn.title = "Bạn là Quản trị viên duy nhất trong hệ thống, không thể hạ cấp!";
+                    } else {
+                        btn.title = "Tự nguyện từ bỏ quyền Quản trị viên để trở về người dùng thông thường";
                     }
-                    if (data.user) {
-                        appState.currentUser = data.user;
-                        sessionStorage.setItem("agribank_user", JSON.stringify(data.user));
-                    } else if (appState.currentUser) {
-                        appState.currentUser.role = "nhan_vien";
-                        sessionStorage.setItem("agribank_user", JSON.stringify(appState.currentUser));
-                    }
-
-                    // Đóng cả 2 modal nếu đang mở
-                    const modalCaiDat = document.getElementById("modal-cai-dat");
-                    if (modalCaiDat) modalCaiDat.style.display = "none";
-                    const modalUsers = document.getElementById("modal-quan-ly-users");
-                    if (modalUsers) modalUsers.style.display = "none";
-
-                    apDungPhanQuyenGiaoDien();
-                    veBangDuLieu();
-                    hienThiToast("Bạn đã tự hạ cấp về người dùng thông thường thành công!", "success");
-                } else {
-                    hienThiToast(data.detail || "Không thể hạ cấp!", "error");
                 }
-            } catch (err) {
-                hienThiToast("Lỗi kết nối khi gửi yêu cầu hạ cấp!", "error");
+            });
+
+            if (soleWarningSetting) {
+                soleWarningSetting.style.display = isSole ? "block" : "none";
             }
         }
 
+        // =====================================================
+        // XÁC THỰC OTP TỰ HẠ CẤP QUYỀN ADMIN (BẢO VỆ 2 LỚP)
+        // =====================================================
+        let countdownHaQuyenInterval = null;
+
+        async function moModalXacThucHaQuyen() {
+            if (appState.soLuongAdmin <= 1) {
+                hienThiToast("Hệ thống bắt buộc phải có ít nhất 1 Admin! Bạn là Admin duy nhất nên không thể hạ cấp.", "error");
+                return;
+            }
+
+            const modalHaQuyen = document.getElementById("modal-xac-thuc-ha-quyen");
+            const formHaQuyen = document.getElementById("form-xac-thuc-ha-quyen");
+            const errBox = document.getElementById("ha-quyen-error-msg");
+            const sucBox = document.getElementById("ha-quyen-success-msg");
+            const inputOtp = document.getElementById("otp-ha-quyen-input");
+
+            if (formHaQuyen) formHaQuyen.reset();
+            if (errBox) errBox.style.display = "none";
+            if (sucBox) sucBox.style.display = "none";
+            if (modalHaQuyen) modalHaQuyen.style.display = "flex";
+
+            // Tự động kích hoạt gửi mã OTP về email
+            await guiOtpHaQuyen();
+            if (inputOtp) inputOtp.focus();
+        }
+
+        async function guiOtpHaQuyen() {
+            const btnResend = document.getElementById("btn-gui-lai-otp-ha-quyen");
+            const hint = document.getElementById("otp-ha-quyen-hint");
+            const errBox = document.getElementById("ha-quyen-error-msg");
+            const sucBox = document.getElementById("ha-quyen-success-msg");
+
+            if (btnResend) {
+                btnResend.disabled = true;
+                btnResend.textContent = "Đang gửi...";
+            }
+            if (errBox) errBox.style.display = "none";
+
+            try {
+                const res = await fetchAuth("/api/users/yeu-cau-otp-ha-quyen", { method: "POST" });
+                const data = await res.json();
+                if (res.ok) {
+                    if (sucBox) {
+                        sucBox.textContent = data.message || "Mã OTP đã được gửi đến email của bạn!";
+                        sucBox.style.display = "block";
+                    }
+                    if (hint) {
+                        hint.textContent = `Mã OTP 6 số đã được gửi tới email ${appState.currentUser ? appState.currentUser.email : ''}. Vui lòng kiểm tra hộp thư!`;
+                        hint.style.color = "#15803d";
+                    }
+                    let count = 60;
+                    if (countdownHaQuyenInterval) clearInterval(countdownHaQuyenInterval);
+                    countdownHaQuyenInterval = setInterval(() => {
+                        count--;
+                        if (btnResend) {
+                            if (count > 0) {
+                                btnResend.textContent = `Gửi lại (${count}s)`;
+                            } else {
+                                clearInterval(countdownHaQuyenInterval);
+                                btnResend.disabled = false;
+                                btnResend.textContent = "Gửi lại mã";
+                            }
+                        }
+                    }, 1000);
+                } else {
+                    if (errBox) {
+                        errBox.textContent = data.detail || "Không thể gửi OTP!";
+                        errBox.style.display = "block";
+                    }
+                    if (btnResend) {
+                        btnResend.disabled = false;
+                        btnResend.textContent = "Gửi lại mã";
+                    }
+                }
+            } catch (err) {
+                if (errBox) {
+                    errBox.textContent = "Lỗi kết nối khi gửi OTP!";
+                    errBox.style.display = "block";
+                }
+                if (btnResend) {
+                    btnResend.disabled = false;
+                    btnResend.textContent = "Gửi lại mã";
+                }
+            }
+        }
+
+        const formXacThucHaQuyen = document.getElementById("form-xac-thuc-ha-quyen");
+        if (formXacThucHaQuyen) {
+            formXacThucHaQuyen.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                const otpVal = document.getElementById("otp-ha-quyen-input").value.trim();
+                const errBox = document.getElementById("ha-quyen-error-msg");
+                const btnSubmit = document.getElementById("btn-submit-ha-quyen");
+
+                if (!otpVal || otpVal.length !== 6) {
+                    if (errBox) {
+                        errBox.textContent = "Vui lòng nhập đầy đủ 6 chữ số OTP!";
+                        errBox.style.display = "block";
+                    }
+                    return;
+                }
+
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.textContent = "Đang xác thực...";
+                }
+                if (errBox) errBox.style.display = "none";
+
+                try {
+                    const res = await fetchAuth("/api/users/tu-ha-quyen", {
+                        method: "POST",
+                        body: JSON.stringify({ otp_code: otpVal })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        if (data.access_token) {
+                            sessionStorage.setItem("agribank_token", data.access_token);
+                            appState.token = data.access_token;
+                        }
+                        if (data.user) {
+                            appState.currentUser = data.user;
+                            sessionStorage.setItem("agribank_user", JSON.stringify(data.user));
+                        } else if (appState.currentUser) {
+                            appState.currentUser.role = "nhan_vien";
+                            sessionStorage.setItem("agribank_user", JSON.stringify(appState.currentUser));
+                        }
+
+                        // Đóng tất cả modal
+                        const modalHaQuyen = document.getElementById("modal-xac-thuc-ha-quyen");
+                        if (modalHaQuyen) modalHaQuyen.style.display = "none";
+                        const modalCaiDat = document.getElementById("modal-cai-dat");
+                        if (modalCaiDat) modalCaiDat.style.display = "none";
+                        const modalUsers = document.getElementById("modal-quan-ly-users");
+                        if (modalUsers) modalUsers.style.display = "none";
+
+                        if (countdownHaQuyenInterval) clearInterval(countdownHaQuyenInterval);
+
+                        apDungPhanQuyenGiaoDien();
+                        veBangDuLieu();
+                        hienThiToast("Bạn đã tự hạ cấp về người dùng thông thường thành công!", "success");
+                    } else {
+                        if (errBox) {
+                            errBox.textContent = data.detail || "Không thể hạ cấp!";
+                            errBox.style.display = "block";
+                        }
+                        hienThiToast(data.detail || "Không thể hạ cấp!", "error");
+                    }
+                } catch (err) {
+                    if (errBox) {
+                        errBox.textContent = "Lỗi kết nối khi xác thực OTP!";
+                        errBox.style.display = "block";
+                    }
+                    hienThiToast("Lỗi kết nối khi xác thực OTP!", "error");
+                } finally {
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.textContent = "Xác Nhận Hạ Cấp";
+                    }
+                }
+            });
+        }
+
+        const btnDongModalHaQuyen = document.getElementById("btn-dong-modal-ha-quyen");
+        const btnHuyHaQuyen = document.getElementById("btn-huy-ha-quyen");
+        const dongModalHaQuyenHandler = () => {
+            const m = document.getElementById("modal-xac-thuc-ha-quyen");
+            if (m) m.style.display = "none";
+            if (countdownHaQuyenInterval) clearInterval(countdownHaQuyenInterval);
+        };
+        if (btnDongModalHaQuyen) btnDongModalHaQuyen.addEventListener("click", dongModalHaQuyenHandler);
+        if (btnHuyHaQuyen) btnHuyHaQuyen.addEventListener("click", dongModalHaQuyenHandler);
+
+        const btnGuiLaiOtpHaQuyen = document.getElementById("btn-gui-lai-otp-ha-quyen");
+        if (btnGuiLaiOtpHaQuyen) btnGuiLaiOtpHaQuyen.addEventListener("click", guiOtpHaQuyen);
+
         // Gắn sự kiện cho các nút tự hạ cấp quyền Admin
         const btnTuHaQuyen = document.getElementById("btn-tu-ha-quyen-admin");
-        if (btnTuHaQuyen) btnTuHaQuyen.addEventListener("click", thucHienTuHaQuyenAdmin);
+        if (btnTuHaQuyen) btnTuHaQuyen.addEventListener("click", moModalXacThucHaQuyen);
 
         const btnTuHaQuyenTab = document.getElementById("btn-tu-ha-quyen-admin-tab");
-        if (btnTuHaQuyenTab) btnTuHaQuyenTab.addEventListener("click", thucHienTuHaQuyenAdmin);
+        if (btnTuHaQuyenTab) btnTuHaQuyenTab.addEventListener("click", moModalXacThucHaQuyen);
 
         const btnDemoteMgmtBar = document.getElementById("btn-demote-user-mgmt-bar");
-        if (btnDemoteMgmtBar) btnDemoteMgmtBar.addEventListener("click", thucHienTuHaQuyenAdmin);
+        if (btnDemoteMgmtBar) btnDemoteMgmtBar.addEventListener("click", moModalXacThucHaQuyen);
 
         // =====================================================
         // 10. MODAL QUÊN MẬT KHẨU (XÁC THỰC EMAIL OTP)
@@ -1521,7 +1700,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 btnXoaBanGiao.className = "btn-table-danger";
                                 btnXoaBanGiao.title = "Xóa tài khoản khởi tạo bàn giao";
                                 btnXoaBanGiao.textContent = "Xóa TK Bàn Giao";
-                                btnXoaBanGiao.addEventListener("click", () => xoaUser(u.id, u.email));
+                                btnXoaBanGiao.addEventListener("click", () => moModalXacThucXoaUser(u.id, u.email));
                                 tdAction.appendChild(btnXoaBanGiao);
                             } else if (isSelf) {
                                 // ADMIN ĐANG ĐĂNG NHẬP: HIỆN CHỮ 'BẠN' + NÚT TỰ HẠ CẤP VỀ NHÂN VIÊN
@@ -1533,12 +1712,17 @@ document.addEventListener("DOMContentLoaded", function() {
                                 const btnHaQuyen = document.createElement("button");
                                 btnHaQuyen.className = "btn-table-demote";
                                 btnHaQuyen.style.marginLeft = "8px";
-                                btnHaQuyen.title = "Tự hạ cấp tài khoản của bạn về người dùng thông thường";
+                                if (tongSoAdmin <= 1) {
+                                    btnHaQuyen.disabled = true;
+                                    btnHaQuyen.title = "Hệ thống chỉ còn 1 Admin duy nhất, không thể hạ cấp!";
+                                } else {
+                                    btnHaQuyen.title = "Tự hạ cấp tài khoản của bạn về người dùng thông thường";
+                                    btnHaQuyen.addEventListener("click", () => moModalXacThucHaQuyen());
+                                }
                                 btnHaQuyen.innerHTML = `
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
                                     <span>Hạ về Nhân Viên</span>
                                 `;
-                                btnHaQuyen.addEventListener("click", () => thucHienTuHaQuyenAdmin());
                                 tdAction.appendChild(btnHaQuyen);
 
                                 if (tongSoAdmin > 1) {
@@ -1547,7 +1731,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                     btnRutLui.title = "Xóa tài khoản của bạn";
                                     btnRutLui.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
                                     btnRutLui.style.marginLeft = "6px";
-                                    btnRutLui.addEventListener("click", () => xoaUser(u.id, u.email));
+                                    btnRutLui.addEventListener("click", () => moModalXacThucXoaUser(u.id, u.email));
                                     tdAction.appendChild(btnRutLui);
                                 }
                             } else {
@@ -1570,7 +1754,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             btnXoa.title = "Xóa tài khoản";
                             btnXoa.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
                             btnXoa.style.marginLeft = "8px";
-                            btnXoa.addEventListener("click", () => xoaUser(u.id, u.email));
+                            btnXoa.addEventListener("click", () => moModalXacThucXoaUser(u.id, u.email));
                             tdAction.appendChild(btnXoa);
                         }
 
@@ -1604,31 +1788,177 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        async function xoaUser(userId, email) {
-            const isBoot = (email.toLowerCase() === "admin@agribank.com.vn");
-            const msg = isBoot 
-                ? `XÁC NHẬN HOÀN TẤT BÀN GIAO:\nBạn có chắc muốn XÓA VĨNH VIỄN tài khoản khởi tạo mặc định "${email}"?\n(Sau khi xóa, chỉ các tài khoản Quản trị viên cá nhân do bạn quản lý mới có quyền vào hệ thống).`
-                : `Bạn có chắc muốn XÓA VĨNH VIỄN tài khoản "${email}"? Người này sẽ không thể đăng nhập được nữa.`;
+        // =====================================================
+        // XÁC THỰC OTP XÓA TÀI KHOẢN (BẢO VỆ 2 LỚP)
+        // =====================================================
+        let countdownXoaUserInterval = null;
 
-            if (!confirm(msg)) return;
+        async function moModalXacThucXoaUser(userId, email) {
+            const isSelf = Boolean(appState.currentUser && (String(userId) === String(appState.currentUser.id) || email.toLowerCase() === (appState.currentUser.email || '').toLowerCase()));
+            if (isSelf && appState.soLuongAdmin <= 1) {
+                hienThiToast("Không thể xóa Quản trị viên duy nhất còn lại của hệ thống!", "error");
+                return;
+            }
+
+            const modalXoaUser = document.getElementById("modal-xac-thuc-xoa-user");
+            const formXoaUser = document.getElementById("form-xac-thuc-xoa-user");
+            const errBox = document.getElementById("xoa-user-error-msg");
+            const sucBox = document.getElementById("xoa-user-success-msg");
+            const inputTargetId = document.getElementById("xoa-user-target-id");
+            const textTargetEmail = document.getElementById("xoa-user-target-email");
+            const inputOtp = document.getElementById("otp-xoa-user-input");
+
+            if (formXoaUser) formXoaUser.reset();
+            if (inputTargetId) inputTargetId.value = userId;
+            if (textTargetEmail) textTargetEmail.textContent = email;
+            if (errBox) errBox.style.display = "none";
+            if (sucBox) sucBox.style.display = "none";
+            if (modalXoaUser) modalXoaUser.style.display = "flex";
+
+            await guiOtpXoaUser(userId);
+            if (inputOtp) inputOtp.focus();
+        }
+
+        async function guiOtpXoaUser(userId) {
+            const btnResend = document.getElementById("btn-gui-lai-otp-xoa-user");
+            const hint = document.getElementById("otp-xoa-user-hint");
+            const errBox = document.getElementById("xoa-user-error-msg");
+            const sucBox = document.getElementById("xoa-user-success-msg");
+
+            if (btnResend) {
+                btnResend.disabled = true;
+                btnResend.textContent = "Đang gửi...";
+            }
+            if (errBox) errBox.style.display = "none";
 
             try {
-                const res = await fetchAuth(`/api/users/${userId}`, { method: "DELETE" });
+                const res = await fetchAuth(`/api/users/${userId}/yeu-cau-otp-xoa`, { method: "POST" });
                 const data = await res.json();
                 if (res.ok) {
-                    hienThiToast(data.message, "info");
-                    if (appState.currentUser && appState.currentUser.id === userId) {
-                        hienThiToast("Bạn đã xóa tài khoản đang đăng nhập. Đang đăng xuất...", "info");
-                        setTimeout(xuLyDangXuat, 1500);
-                    } else {
-                        taiDanhSachUsersAdmin();
+                    if (sucBox) {
+                        sucBox.textContent = data.message || "Mã OTP đã được gửi đến email Quản trị viên!";
+                        sucBox.style.display = "block";
                     }
+                    if (hint) {
+                        hint.textContent = `Mã OTP 6 số đã được gửi tới email ${appState.currentUser ? appState.currentUser.email : ''}. Vui lòng kiểm tra hộp thư!`;
+                        hint.style.color = "#15803d";
+                    }
+                    let count = 60;
+                    if (countdownXoaUserInterval) clearInterval(countdownXoaUserInterval);
+                    countdownXoaUserInterval = setInterval(() => {
+                        count--;
+                        if (btnResend) {
+                            if (count > 0) {
+                                btnResend.textContent = `Gửi lại (${count}s)`;
+                            } else {
+                                clearInterval(countdownXoaUserInterval);
+                                btnResend.disabled = false;
+                                btnResend.textContent = "Gửi lại mã";
+                            }
+                        }
+                    }, 1000);
                 } else {
-                    hienThiToast(data.detail || "Không thể xóa tài khoản!", "error");
+                    if (errBox) {
+                        errBox.textContent = data.detail || "Không thể gửi OTP!";
+                        errBox.style.display = "block";
+                    }
+                    if (btnResend) {
+                        btnResend.disabled = false;
+                        btnResend.textContent = "Gửi lại mã";
+                    }
                 }
             } catch (err) {
-                hienThiToast("Lỗi hệ thống khi xóa tài khoản!", "error");
+                if (errBox) {
+                    errBox.textContent = "Lỗi kết nối khi gửi OTP!";
+                    errBox.style.display = "block";
+                }
+                if (btnResend) {
+                    btnResend.disabled = false;
+                    btnResend.textContent = "Gửi lại mã";
+                }
             }
+        }
+
+        const formXacThucXoaUser = document.getElementById("form-xac-thuc-xoa-user");
+        if (formXacThucXoaUser) {
+            formXacThucXoaUser.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                const targetId = document.getElementById("xoa-user-target-id").value;
+                const targetEmail = document.getElementById("xoa-user-target-email").textContent;
+                const otpVal = document.getElementById("otp-xoa-user-input").value.trim();
+                const errBox = document.getElementById("xoa-user-error-msg");
+                const btnSubmit = document.getElementById("btn-submit-xoa-user");
+
+                if (!otpVal || otpVal.length !== 6) {
+                    if (errBox) {
+                        errBox.textContent = "Vui lòng nhập đầy đủ 6 chữ số OTP!";
+                        errBox.style.display = "block";
+                    }
+                    return;
+                }
+
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.textContent = "Đang xóa...";
+                }
+                if (errBox) errBox.style.display = "none";
+
+                try {
+                    const res = await fetchAuth(`/api/users/${targetId}?otp_code=${encodeURIComponent(otpVal)}`, {
+                        method: "DELETE"
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        const modalXoaUser = document.getElementById("modal-xac-thuc-xoa-user");
+                        if (modalXoaUser) modalXoaUser.style.display = "none";
+                        if (countdownXoaUserInterval) clearInterval(countdownXoaUserInterval);
+
+                        hienThiToast(data.message || `Đã xóa tài khoản "${targetEmail}" thành công!`, "info");
+
+                        if (appState.currentUser && String(appState.currentUser.id) === String(targetId)) {
+                            hienThiToast("Bạn đã xóa tài khoản đang đăng nhập. Đang đăng xuất...", "info");
+                            setTimeout(xuLyDangXuat, 1500);
+                        } else {
+                            await taiDanhSachUsersAdmin();
+                        }
+                    } else {
+                        if (errBox) {
+                            errBox.textContent = data.detail || "Không thể xóa tài khoản!";
+                            errBox.style.display = "block";
+                        }
+                        hienThiToast(data.detail || "Không thể xóa tài khoản!", "error");
+                    }
+                } catch (err) {
+                    if (errBox) {
+                        errBox.textContent = "Lỗi kết nối khi gửi yêu cầu xóa!";
+                        errBox.style.display = "block";
+                    }
+                    hienThiToast("Lỗi kết nối khi gửi yêu cầu xóa!", "error");
+                } finally {
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.textContent = "Xác Nhận Xóa";
+                    }
+                }
+            });
+        }
+
+        const btnDongModalXoaUser = document.getElementById("btn-dong-modal-xoa-user");
+        const btnHuyXoaUser = document.getElementById("btn-huy-xoa-user");
+        const dongModalXoaUserHandler = () => {
+            const m = document.getElementById("modal-xac-thuc-xoa-user");
+            if (m) m.style.display = "none";
+            if (countdownXoaUserInterval) clearInterval(countdownXoaUserInterval);
+        };
+        if (btnDongModalXoaUser) btnDongModalXoaUser.addEventListener("click", dongModalXoaUserHandler);
+        if (btnHuyXoaUser) btnHuyXoaUser.addEventListener("click", dongModalXoaUserHandler);
+
+        const btnGuiLaiOtpXoaUser = document.getElementById("btn-gui-lai-otp-xoa-user");
+        if (btnGuiLaiOtpXoaUser) {
+            btnGuiLaiOtpXoaUser.addEventListener("click", () => {
+                const targetId = document.getElementById("xoa-user-target-id").value;
+                if (targetId) guiOtpXoaUser(targetId);
+            });
         }
     }
 

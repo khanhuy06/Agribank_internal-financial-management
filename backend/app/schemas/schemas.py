@@ -42,6 +42,9 @@ class TaoTaiKhoanThuCongSchema(BaseModel):
     mat_khau: str = Field(..., min_length=6, description="Mật khẩu khởi tạo ban đầu (tối thiểu 6 ký tự)")
     role: Literal["admin", "nhan_vien"] = Field("nhan_vien", description="Vai trò tài khoản: admin hoặc nhan_vien")
 
+class XacNhanOtpSchema(BaseModel):
+    otp_code: str = Field(..., min_length=6, max_length=6, description="Mã OTP 6 số xác thực gửi về email")
+
 # --- 2. CÔNG TẮC HỆ THỐNG ---
 
 class CongTacDangKySchema(BaseModel):
