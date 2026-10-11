@@ -71,7 +71,14 @@ STATIC_DIR = FRONTEND_DIR if os.path.exists(FRONTEND_DIR) else BASE_DIR
 @app.get("/")
 def trang_chu():
     index_file = os.path.join(STATIC_DIR, "index.html")
-    return FileResponse(index_file)
+    return FileResponse(
+        index_file,
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
 
 @app.get("/robots.txt")
 def robots_file():

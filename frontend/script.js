@@ -444,6 +444,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 hienThiToast("Vui lòng nhập tên cột!", "error");
                 return;
             }
+            const btnSubmit = formThemCot.querySelector("button[type='submit']");
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.textContent = "Đang thêm...";
+            }
             const idCot = "cot_" + Date.now();
 
             try {
@@ -468,6 +473,11 @@ document.addEventListener("DOMContentLoaded", function() {
             } catch (err) {
                 console.error("Lỗi khi thêm cột:", err);
                 hienThiToast(err.message || "Lỗi khi thêm cột!", "error");
+            } finally {
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = "Thêm Cột";
+                }
             }
         });
     }
@@ -480,9 +490,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 await taiDanhSachCot();
                 veBangDuLieu();
                 hienThiToast(`Đã xóa cột "${tenCot}" thành công!`, "info");
+            } else {
+                let errMsg = "Không thể xóa cột!";
+                try {
+                    const err = await res.json();
+                    errMsg = err.detail || errMsg;
+                } catch (e) {}
+                hienThiToast(errMsg, "error");
             }
         } catch (err) {
-            hienThiToast("Lỗi khi xóa cột!", "error");
+            hienThiToast(err.message || "Lỗi khi xóa cột!", "error");
         }
     }
 

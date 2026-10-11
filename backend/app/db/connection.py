@@ -26,7 +26,17 @@ except ImportError:
 
 # Đường dẫn file SQLite dự phòng
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-SQLITE_PATH = os.path.join(BASE_DIR, "agribank.db")
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    SQLITE_PATH = "/tmp/agribank.db"
+    src_db = os.path.join(BASE_DIR, "agribank.db")
+    if os.path.exists(src_db) and not os.path.exists("/tmp/agribank.db"):
+        try:
+            import shutil
+            shutil.copy2(src_db, "/tmp/agribank.db")
+        except Exception as copy_err:
+            print(f"[WARN] Không thể copy agribank.db sang /tmp: {copy_err}")
+else:
+    SQLITE_PATH = os.path.join(BASE_DIR, "agribank.db")
 
 def get_database_mode() -> str:
     """Xác định chế độ cơ sở dữ liệu hiện tại."""
@@ -138,8 +148,14 @@ def thuc_thi_sql(query: str, params: list = None) -> Dict[str, Any]:
         try:
             return _thuc_thi_postgres(query, params)
         except Exception as e:
-            print(f"[CẢNH BÁO POSTGRES] {e}. Chuyển sang chế độ dự phòng!")
-            return _thuc_thi_sqlite(query, params)
+            print(f"[RETRY POSTGRES] Lần 1 thất bại ({e}). Đang thử lại lần 2...")
+            try:
+                import time
+                time.sleep(0.5)
+                return _thuc_thi_postgres(query, params)
+            except Exception as e2:
+                print(f"[CẢNH BÁO POSTGRES] {e2}. Chuyển sang chế độ dự phòng!")
+                return _thuc_thi_sqlite(query, params)
     elif mode == "turso":
         try:
             return _thuc_thi_turso(query, params)

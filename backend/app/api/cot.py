@@ -19,8 +19,14 @@ def api_lay_danh_sach_cot(current_user: dict = Depends(get_current_user)):
 @router.post("")
 def api_them_cot(req: CotMoiSchema, admin: dict = Depends(require_admin)):
     """Chỉ Admin mới có quyền thêm cột linh hoạt mới."""
-    crud.add_column(req.id, req.ten, req.kieu)
-    return {"message": "Thêm cột thành công", "cot": req.dict()}
+    try:
+        crud.add_column(req.id, req.ten, req.kieu)
+        data = req.model_dump() if hasattr(req, "model_dump") else req.dict()
+        return {"success": True, "message": "Thêm cột thành công", "cot": data}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Lỗi lưu cột vào cơ sở dữ liệu: {str(e)}")
 
 @router.delete("/{id_cot}")
 def api_xoa_cot(
@@ -28,5 +34,10 @@ def api_xoa_cot(
     admin: dict = Depends(require_admin)
 ):
     """Chỉ Admin mới có quyền xóa cột tùy chỉnh."""
-    crud.delete_column(id_cot)
-    return {"message": f"Đã xóa cột '{id_cot}' thành công!"}
+    try:
+        crud.delete_column(id_cot)
+        return {"success": True, "message": f"Đã xóa cột '{id_cot}' thành công!"}
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Lỗi khi xóa cột: {str(e)}")
