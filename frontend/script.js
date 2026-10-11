@@ -37,6 +37,26 @@ document.addEventListener("DOMContentLoaded", function() {
         appState.currentUser = null;
     }
 
+    // Dự phòng an toàn: nếu có token mà currentUser chưa có role, giải mã từ JWT payload
+    if (appState.token && (!appState.currentUser || !appState.currentUser.role)) {
+        try {
+            const payloadBase64 = appState.token.split('.')[1];
+            const payloadJson = decodeURIComponent(escape(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/'))));
+            const payload = JSON.parse(payloadJson);
+            if (payload && payload.role) {
+                appState.currentUser = {
+                    id: payload.id,
+                    email: payload.email,
+                    ho_ten: payload.ho_ten,
+                    role: payload.role
+                };
+                sessionStorage.setItem("agribank_user", JSON.stringify(appState.currentUser));
+            }
+        } catch (err) {
+            console.warn("Không thể parse JWT:", err);
+        }
+    }
+
     // =====================================================
     // 2. HÀM GỌI API KÈM VÉ THÔNG HÀNH JWT (CHỐNG F12)
     // =====================================================
@@ -895,8 +915,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const tabBtnTen = document.getElementById("tab-btn-cai-dat-ten");
         const tabBtnMk = document.getElementById("tab-btn-cai-dat-mk");
+        const tabBtnAdmin = document.getElementById("tab-btn-cai-dat-admin");
         const khoiTen = document.getElementById("khoi-cai-dat-ten");
         const khoiMk = document.getElementById("khoi-cai-dat-mk");
+        const khoiAdmin = document.getElementById("khoi-cai-dat-admin");
 
         const formDoiTen = document.getElementById("form-doi-ten");
         const doiTenErr = document.getElementById("doi-ten-error");
@@ -910,26 +932,35 @@ document.addEventListener("DOMContentLoaded", function() {
         let cooldownDoiMkOtp = 0;
         let timerDoiMkOtp = null;
 
-        // Chuyển tab trong modal cài đặt
+        // Chuyển tab trong modal cài đặt (3 tabs: tên, mật khẩu, quyền admin)
         const chuyenTabCaiDat = (tab) => {
+            if (tabBtnTen) tabBtnTen.classList.remove("active");
+            if (tabBtnMk) tabBtnMk.classList.remove("active");
+            if (tabBtnAdmin) tabBtnAdmin.classList.remove("active");
+            if (khoiTen) khoiTen.style.display = "none";
+            if (khoiMk) khoiMk.style.display = "none";
+            if (khoiAdmin) khoiAdmin.style.display = "none";
+
             if (tab === "ten") {
                 if (tabBtnTen) tabBtnTen.classList.add("active");
-                if (tabBtnMk) tabBtnMk.classList.remove("active");
                 if (khoiTen) khoiTen.style.display = "block";
-                if (khoiMk) khoiMk.style.display = "none";
-            } else {
+            } else if (tab === "mk") {
                 if (tabBtnMk) tabBtnMk.classList.add("active");
-                if (tabBtnTen) tabBtnTen.classList.remove("active");
                 if (khoiMk) khoiMk.style.display = "block";
-                if (khoiTen) khoiTen.style.display = "none";
+            } else if (tab === "admin") {
+                if (tabBtnAdmin) tabBtnAdmin.classList.add("active");
+                if (khoiAdmin) khoiAdmin.style.display = "block";
             }
         };
 
         if (tabBtnTen) tabBtnTen.addEventListener("click", () => chuyenTabCaiDat("ten"));
         if (tabBtnMk) tabBtnMk.addEventListener("click", () => chuyenTabCaiDat("mk"));
+        if (tabBtnAdmin) tabBtnAdmin.addEventListener("click", () => chuyenTabCaiDat("admin"));
 
         // Mở modal cài đặt
-        const moModalCaiDatHandler = () => {
+        const moModalCaiDatHandler = (tabMacDinh = "ten") => {
+            const isAdmin = Boolean(appState.currentUser && appState.currentUser.role === "admin");
+
             if (appState.currentUser) {
                 const tenHienTaiInput = document.getElementById("setting-ten-hien-tai");
                 if (tenHienTaiInput) {
@@ -944,18 +975,28 @@ document.addEventListener("DOMContentLoaded", function() {
             if (formDoiMk) formDoiMk.reset();
             if (doiMkErr) doiMkErr.style.display = "none";
 
-            // Hiển thị / ẩn khu vực tự hạ cấp quyền Admin (Tuyệt đối không hiển thị cho nhân viên thường)
+            // Hiển thị / ẩn tab và khu vực quyền Admin (Chỉ Admin mới thấy)
+            if (tabBtnAdmin) tabBtnAdmin.style.display = isAdmin ? "block" : "none";
             const khuVucAdmin = document.getElementById("khu-vuc-quyen-admin");
-            if (khuVucAdmin) {
-                khuVucAdmin.style.display = (appState.currentUser && appState.currentUser.role === "admin") ? "block" : "none";
-            }
+            if (khuVucAdmin) khuVucAdmin.style.display = isAdmin ? "block" : "none";
 
-            chuyenTabCaiDat("ten");
+            chuyenTabCaiDat(tabMacDinh);
             if (modalCaiDat) modalCaiDat.style.display = "flex";
         };
 
-        if (btnMoCaiDat) btnMoCaiDat.addEventListener("click", moModalCaiDatHandler);
-        if (btnHeaderProfile) btnHeaderProfile.addEventListener("click", moModalCaiDatHandler);
+        if (btnMoCaiDat) btnMoCaiDat.addEventListener("click", () => moModalCaiDatHandler("ten"));
+        if (btnHeaderProfile) btnHeaderProfile.addEventListener("click", () => moModalCaiDatHandler("ten"));
+
+        // Bấm trực tiếp vào badge Admin trên Header cũng mở cài đặt quyền Admin
+        const badgeVaiTro = document.getElementById("badge-vai-tro");
+        if (badgeVaiTro) {
+            badgeVaiTro.style.cursor = "pointer";
+            badgeVaiTro.title = "Bấm để quản lý quyền Admin";
+            badgeVaiTro.addEventListener("click", (e) => {
+                e.stopPropagation();
+                moModalCaiDatHandler("admin");
+            });
+        }
 
         // Đóng modal cài đặt
         const dongModalCaiDatHandler = () => {
@@ -1092,49 +1133,53 @@ document.addEventListener("DOMContentLoaded", function() {
             });
         }
 
-        // Nút Admin tự nguyện hạ cấp quyền về người dùng thông thường
-        const btnTuHaQuyen = document.getElementById("btn-tu-ha-quyen-admin");
-        if (btnTuHaQuyen) {
-            btnTuHaQuyen.addEventListener("click", async () => {
-                const xacNhan = confirm("Bạn có chắc chắn muốn tự hạ cấp quyền Admin về người dùng thông thường? Sau khi xác nhận, bạn sẽ không còn quyền quản trị hệ thống.");
-                if (!xacNhan) return;
+        // Hàm chung: Admin tự nguyện hạ cấp quyền về người dùng thông thường
+        async function thucHienTuHaQuyenAdmin() {
+            const xacNhan = confirm("Bạn có chắc chắn muốn tự hạ cấp quyền Admin về người dùng thông thường? Sau khi xác nhận, bạn sẽ không còn quyền quản trị hệ thống.");
+            if (!xacNhan) return;
 
-                btnTuHaQuyen.disabled = true;
-                btnTuHaQuyen.innerHTML = `<span>Đang xử lý...</span>`;
-
-                try {
-                    const res = await fetchAuth("/api/users/tu-ha-quyen", { method: "POST" });
-                    const data = await res.json();
-                    if (res.ok) {
-                        if (data.access_token) {
-                            sessionStorage.setItem("agribank_token", data.access_token);
-                        }
-                        if (data.user) {
-                            appState.currentUser = data.user;
-                            sessionStorage.setItem("agribank_user", JSON.stringify(data.user));
-                        } else if (appState.currentUser) {
-                            appState.currentUser.role = "nhan_vien";
-                            sessionStorage.setItem("agribank_user", JSON.stringify(appState.currentUser));
-                        }
-
-                        dongModalCaiDatHandler();
-                        apDungPhanQuyenGiaoDien();
-                        veBangDuLieu();
-                        hienThiToast("Bạn đã tự hạ cấp về người dùng thông thường thành công!", "success");
-                    } else {
-                        hienThiToast(data.detail || "Không thể hạ cấp!", "error");
+            try {
+                const res = await fetchAuth("/api/users/tu-ha-quyen", { method: "POST" });
+                const data = await res.json();
+                if (res.ok) {
+                    if (data.access_token) {
+                        sessionStorage.setItem("agribank_token", data.access_token);
+                        appState.token = data.access_token;
                     }
-                } catch (err) {
-                    hienThiToast("Lỗi kết nối khi gửi yêu cầu hạ cấp!", "error");
-                } finally {
-                    btnTuHaQuyen.disabled = false;
-                    btnTuHaQuyen.innerHTML = `
-                        <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
-                        <span>Hạ Về Nhân Viên</span>
-                    `;
+                    if (data.user) {
+                        appState.currentUser = data.user;
+                        sessionStorage.setItem("agribank_user", JSON.stringify(data.user));
+                    } else if (appState.currentUser) {
+                        appState.currentUser.role = "nhan_vien";
+                        sessionStorage.setItem("agribank_user", JSON.stringify(appState.currentUser));
+                    }
+
+                    // Đóng cả 2 modal nếu đang mở
+                    const modalCaiDat = document.getElementById("modal-cai-dat");
+                    if (modalCaiDat) modalCaiDat.style.display = "none";
+                    const modalUsers = document.getElementById("modal-quan-ly-users");
+                    if (modalUsers) modalUsers.style.display = "none";
+
+                    apDungPhanQuyenGiaoDien();
+                    veBangDuLieu();
+                    hienThiToast("Bạn đã tự hạ cấp về người dùng thông thường thành công!", "success");
+                } else {
+                    hienThiToast(data.detail || "Không thể hạ cấp!", "error");
                 }
-            });
+            } catch (err) {
+                hienThiToast("Lỗi kết nối khi gửi yêu cầu hạ cấp!", "error");
+            }
         }
+
+        // Gắn sự kiện cho các nút tự hạ cấp quyền Admin
+        const btnTuHaQuyen = document.getElementById("btn-tu-ha-quyen-admin");
+        if (btnTuHaQuyen) btnTuHaQuyen.addEventListener("click", thucHienTuHaQuyenAdmin);
+
+        const btnTuHaQuyenTab = document.getElementById("btn-tu-ha-quyen-admin-tab");
+        if (btnTuHaQuyenTab) btnTuHaQuyenTab.addEventListener("click", thucHienTuHaQuyenAdmin);
+
+        const btnDemoteMgmtBar = document.getElementById("btn-demote-user-mgmt-bar");
+        if (btnDemoteMgmtBar) btnDemoteMgmtBar.addEventListener("click", thucHienTuHaQuyenAdmin);
 
         // =====================================================
         // 10. MODAL QUÊN MẬT KHẨU (XÁC THỰC EMAIL OTP)
@@ -1439,7 +1484,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         tdAction.className = "col-actions";
 
                         const isInitialSeed = (u.email.toLowerCase() === "admin@agribank.com.vn");
-                        const isSelf = (appState.currentUser && u.id === appState.currentUser.id);
+                        const isSelf = Boolean(appState.currentUser && (u.id === appState.currentUser.id || u.email.toLowerCase() === (appState.currentUser.email || '').toLowerCase()));
 
                         if (u.role === "admin") {
                             // TRƯỜNG HỢP ADMIN:
@@ -1451,25 +1496,38 @@ document.addEventListener("DOMContentLoaded", function() {
                                 btnXoaBanGiao.textContent = "Xóa TK Bàn Giao";
                                 btnXoaBanGiao.addEventListener("click", () => xoaUser(u.id, u.email));
                                 tdAction.appendChild(btnXoaBanGiao);
-                            } else if (isSelf && tongSoAdmin > 1) {
-                                // ADMIN TỰ XÓA MÌNH (RÚT LUI AN TOÀN NẾU ĐÃ CÓ ADMIN KHÁC)
+                            } else if (isSelf) {
+                                // ADMIN ĐANG ĐĂNG NHẬP: HIỆN CHỮ 'BẠN' + NÚT TỰ HẠ CẤP VỀ NHÂN VIÊN
                                 const spanShield = document.createElement("span");
                                 spanShield.className = "badge-protected-admin";
                                 spanShield.textContent = "Bạn";
                                 tdAction.appendChild(spanShield);
 
-                                const btnRutLui = document.createElement("button");
-                                btnRutLui.className = "btn-table-delete";
-                                btnRutLui.title = "Xóa tài khoản của bạn";
-                                btnRutLui.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
-                                btnRutLui.style.marginLeft = "8px";
-                                btnRutLui.addEventListener("click", () => xoaUser(u.id, u.email));
-                                tdAction.appendChild(btnRutLui);
+                                const btnHaQuyen = document.createElement("button");
+                                btnHaQuyen.className = "btn-table-demote";
+                                btnHaQuyen.style.marginLeft = "8px";
+                                btnHaQuyen.title = "Tự hạ cấp tài khoản của bạn về người dùng thông thường";
+                                btnHaQuyen.innerHTML = `
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                                    <span>Hạ về Nhân Viên</span>
+                                `;
+                                btnHaQuyen.addEventListener("click", () => thucHienTuHaQuyenAdmin());
+                                tdAction.appendChild(btnHaQuyen);
+
+                                if (tongSoAdmin > 1) {
+                                    const btnRutLui = document.createElement("button");
+                                    btnRutLui.className = "btn-table-delete";
+                                    btnRutLui.title = "Xóa tài khoản của bạn";
+                                    btnRutLui.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+                                    btnRutLui.style.marginLeft = "6px";
+                                    btnRutLui.addEventListener("click", () => xoaUser(u.id, u.email));
+                                    tdAction.appendChild(btnRutLui);
+                                }
                             } else {
-                                // ADMIN CHÍNH THỨC: BẢO VỆ TUYỆT ĐỐI
+                                // ADMIN CHÍNH THỨC KHÁC: BẢO VỆ TUYỆT ĐỐI
                                 const spanShield = document.createElement("span");
                                 spanShield.className = "badge-protected-admin";
-                                spanShield.textContent = isSelf ? "Bạn" : "Quản trị viên";
+                                spanShield.textContent = "Quản trị viên";
                                 tdAction.appendChild(spanShield);
                             }
                         } else {

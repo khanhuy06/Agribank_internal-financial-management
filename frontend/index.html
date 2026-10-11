@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- CSS Chính (kèm cache-busting) -->
-    <link rel="stylesheet" href="style.css?v=20261011_v6">
+    <link rel="stylesheet" href="style.css?v=20261011_v7">
 </head>
 <body>
     <!-- 1. HEADER CHÍNH (CHUẨN VERCEL / ENTERPRISE SAAS) -->
@@ -295,6 +295,7 @@
             <div class="auth-tabs" style="margin-top: 14px; margin-bottom: 20px;">
                 <button type="button" class="auth-tab-btn active" id="tab-btn-cai-dat-ten">Đổi Tên Tài Khoản</button>
                 <button type="button" class="auth-tab-btn" id="tab-btn-cai-dat-mk">Đổi Mật Khẩu</button>
+                <button type="button" class="auth-tab-btn" id="tab-btn-cai-dat-admin" style="display: none;">Quyền Admin</button>
             </div>
 
             <!-- PHẦN 1: ĐỔI TÊN TÀI KHOẢN -->
@@ -349,6 +350,28 @@
                         <button type="submit" class="btn btn-primary" id="btn-xac-nhan-doi-mk">Đổi Mật Khẩu</button>
                     </div>
                 </form>
+            </div>
+
+            <!-- PHẦN 3: QUYỀN ADMIN (CHỈ DÀNH CHO ADMIN) -->
+            <div id="khoi-cai-dat-admin" style="display: none;">
+                <div class="admin-privilege-card" style="margin-top: 0;">
+                    <div class="privilege-header">
+                        <div class="privilege-info">
+                            <span class="privilege-title">Cấp bậc hệ thống:</span>
+                            <span class="role-badge role-admin">ADMIN</span>
+                        </div>
+                        <button type="button" id="btn-tu-ha-quyen-admin-tab" class="btn-demote-self" title="Tự nguyện từ bỏ quyền Quản trị viên để trở về người dùng thông thường">
+                            <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                            <span>Hạ Về Nhân Viên</span>
+                        </button>
+                    </div>
+                    <p class="privilege-desc" style="margin-top: 10px;">
+                        Tài khoản của bạn hiện có toàn quyền Quản trị viên (thêm/sửa/xóa dòng, thêm cột, nhập/xuất Excel và quản lý tài khoản người dùng).
+                    </p>
+                    <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 12px; color: #92400e;">
+                        <strong>Lưu ý:</strong> Khi tự hạ cấp về Nhân viên, bạn sẽ chỉ còn quyền xem dữ liệu và không thể tự cấp lại quyền Admin cho chính mình.
+                    </div>
+                </div>
             </div>
 
             <!-- KHU VỰC QUẢN TRỊ VIÊN: TỰ HẠ CẤP VỀ NHÂN VIÊN (CHỈ HIỆN VỚI ADMIN) -->
@@ -437,9 +460,15 @@
             <!-- Thanh công cụ quản lý tài khoản: Tiêu đề & Nút thêm thủ công -->
             <div class="user-mgmt-header-bar">
                 <h4 style="font-size: 14px; font-weight: 600; color: #1e293b; margin: 0;">Danh Sách Tài Khoản</h4>
-                <button type="button" class="btn btn-primary" id="btn-hien-form-them-user" style="padding: 6px 14px; font-size: 12.5px;">
-                    Thêm Tài Khoản
-                </button>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button type="button" class="btn-table-demote" id="btn-demote-user-mgmt-bar" style="padding: 6px 12px; font-size: 12px;" title="Tự hạ cấp tài khoản của bạn về người dùng thông thường">
+                        <svg class="icon-svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+                        <span>Tự Hạ Cấp Về Nhân Viên</span>
+                    </button>
+                    <button type="button" class="btn btn-primary" id="btn-hien-form-them-user" style="padding: 6px 14px; font-size: 12.5px;">
+                        Thêm Tài Khoản
+                    </button>
+                </div>
             </div>
 
             <!-- FORM THÊM TÀI KHOẢN THỦ CÔNG (Tạo tài khoản & cấp quyền Admin / Nhân viên) -->
@@ -513,6 +542,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- JAVASCRIPT ĐIỀU HÀNH (kèm cache-busting) -->
-    <script src="script.js?v=20261011_v6"></script>
+    <script src="script.js?v=20261011_v7"></script>
 </body>
 </html>
