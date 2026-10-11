@@ -626,23 +626,43 @@ body {
     background-color: #f9fafb;
 }
 
-/* Căn lề số và tiền tệ sang phải */
-.col-so {
-    text-align: right;
+/* Căn lề số và tiền tệ chuẩn xác sang phải cho cả Tiêu đề (TH) và Ô dữ liệu (TD) */
+.col-so,
+th.col-so,
+td.col-so {
+    text-align: right !important;
     font-variant-numeric: tabular-nums;
     font-weight: 500;
 }
 
-.col-tong {
-    text-align: right;
+th.col-so {
     font-weight: 600;
-    color: var(--agri-red);
+    color: var(--gray-600);
+}
+
+.col-tong,
+th.col-tong,
+td.col-tong {
+    text-align: right !important;
     font-variant-numeric: tabular-nums;
 }
 
-.col-actions {
-    text-align: center;
-    width: 100px;
+th.col-tong {
+    font-weight: 600;
+    color: var(--gray-600);
+}
+
+td.col-tong {
+    font-weight: 600;
+    color: var(--agri-red);
+}
+
+.col-actions,
+th.col-actions,
+td.col-actions {
+    text-align: center !important;
+    width: 90px;
+    min-width: 90px;
 }
 
 .btn-action {

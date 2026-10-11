@@ -228,6 +228,9 @@ document.addEventListener("DOMContentLoaded", function() {
         appState.danhSachCot.forEach(cot => {
             const th = document.createElement("th");
             th.textContent = cot.ten;
+            if (cot.kieu === "so") {
+                th.className = "col-so";
+            }
             
             // Chỉ Admin mới có nút xóa cột tùy chỉnh
             if (!cot.macDinh && isAdmin) {
@@ -247,7 +250,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const thTong = document.createElement("th");
         thTong.textContent = "Tổng Cộng";
-        thTong.style.textAlign = "right";
+        thTong.className = "col-tong";
         theadRow.appendChild(thTong);
 
         // Chỉ Admin mới có cột Thao tác Sửa/Xóa
@@ -312,7 +315,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (cot.id === "luong_thuong") tongLuongThuong += soVal;
                     } else {
                         // CHỐNG XSS: Dùng textContent tuyệt đối an toàn
-                        td.textContent = String(giaTri);
+                        const strVal = String(giaTri !== undefined && giaTri !== null ? giaTri : "").trim();
+                        td.textContent = strVal || "—";
+                        if (!strVal) {
+                            td.style.color = "var(--gray-400)";
+                        }
                     }
                     tr.appendChild(td);
                 });
@@ -357,7 +364,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 td.className = "col-so";
                 td.textContent = dinhDangTien(tongTungCotSo[cot.id] || 0);
             } else {
-                td.textContent = "-";
+                td.textContent = "—";
+                td.style.color = "var(--gray-400)";
             }
             tfootRow.appendChild(td);
         });
