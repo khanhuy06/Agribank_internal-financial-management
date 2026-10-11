@@ -13,6 +13,21 @@ if sys.platform == "win32":
     except Exception:
         pass
 
+# Tự động đọc file .env cục bộ nếu có
+_base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+_env_file = os.path.join(_base_dir, ".env")
+if os.path.exists(_env_file):
+    try:
+        with open(_env_file, "r", encoding="utf-8") as _f:
+            for _line in _f:
+                _line = _line.strip()
+                if _line and not _line.startswith("#") and "=" in _line:
+                    _k, _v = _line.split("=", 1)
+                    if _k.strip() not in os.environ:
+                        os.environ[_k.strip()] = _v.strip()
+    except Exception:
+        pass
+
 class Settings:
     # 1. Cấu hình bảo mật JWT Token
     SECRET_KEY: str = os.environ.get("SECRET_KEY", "agribank_jwt_security_secret_key_2026_hoanlao_vietnam")

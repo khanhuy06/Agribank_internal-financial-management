@@ -95,10 +95,18 @@ def get_registration_status() -> bool:
 def set_registration_status(is_open: bool) -> bool:
     """Admin gạt công tắc BẬT (True) hoặc TẮT (False) cổng đăng ký."""
     val = "1" if is_open else "0"
-    thuc_thi_sql("""
-        INSERT OR REPLACE INTO cau_hinh_he_thong (khoa, gia_tri)
-        VALUES ('cho_phep_dang_ky', ?)
-    """, [val])
+    from backend.app.db.connection import get_database_mode
+    if get_database_mode() == "postgresql":
+        thuc_thi_sql("""
+            INSERT INTO cau_hinh_he_thong (khoa, gia_tri)
+            VALUES ('cho_phep_dang_ky', ?)
+            ON CONFLICT (khoa) DO UPDATE SET gia_tri = EXCLUDED.gia_tri
+        """, [val])
+    else:
+        thuc_thi_sql("""
+            INSERT OR REPLACE INTO cau_hinh_he_thong (khoa, gia_tri)
+            VALUES ('cho_phep_dang_ky', ?)
+        """, [val])
     return True
 
 

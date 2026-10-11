@@ -223,19 +223,34 @@ def khoi_tao_db():
     """)
 
     # 3. Bảng lương chi tiết
-    thuc_thi_sql("""
-        CREATE TABLE IF NOT EXISTS bang_luong (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            nam INTEGER NOT NULL,
-            thang INTEGER NOT NULL,
-            ma_nv TEXT NOT NULL,
-            ho_ten TEXT,
-            luong_thang REAL DEFAULT 0,
-            luong_thuong REAL DEFAULT 0,
-            cot_tuy_chinh TEXT DEFAULT '{}',
-            ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-    """)
+    if get_database_mode() == "postgresql":
+        thuc_thi_sql("""
+            CREATE TABLE IF NOT EXISTS bang_luong (
+                id SERIAL PRIMARY KEY,
+                nam INT NOT NULL,
+                thang INT NOT NULL,
+                ma_nv VARCHAR(100) NOT NULL,
+                ho_ten VARCHAR(255),
+                luong_thang NUMERIC DEFAULT 0,
+                luong_thuong NUMERIC DEFAULT 0,
+                cot_tuy_chinh TEXT DEFAULT '{}',
+                ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+    else:
+        thuc_thi_sql("""
+            CREATE TABLE IF NOT EXISTS bang_luong (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nam INTEGER NOT NULL,
+                thang INTEGER NOT NULL,
+                ma_nv TEXT NOT NULL,
+                ho_ten TEXT,
+                luong_thang REAL DEFAULT 0,
+                luong_thuong REAL DEFAULT 0,
+                cot_tuy_chinh TEXT DEFAULT '{}',
+                ngay_tao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
 
     # 4. Bảng cấu hình hệ thống (Công tắc mở/tắt cổng đăng ký)
     thuc_thi_sql("""
@@ -246,15 +261,26 @@ def khoi_tao_db():
     """)
 
     # 5. Bảng lưu mã xác thực OTP khôi phục mật khẩu
-    thuc_thi_sql("""
-        CREATE TABLE IF NOT EXISTS ma_xac_thuc_otp (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            email TEXT NOT NULL,
-            otp_code TEXT NOT NULL,
-            het_han_luc TIMESTAMP NOT NULL,
-            da_dung INTEGER DEFAULT 0
-        )
-    """)
+    if get_database_mode() == "postgresql":
+        thuc_thi_sql("""
+            CREATE TABLE IF NOT EXISTS ma_xac_thuc_otp (
+                id SERIAL PRIMARY KEY,
+                email VARCHAR(255) NOT NULL,
+                otp_code VARCHAR(20) NOT NULL,
+                het_han_luc TIMESTAMP NOT NULL,
+                da_dung INT DEFAULT 0
+            )
+        """)
+    else:
+        thuc_thi_sql("""
+            CREATE TABLE IF NOT EXISTS ma_xac_thuc_otp (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL,
+                otp_code TEXT NOT NULL,
+                het_han_luc TIMESTAMP NOT NULL,
+                da_dung INTEGER DEFAULT 0
+            )
+        """)
 
     # --- KHỞI TẠO DỮ LIỆU BAN ĐẦU ---
 
