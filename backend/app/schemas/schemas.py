@@ -20,6 +20,7 @@ class DangKySchema(BaseModel):
 class DoiMatKhauSchema(BaseModel):
     mat_khau_cu: str = Field(..., description="Mật khẩu hiện tại")
     mat_khau_moi: str = Field(..., min_length=6, description="Mật khẩu mới tối thiểu 6 ký tự")
+    otp_code: str = Field(..., min_length=6, max_length=6, description="Mã OTP 6 số xác thực gửi về email")
 
 class QuenMatKhauRequestSchema(BaseModel):
     email: str = Field(..., description="Email đã đăng ký để nhận mã OTP")

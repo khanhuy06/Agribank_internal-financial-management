@@ -118,4 +118,25 @@ def send_otp_email(to_email: str, ho_ten: str, otp_code: str) -> bool:
         <p style="color: #888; font-size: 12px; margin-top: 24px;">Nếu bạn không yêu cầu khôi phục mật khẩu, vui lòng bỏ qua email này.</p>
     </div>
     """
+def send_change_password_otp_email(to_email: str, ho_ten: str, otp_code: str) -> bool:
+    """Gửi mã OTP 6 số để xác thực việc đổi mật khẩu tài khoản."""
+    subject = f"🔐 Mã OTP xác thực ĐỔI MẬT KHẨU Agribank: {otp_code}"
+    html = f"""
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px;">
+        <div style="text-align: center; border-bottom: 2px solid #7c1419; padding-bottom: 12px; margin-bottom: 20px;">
+            <h2 style="color: #7c1419; margin: 0;">AGRIBANK - CHI NHÁNH HOÀN LÃO</h2>
+            <p style="color: #666; font-size: 13px; margin: 4px 0 0 0;">Xác Thực An Toàn Đổi Mật Khẩu</p>
+        </div>
+        <p>Xin chào <strong>{ho_ten}</strong>,</p>
+        <p>Hệ thống vừa nhận được yêu cầu <strong>ĐỔI MẬT KHẨU</strong> cho tài khoản ngân hàng của bạn: <strong>{to_email}</strong>.</p>
+        <p>Để đảm bảo an toàn tuyệt đối, vui lòng nhập mã xác thực OTP 6 số dưới đây để xác nhận đổi mật khẩu:</p>
+        <div style="text-align: center; margin: 24px 0;">
+            <span style="display: inline-block; background: #7c1419; color: #ffffff; font-size: 28px; font-weight: bold; letter-spacing: 6px; padding: 12px 30px; border-radius: 8px;">
+                {otp_code}
+            </span>
+        </div>
+        <p style="color: #ef4444; font-size: 13px;">* Mã này có hiệu lực trong vòng <strong>10 phút</strong>. Tuyệt đối không chia sẻ mã này cho bất kỳ ai.</p>
+        <p style="color: #888; font-size: 12px; margin-top: 24px;">Nếu bạn KHÔNG thực hiện yêu cầu đổi mật khẩu, vui lòng liên hệ ngay với Quản trị viên để kiểm tra an ninh tài khoản.</p>
+    </div>
+    """
     return send_email_notification(to_email, subject, html)

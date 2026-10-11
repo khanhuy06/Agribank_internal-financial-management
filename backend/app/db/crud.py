@@ -80,6 +80,13 @@ def delete_user(user_id: int) -> bool:
     thuc_thi_sql("DELETE FROM tai_khoan WHERE id = ?", [user_id])
     return True
 
+def count_admins() -> int:
+    """Đếm tổng số tài khoản Admin đang hoạt động."""
+    res = thuc_thi_sql("SELECT COUNT(*) as cnt FROM tai_khoan WHERE role = 'admin' AND is_active = 1")
+    if res["rows"]:
+        return int(res["rows"][0]["cnt"] or 0)
+    return 0
+
 
 # =========================================================
 # 2. CÔNG TẮC CỔNG ĐĂNG KÝ HỆ THỐNG (SYSTEM SETTINGS)

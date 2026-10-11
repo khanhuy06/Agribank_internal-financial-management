@@ -863,53 +863,129 @@ document.addEventListener("DOMContentLoaded", function() {
         // =====================================================
         // 9. MODAL ĐỔI MẬT KHẨU CÁ NHÂN
         // =====================================================
+        // 9. MODAL ĐỔI MẬT KHẨU CÁ NHÂN (XÁC THỰC EMAIL OTP)
+        // =====================================================
         const modalDoiMk = document.getElementById("modal-doi-mat-khau");
         const btnMoDoiMk = document.getElementById("btn-mo-modal-doi-mk");
         const btnDongDoiMk = document.getElementById("btn-dong-modal-doi-mk");
         const btnHuyDoiMk = document.getElementById("btn-huy-doi-mk");
         const formDoiMk = document.getElementById("form-doi-mat-khau");
         const doiMkErr = document.getElementById("doi-mk-error");
+        const btnGuiOtpDoiMk = document.getElementById("btn-gui-otp-doi-mk");
+        const textOtpStatus = document.getElementById("text-otp-status");
+        const inputOtpDoiMk = document.getElementById("mk-otp-code");
 
-        btnMoDoiMk.addEventListener("click", () => {
-            formDoiMk.reset();
-            doiMkErr.style.display = "none";
-            modalDoiMk.style.display = "flex";
-        });
+        let cooldownDoiMkOtp = 0;
+        let timerDoiMkOtp = null;
 
-        const dongModalDoiMkHandler = () => modalDoiMk.style.display = "none";
-        btnDongDoiMk.addEventListener("click", dongModalDoiMkHandler);
-        btnHuyDoiMk.addEventListener("click", dongModalDoiMkHandler);
+        if (btnMoDoiMk) {
+            btnMoDoiMk.addEventListener("click", () => {
+                if (formDoiMk) formDoiMk.reset();
+                if (doiMkErr) doiMkErr.style.display = "none";
+                if (textOtpStatus) {
+                    textOtpStatus.textContent = "Bấm 'Gửi Mã OTP' để nhận mã xác thực qua hòm thư Email đăng ký.";
+                    textOtpStatus.style.color = "#64748b";
+                }
+                modalDoiMk.style.display = "flex";
+            });
+        }
 
-        formDoiMk.addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const cu = document.getElementById("mk-cu").value;
-            const moi = document.getElementById("mk-moi").value;
-            const confirm = document.getElementById("mk-moi-confirm").value;
+        const dongModalDoiMkHandler = () => {
+            if (modalDoiMk) modalDoiMk.style.display = "none";
+            if (doiMkErr) doiMkErr.style.display = "none";
+        };
+        if (btnDongDoiMk) btnDongDoiMk.addEventListener("click", dongModalDoiMkHandler);
+        if (btnHuyDoiMk) btnHuyDoiMk.addEventListener("click", dongModalDoiMkHandler);
 
-            if (moi !== confirm) {
-                doiMkErr.textContent = "❌ Mật khẩu mới và xác nhận mật khẩu không khớp nhau!";
-                doiMkErr.style.display = "block";
-                return;
-            }
+        // Nút Gửi mã OTP xác thực đổi mật khẩu
+        if (btnGuiOtpDoiMk) {
+            btnGuiOtpDoiMk.addEventListener("click", async () => {
+                if (cooldownDoiMkOtp > 0) return;
 
-            try {
-                const res = await fetchAuth("/api/auth/doi-mat-khau", {
-                    method: "POST",
-                    body: JSON.stringify({ mat_khau_cu: cu, mat_khau_moi: moi })
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    dongModalDoiMkHandler();
-                    hienThiToast("Đổi mật khẩu thành công! Email thông báo đã được gửi.");
-                } else {
-                    doiMkErr.textContent = "❌ " + (data.detail || "Đổi mật khẩu thất bại!");
+                btnGuiOtpDoiMk.disabled = true;
+                btnGuiOtpDoiMk.textContent = "⏳ Đang gửi...";
+
+                try {
+                    const res = await fetchAuth("/api/auth/send-change-password-otp", { method: "POST" });
+                    const data = await res.json();
+                    if (res.ok) {
+                        hienThiToast(data.message, "success");
+                        if (textOtpStatus) {
+                            textOtpStatus.textContent = "✅ " + data.message;
+                            textOtpStatus.style.color = "#059669";
+                        }
+                        if (inputOtpDoiMk) inputOtpDoiMk.focus();
+
+                        // Bắt đầu đếm ngược 60 giây
+                        cooldownDoiMkOtp = 60;
+                        btnGuiOtpDoiMk.textContent = `Gửi lại (${cooldownDoiMkOtp}s)`;
+                        clearInterval(timerDoiMkOtp);
+                        timerDoiMkOtp = setInterval(() => {
+                            cooldownDoiMkOtp--;
+                            if (cooldownDoiMkOtp <= 0) {
+                                clearInterval(timerDoiMkOtp);
+                                btnGuiOtpDoiMk.disabled = false;
+                                btnGuiOtpDoiMk.textContent = "📩 Gửi Mã OTP";
+                            } else {
+                                btnGuiOtpDoiMk.textContent = `Gửi lại (${cooldownDoiMkOtp}s)`;
+                            }
+                        }, 1000);
+                    } else {
+                        btnGuiOtpDoiMk.disabled = false;
+                        btnGuiOtpDoiMk.textContent = "📩 Gửi Mã OTP";
+                        hienThiToast(data.detail || "Không thể gửi OTP!", "error");
+                        if (textOtpStatus) {
+                            textOtpStatus.textContent = "❌ " + (data.detail || "Gửi OTP thất bại.");
+                            textOtpStatus.style.color = "#dc2626";
+                        }
+                    }
+                } catch (err) {
+                    btnGuiOtpDoiMk.disabled = false;
+                    btnGuiOtpDoiMk.textContent = "📩 Gửi Mã OTP";
+                    hienThiToast("Lỗi kết nối khi gửi OTP!", "error");
+                }
+            });
+        }
+
+        if (formDoiMk) {
+            formDoiMk.addEventListener("submit", async function(e) {
+                e.preventDefault();
+                const cu = document.getElementById("mk-cu").value;
+                const moi = document.getElementById("mk-moi").value;
+                const confirm = document.getElementById("mk-moi-confirm").value;
+                const otp = document.getElementById("mk-otp-code").value.trim();
+
+                if (moi !== confirm) {
+                    doiMkErr.textContent = "❌ Mật khẩu mới và xác nhận mật khẩu không khớp nhau!";
+                    doiMkErr.style.display = "block";
+                    return;
+                }
+
+                if (!otp || otp.length !== 6) {
+                    doiMkErr.textContent = "❌ Vui lòng nhập đúng mã OTP 6 chữ số nhận từ email!";
+                    doiMkErr.style.display = "block";
+                    return;
+                }
+
+                try {
+                    const res = await fetchAuth("/api/auth/doi-mat-khau", {
+                        method: "POST",
+                        body: JSON.stringify({ mat_khau_cu: cu, mat_khau_moi: moi, otp_code: otp })
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        dongModalDoiMkHandler();
+                        hienThiToast("Đổi mật khẩu thành công! Email thông báo an ninh đã được gửi.", "success");
+                    } else {
+                        doiMkErr.textContent = "❌ " + (data.detail || "Đổi mật khẩu thất bại!");
+                        doiMkErr.style.display = "block";
+                    }
+                } catch (err) {
+                    doiMkErr.textContent = "❌ Lỗi hệ thống khi đổi mật khẩu!";
                     doiMkErr.style.display = "block";
                 }
-            } catch (err) {
-                doiMkErr.textContent = "❌ Lỗi hệ thống khi đổi mật khẩu!";
-                doiMkErr.style.display = "block";
-            }
-        });
+            });
+        }
 
         // =====================================================
         // 10. MODAL QUÊN MẬT KHẨU (XÁC THỰC EMAIL OTP)
@@ -1169,6 +1245,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">Chưa có tài khoản nào.</td></tr>`;
                         return;
                     }
+                    const tongSoAdmin = users.filter(usr => usr.role === 'admin').length;
 
                     users.forEach((u, idx) => {
                         const tr = document.createElement("tr");
@@ -1206,15 +1283,43 @@ document.addEventListener("DOMContentLoaded", function() {
                         const tdAction = document.createElement("td");
                         tdAction.className = "col-actions";
 
+                        const isInitialSeed = (u.email.toLowerCase() === "admin@agribank.com.vn");
+                        const isSelf = (appState.currentUser && u.id === appState.currentUser.id);
+
                         if (u.role === "admin") {
-                            // QUY TẮC AN NINH TỐI CAO: ADMIN BẢO VỆ LẪN NHAU
-                            // Không Admin nào có quyền hạ cấp hay kick Admin khác
-                            const spanShield = document.createElement("span");
-                            spanShield.className = "badge-protected-admin";
-                            const isSelf = (appState.currentUser && u.id === appState.currentUser.id);
-                            spanShield.innerHTML = isSelf ? "👑 <strong>Bạn</strong> (Admin)" : "🛡️ <strong>Admin</strong> (Bảo vệ)";
-                            spanShield.title = "Quy tắc an ninh: Quản trị viên (Admin) không thể bị hạ cấp hay xóa bởi Admin khác!";
-                            tdAction.appendChild(spanShield);
+                            // TRƯỜNG HỢP ADMIN:
+                            if (isInitialSeed && tongSoAdmin > 1) {
+                                // TÀI KHOẢN KHỞI TẠO BÀN GIAO: Khi đã có Admin khác -> CHO PHÉP XÓA HOÀN TẤT BÀN GIAO!
+                                const btnXoaBanGiao = document.createElement("button");
+                                btnXoaBanGiao.className = "btn-action btn-delete";
+                                btnXoaBanGiao.title = "Xóa tài khoản khởi tạo mặc định (Bàn giao hoàn tất)";
+                                btnXoaBanGiao.innerHTML = "🗑️ Xóa TK Khởi Tạo";
+                                btnXoaBanGiao.style.fontSize = "11.5px";
+                                btnXoaBanGiao.style.padding = "3px 8px";
+                                btnXoaBanGiao.addEventListener("click", () => xoaUser(u.id, u.email));
+                                tdAction.appendChild(btnXoaBanGiao);
+                            } else if (isSelf && tongSoAdmin > 1) {
+                                // ADMIN TỰ XÓA MÌNH (RÚT LUI AN TOÀN NẾU ĐÃ CÓ ADMIN KHÁC)
+                                const spanShield = document.createElement("span");
+                                spanShield.className = "badge-protected-admin";
+                                spanShield.innerHTML = "👑 <strong>Bạn</strong> (Admin)";
+                                tdAction.appendChild(spanShield);
+
+                                const btnRutLui = document.createElement("button");
+                                btnRutLui.className = "btn-action btn-delete";
+                                btnRutLui.title = "Xóa tài khoản của chính bạn (Đã có Admin khác thay thế)";
+                                btnRutLui.innerHTML = "🗑️";
+                                btnRutLui.style.marginLeft = "6px";
+                                btnRutLui.addEventListener("click", () => xoaUser(u.id, u.email));
+                                tdAction.appendChild(btnRutLui);
+                            } else {
+                                // ADMIN CHÍNH THỨC: BẢO VỆ TUYỆT ĐỐI (KHÔNG AI ĐƯỢC PHÉP HẠ CẤP HOẶC KICK NHAU)
+                                const spanShield = document.createElement("span");
+                                spanShield.className = "badge-protected-admin";
+                                spanShield.innerHTML = isSelf ? "👑 <strong>Bạn</strong> (Admin)" : "🛡️ <strong>Admin</strong> (Bảo vệ)";
+                                spanShield.title = "Quy tắc an ninh: Quản trị viên (Admin) chính thức được bảo vệ tuyệt đối, không thể bị xóa!";
+                                tdAction.appendChild(spanShield);
+                            }
                         } else {
                             // NHÂN VIÊN: CÓ THỂ ĐƯỢC THĂNG CHỨC LÀM ADMIN HOẶC XÓA
                             const btnThangChuc = document.createElement("button");
@@ -1264,14 +1369,24 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         async function xoaUser(userId, email) {
-            if (!confirm(`Bạn có chắc muốn XÓA VĨNH VIỄN tài khoản "${email}"? Người này sẽ không thể đăng nhập được nữa.`)) return;
+            const isBoot = (email.toLowerCase() === "admin@agribank.com.vn");
+            const msg = isBoot 
+                ? `XÁC NHẬN HOÀN TẤT BÀN GIAO:\nBạn có chắc muốn XÓA VĨNH VIỄN tài khoản khởi tạo mặc định "${email}"?\n(Sau khi xóa, chỉ các tài khoản Quản trị viên cá nhân do bạn quản lý mới có quyền vào hệ thống).`
+                : `Bạn có chắc muốn XÓA VĨNH VIỄN tài khoản "${email}"? Người này sẽ không thể đăng nhập được nữa.`;
+
+            if (!confirm(msg)) return;
 
             try {
                 const res = await fetchAuth(`/api/users/${userId}`, { method: "DELETE" });
                 const data = await res.json();
                 if (res.ok) {
                     hienThiToast(data.message, "info");
-                    taiDanhSachUsersAdmin();
+                    if (appState.currentUser && appState.currentUser.id === userId) {
+                        hienThiToast("Bạn đã xóa tài khoản đang đăng nhập. Đang đăng xuất...", "info");
+                        setTimeout(xuLyDangXuat, 1500);
+                    } else {
+                        taiDanhSachUsersAdmin();
+                    }
                 } else {
                     hienThiToast(data.detail || "Không thể xóa tài khoản!", "error");
                 }

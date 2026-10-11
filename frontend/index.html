@@ -293,32 +293,44 @@
         </div>
     </div>
 
-    <!-- MODAL 3: ĐỔI MẬT KHẨU CÁ NHÂN -->
+    <!-- MODAL 3: ĐỔI MẬT KHẨU CÁ NHÂN (XÁC THỰC 2 LỚP QUA EMAIL OTP) -->
     <div id="modal-doi-mat-khau" class="modal-overlay" style="display: none;">
         <div class="modal-box modal-sm">
             <button class="modal-close-btn" id="btn-dong-modal-doi-mk">&times;</button>
-            <h3 class="modal-title">🔑 Đổi Mật Khẩu Cá Nhân</h3>
-            <p class="modal-desc">Bảo vệ tài khoản của bạn. Email xác nhận sẽ được gửi sau khi đổi thành công.</p>
+            <h3 class="modal-title">🔐 Đổi Mật Khẩu & Xác Thực OTP</h3>
+            <p class="modal-desc">Bảo mật ngân hàng 2 lớp (2FA): Mã OTP 6 số sẽ được gửi về Email để xác nhận trước khi thay đổi mật khẩu.</p>
             
             <form id="form-doi-mat-khau">
                 <div class="form-group">
-                    <label for="mk-cu">Mật Khẩu Hiện Tại:</label>
+                    <label for="mk-cu">Mật Khẩu Hiện Tại: *</label>
                     <input type="password" id="mk-cu" placeholder="Nhập mật khẩu đang dùng..." required>
                 </div>
                 <div class="form-group">
-                    <label for="mk-moi">Mật Khẩu Mới (tối thiểu 6 ký tự):</label>
+                    <label for="mk-moi">Mật Khẩu Mới (tối thiểu 6 ký tự): *</label>
                     <input type="password" id="mk-moi" placeholder="Nhập mật khẩu mới..." required minlength="6">
                 </div>
                 <div class="form-group">
-                    <label for="mk-moi-confirm">Xác Nhận Mật Khẩu Mới:</label>
+                    <label for="mk-moi-confirm">Xác Nhận Mật Khẩu Mới: *</label>
                     <input type="password" id="mk-moi-confirm" placeholder="Nhập lại mật khẩu mới..." required minlength="6">
+                </div>
+
+                <!-- Ô nhập OTP và nút gửi OTP -->
+                <div class="form-group" style="margin-top: 6px;">
+                    <label for="mk-otp-code">Mã OTP Xác Thực Email (6 số): *</label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="mk-otp-code" placeholder="123456" maxlength="6" required style="letter-spacing: 3px; font-weight: bold; text-align: center; font-size: 16px; flex: 1;">
+                        <button type="button" class="btn btn-outline" id="btn-gui-otp-doi-mk" style="white-space: nowrap; font-size: 13px; padding: 7px 12px;">
+                            📩 Gửi Mã OTP
+                        </button>
+                    </div>
+                    <small id="text-otp-status" style="font-size: 11.5px; color: #64748b; margin-top: 3px;">Bấm "Gửi Mã OTP" để nhận mã xác thực qua hòm thư Email đăng ký.</small>
                 </div>
 
                 <div id="doi-mk-error" class="login-error" style="display: none;"></div>
 
                 <div class="modal-actions">
                     <button type="button" class="btn btn-default" id="btn-huy-doi-mk">Hủy</button>
-                    <button type="submit" class="btn btn-primary">Xác Nhận Đổi</button>
+                    <button type="submit" class="btn btn-primary" id="btn-xac-nhan-doi-mk">Xác Nhận Đổi Mật Khẩu</button>
                 </div>
             </form>
         </div>

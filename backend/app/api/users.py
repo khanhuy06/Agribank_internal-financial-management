@@ -87,26 +87,39 @@ def api_xoa_tai_khoan(
     admin: dict = Depends(require_admin)
 ):
     """
-    Admin xóa tài khoản nhân viên.
-    AN NINH TỐI CAO: Admin KHÔNG ĐƯỢC PHÉP kick/xóa tài khoản của Admin khác!
+    Xóa tài khoản người dùng:
+    - Cho phép xóa tài khoản nhân viên thông thường.
+    - Cho phép xóa tài khoản bàn giao ban đầu ('admin@agribank.com.vn') khi đã có Admin khác (hoàn tất bàn giao).
+    - Cho phép Admin tự xóa chính mình khi hệ thống còn ít nhất 1 Admin khác.
+    - BẢO MẬT AN NINH: Các Admin chính thức tuyệt đối không thể kick lẫn nhau!
     """
     user = crud.get_user_by_id(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản người dùng!")
 
-    # Chống tự xóa tài khoản của chính mình
-    if user["id"] == admin["id"]:
-        raise HTTPException(status_code=400, detail="Bạn không thể tự xóa tài khoản của chính mình!")
+    so_admin_hien_tai = crud.count_admins()
 
-    # AN NINH TỐI CAO: Chống kick/xóa Admin khác
+    # Kiểm tra trường hợp tài khoản là Admin
     if user.get("role") == "admin":
-        raise HTTPException(
-            status_code=403, 
-            detail="Bảo mật cấp cao: Không thể xóa tài khoản của Quản trị viên (Admin) khác!"
-        )
+        # Không được để hệ thống mất hết Admin
+        if so_admin_hien_tai <= 1:
+            raise HTTPException(
+                status_code=400,
+                detail="Không thể xóa! Đây là Quản trị viên (Admin) duy nhất còn lại của hệ thống. Hãy tạo Admin mới trước khi xóa."
+            )
+
+        la_tai_khoan_ban_giao = (user["email"].strip().lower() == "admin@agribank.com.vn")
+        la_chinh_minh = (user["id"] == admin["id"])
+
+        # Nếu không phải tài khoản bàn giao ban đầu và cũng không phải tự xóa chính mình -> Cấm kick Admin khác!
+        if not la_tai_khoan_ban_giao and not la_chinh_minh:
+            raise HTTPException(
+                status_code=403,
+                detail="Bảo mật cấp cao: Không thể xóa tài khoản của Quản trị viên (Admin) chính thức khác!"
+            )
 
     crud.delete_user(user_id)
     return {
         "success": True,
-        "message": f"Đã xóa tài khoản '{user['email']}' thành công! Người này không thể vào web được nữa."
+        "message": f"Đã xóa tài khoản '{user['email']}' thành công! Bàn giao an toàn hoàn tất."
     }

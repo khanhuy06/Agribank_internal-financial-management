@@ -13,9 +13,65 @@ from backend.app.db import crud
 from backend.app.core.security import (
     hash_password, verify_password, create_access_token, get_current_user
 )
-from backend.app.core.email import send_password_changed_email, send_otp_email
+from backend.app.core.email import send_password_changed_email, send_otp_email, send_change_password_otp_email
 
 router = APIRouter(prefix="/api/auth", tags=["Xác thực & Bảo mật"])
+
+@router.post("/send-change-password-otp")
+def api_gui_otp_doi_mat_khau(current_user: dict = Depends(get_current_user)):
+    """
+    Gửi mã OTP 6 số tới email của người dùng đang đăng nhập để xác thực việc đổi mật khẩu.
+    Bảo mật ngân hàng 2 lớp (2FA): Kẻ xấu dù biết mật khẩu cũ cũng không thể đổi nếu không có OTP email.
+    """
+    user = crud.get_user_by_id(current_user["id"])
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản!")
+
+    otp_code = f"{random.randint(100000, 999999)}"
+    crud.save_otp(user["email"], otp_code, expire_minutes=10)
+    send_change_password_otp_email(user["email"], user.get("ho_ten", "Cán bộ"), otp_code)
+
+    parts = user["email"].split("@")
+    masked = f"{parts[0][:2]}***@{parts[1]}" if len(parts[0]) > 2 else user["email"]
+
+    return {
+        "success": True,
+        "message": f"Mã xác thực OTP 6 số đã được gửi tới email '{masked}'. Vui lòng kiểm tra hộp thư!"
+    }
+
+@router.post("/doi-mat-khau")
+def api_doi_mat_khau(req: DoiMatKhauSchema, current_user: dict = Depends(get_current_user)):
+    """
+    Người dùng tự đổi mật khẩu cá nhân.
+    BẢO MẬT NGÂN HÀNG (2FA):
+    1. Xác thực mật khẩu cũ.
+    2. Xác thực mã OTP 6 số gửi về email chính chủ.
+    3. Băm Bcrypt mật khẩu mới.
+    4. Gửi email cảnh báo bảo mật.
+    """
+    user = crud.get_user_by_id(current_user["id"])
+    if not user:
+        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản!")
+
+    # 1. Xác thực mật khẩu cũ
+    if not verify_password(req.mat_khau_cu, user["hashed_password"]):
+        raise HTTPException(status_code=400, detail="Mật khẩu hiện tại không chính xác!")
+
+    # 2. Bắt buộc kiểm tra mã OTP xác thực qua email
+    if not req.otp_code or not crud.verify_and_consume_otp(user["email"], req.otp_code.strip()):
+        raise HTTPException(status_code=400, detail="Mã OTP xác thực email không chính xác hoặc đã hết hạn (10 phút)!")
+
+    # 3. Băm mật khẩu mới và lưu
+    new_hashed = hash_password(req.mat_khau_moi)
+    crud.update_user_password(user["id"], new_hashed)
+
+    # 4. Gửi email thông báo bảo mật
+    send_password_changed_email(user["email"], user["ho_ten"])
+
+    return {
+        "success": True,
+        "message": "Đổi mật khẩu thành công! Email thông báo an ninh đã được gửi tới hòm thư của bạn."
+    }
 
 @router.post("/login")
 def api_dang_nhap(req: DangNhapSchema):
@@ -96,32 +152,6 @@ def api_dang_ky(req: DangKySchema):
         "success": True,
         "message": "Đăng ký tài khoản thành công! Bạn có thể đăng nhập ngay bây giờ.",
         "user_id": new_id
-    }
-
-@router.post("/doi-mat-khau")
-def api_doi_mat_khau(req: DoiMatKhauSchema, current_user: dict = Depends(get_current_user)):
-    """
-    Người dùng (Admin hoặc Nhân viên) tự đổi mật khẩu cá nhân.
-    Tự động gửi email cảnh báo bảo mật về hòm thư người dùng.
-    """
-    user = crud.get_user_by_id(current_user["id"])
-    if not user:
-        raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản!")
-
-    # Xác thực mật khẩu cũ
-    if not verify_password(req.mat_khau_cu, user["hashed_password"]):
-        raise HTTPException(status_code=400, detail="Mật khẩu hiện tại không chính xác!")
-
-    # Băm mật khẩu mới và lưu
-    new_hashed = hash_password(req.mat_khau_moi)
-    crud.update_user_password(user["id"], new_hashed)
-
-    # Gửi email thông báo bảo mật
-    send_password_changed_email(user["email"], user["ho_ten"])
-
-    return {
-        "success": True,
-        "message": "Đổi mật khẩu thành công! Email thông báo đã được gửi tới hòm thư của bạn."
     }
 
 @router.post("/forgot-password")
