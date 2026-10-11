@@ -585,13 +585,18 @@ body {
 .bang-tai-chinh th {
     background: #fafafa;
     color: var(--gray-600);
-    padding: 10px 14px;
+    padding: 11px 16px;
     font-weight: 600;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     white-space: nowrap;
     border-bottom: 1px solid var(--border-color);
+    border-right: 1px solid #f1f5f9;
+}
+
+.bang-tai-chinh th:last-child {
+    border-right: none;
 }
 
 .btn-xoa-cot {
@@ -616,10 +621,15 @@ body {
 }
 
 .bang-tai-chinh td {
-    padding: 10px 14px;
+    padding: 11px 16px;
     border-bottom: 1px solid var(--border-light);
     color: var(--gray-800);
     white-space: nowrap;
+    border-right: 1px solid #f8fafc;
+}
+
+.bang-tai-chinh td:last-child {
+    border-right: none;
 }
 
 .bang-tai-chinh tbody tr:hover {

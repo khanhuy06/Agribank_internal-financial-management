@@ -230,6 +230,9 @@ document.addEventListener("DOMContentLoaded", function() {
             th.textContent = cot.ten;
             if (cot.kieu === "so") {
                 th.className = "col-so";
+                th.style.textAlign = "right";
+            } else {
+                th.style.textAlign = "left";
             }
             
             // Chỉ Admin mới có nút xóa cột tùy chỉnh
@@ -251,6 +254,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const thTong = document.createElement("th");
         thTong.textContent = "Tổng Cộng";
         thTong.className = "col-tong";
+        thTong.style.textAlign = "right";
         theadRow.appendChild(thTong);
 
         // Chỉ Admin mới có cột Thao tác Sửa/Xóa
@@ -308,6 +312,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     if (cot.kieu === "so") {
                         const soVal = Number(giaTri) || 0;
                         td.className = "col-so";
+                        td.style.textAlign = "right";
                         td.textContent = dinhDangTien(soVal);
                         tongTungCotSo[cot.id] = (tongTungCotSo[cot.id] || 0) + soVal;
 
@@ -326,6 +331,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                 const tdTong = document.createElement("td");
                 tdTong.className = "col-tong";
+                tdTong.style.textAlign = "right";
                 tdTong.textContent = dinhDangTien(tongDong);
                 tr.appendChild(tdTong);
 
@@ -362,6 +368,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 daGhiNhanNhanTong = true;
             } else if (cot.kieu === "so") {
                 td.className = "col-so";
+                td.style.textAlign = "right";
                 td.textContent = dinhDangTien(tongTungCotSo[cot.id] || 0);
             } else {
                 td.textContent = "—";
@@ -372,6 +379,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         const tdTongTatCa = document.createElement("td");
         tdTongTatCa.className = "col-tong";
+        tdTongTatCa.style.textAlign = "right";
         tdTongTatCa.textContent = dinhDangTien(tongTatCaNganSach);
         tfootRow.appendChild(tdTongTatCa);
 
