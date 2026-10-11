@@ -1,13 +1,34 @@
-# Python cache
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-
-# Virtual environments
-.venv/
+*.so
+.Python
 env/
 venv/
+.venv/
+ENV/
 
-# SQLite database files (tự động khởi tạo bởi database.py)
+# Database
 *.db
 *.sqlite3
+postgres_data/
+
+# Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+
+# IDE & OS
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

@@ -813,4 +813,125 @@ body {
     color: #991b1b;
     transform: translateY(-1px);
 }
+
+/* THÊM STYLE CHO CÁC TÍNH NĂNG MỚI (PHÂN QUYỀN, TABS, CÔNG TẮC CỔNG) */
+.role-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-left: 6px;
+}
+.role-admin {
+    background: #fef08a;
+    color: #854d0e;
+}
+.role-user {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+
+.btn-header-action {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.btn-header-action:hover {
+    background: #ffffff;
+    color: var(--agri-red-dark);
+}
+
+.auth-tabs {
+    display: flex;
+    border-bottom: 2px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+.auth-tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 3px solid transparent;
+}
+.auth-tab-btn.active {
+    color: var(--agri-red);
+    border-bottom-color: var(--agri-red);
+}
+
+.forgot-link {
+    font-size: 12.5px;
+    color: var(--agri-red);
+    text-decoration: none;
+    font-weight: 500;
+}
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+.login-success {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.modal-lg {
+    max-width: 800px;
+    width: 90%;
+}
+
+.gateway-switch-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+.switch-info strong {
+    font-size: 14px;
+    color: #0f172a;
+}
+.switch-info p {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 3px;
+}
+.switch-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.status-gate-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.gate-open {
+    background: #d1fae5;
+    color: #065f46;
+}
+.gate-closed {
+    background: #fee2e2;
+    color: #991b1b;
+}
 

@@ -1,0 +1,12 @@
+# Robots.txt cho Hệ thống Quản lý Tài chính Nội bộ Agribank
+User-agent: *
+Disallow: /api/
+Disallow: /admin/
+Disallow: /docs
+Disallow: /redoc
+Disallow: /openapi.json
+
+# Chặn bot lưu trữ bản sao dữ liệu nhạy cảm
+User-agent: Googlebot
+Disallow: /api/
+Disallow: /docs
