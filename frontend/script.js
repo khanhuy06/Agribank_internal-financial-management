@@ -202,15 +202,17 @@ document.addEventListener("DOMContentLoaded", function() {
         if (btnImport) btnImport.style.display = isAdmin ? "inline-flex" : "none";
         if (btnModalUsers) btnModalUsers.style.display = isAdmin ? "inline-block" : "none";
 
-        // 2. Badge vai trò trên Header
+        // 2. Badge vai trò trên Header: Chỉ Admin mới thấy chữ Admin, người dùng khác ẩn hoàn toàn
         const badgeVaiTro = document.getElementById("badge-vai-tro");
         if (badgeVaiTro) {
             if (isAdmin) {
                 badgeVaiTro.textContent = "Admin";
                 badgeVaiTro.className = "role-badge role-admin";
+                badgeVaiTro.style.display = "inline-block";
             } else {
-                badgeVaiTro.textContent = "Nhân Viên (Xem)";
-                badgeVaiTro.className = "role-badge role-user";
+                badgeVaiTro.textContent = "";
+                badgeVaiTro.className = "";
+                badgeVaiTro.style.display = "none";
             }
         }
     }
@@ -805,7 +807,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     
                     document.getElementById("login-password").value = "";
                     kiemTraTrangThaiDangNhap();
-                    hienThiToast(`Chào mừng ${data.user.ho_ten}! (${data.user.role === 'admin' ? 'Quản trị viên' : 'Nhân viên'})`);
+                    hienThiToast(`Chào mừng ${data.user.ho_ten}!`);
                 } else {
                     errorMsg.textContent = data.detail || "Đăng nhập thất bại!";
                     errorMsg.style.display = "block";
@@ -1277,10 +1279,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
                         // Vai trò
                         const tdRole = document.createElement("td");
-                        const spanRole = document.createElement("span");
-                        spanRole.className = `role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}`;
-                        spanRole.textContent = u.role === 'admin' ? "Admin" : "Nhân viên";
-                        tdRole.appendChild(spanRole);
+                        if (u.role === "admin") {
+                            const spanRole = document.createElement("span");
+                            spanRole.className = "role-badge role-admin";
+                            spanRole.textContent = "Admin";
+                            tdRole.appendChild(spanRole);
+                        } else {
+                            tdRole.textContent = "—";
+                        }
                         tr.appendChild(tdRole);
 
                         // Ngày tạo
