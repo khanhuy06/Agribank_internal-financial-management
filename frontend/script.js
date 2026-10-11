@@ -1179,11 +1179,10 @@ document.addEventListener("DOMContentLoaded", function() {
         function capNhatCacNutHaQuyen(soAdmin) {
             const btnTuHaQuyen = document.getElementById("btn-tu-ha-quyen-admin");
             const btnTuHaQuyenTab = document.getElementById("btn-tu-ha-quyen-admin-tab");
-            const btnDemoteMgmtBar = document.getElementById("btn-demote-user-mgmt-bar");
             const soleWarningSetting = document.getElementById("sole-admin-warning-setting");
 
             const isSole = soAdmin <= 1;
-            [btnTuHaQuyen, btnTuHaQuyenTab, btnDemoteMgmtBar].forEach(btn => {
+            [btnTuHaQuyen, btnTuHaQuyenTab].forEach(btn => {
                 if (btn) {
                     btn.disabled = isSole;
                     if (isSole) {
@@ -1240,7 +1239,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             try {
                 const res = await fetchAuth("/api/users/yeu-cau-otp-ha-quyen", { method: "POST" });
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
                 if (res.ok) {
                     if (sucBox) {
                         sucBox.textContent = data.message || "Mã OTP đã được gửi đến email của bạn!";
@@ -1266,7 +1265,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }, 1000);
                 } else {
                     if (errBox) {
-                        errBox.textContent = data.detail || "Không thể gửi OTP!";
+                        errBox.textContent = data.detail || `Không thể gửi mã OTP (Mã lỗi ${res.status})!`;
                         errBox.style.display = "block";
                     }
                     if (btnResend) {
@@ -1275,8 +1274,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 }
             } catch (err) {
+                console.error("[OTP HẠ QUYỀN LỖI]:", err);
                 if (errBox) {
-                    errBox.textContent = "Lỗi kết nối khi gửi OTP!";
+                    errBox.textContent = err.message === "Unauthorized" ? "Phiên làm việc hết hạn, vui lòng đăng nhập lại!" : "Lỗi kết nối khi gửi OTP!";
                     errBox.style.display = "block";
                 }
                 if (btnResend) {
@@ -1382,8 +1382,6 @@ document.addEventListener("DOMContentLoaded", function() {
         const btnTuHaQuyenTab = document.getElementById("btn-tu-ha-quyen-admin-tab");
         if (btnTuHaQuyenTab) btnTuHaQuyenTab.addEventListener("click", moModalXacThucHaQuyen);
 
-        const btnDemoteMgmtBar = document.getElementById("btn-demote-user-mgmt-bar");
-        if (btnDemoteMgmtBar) btnDemoteMgmtBar.addEventListener("click", moModalXacThucHaQuyen);
 
         // =====================================================
         // 10. MODAL QUÊN MẬT KHẨU (XÁC THỰC EMAIL OTP)
@@ -1693,12 +1691,28 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (u.role === "admin") {
                             // TRƯỜNG HỢP ADMIN:
                             if (isInitialSeed && tongSoAdmin > 1) {
-                                // TÀI KHOẢN KHỞI TẠO BÀN GIAO: Cho phép xóa khi đã có Admin khác
+                                // TÀI KHOẢN KHỞI TẠO BÀN GIAO: Cho phép Admin xóa trực tiếp không cần mã OTP
                                 const btnXoaBanGiao = document.createElement("button");
                                 btnXoaBanGiao.className = "btn-table-danger";
-                                btnXoaBanGiao.title = "Xóa tài khoản khởi tạo bàn giao";
+                                btnXoaBanGiao.title = "Xóa vĩnh viễn tài khoản khởi tạo bàn giao";
                                 btnXoaBanGiao.textContent = "Xóa TK Bàn Giao";
-                                btnXoaBanGiao.addEventListener("click", () => moModalXacThucXoaUser(u.id, u.email));
+                                btnXoaBanGiao.addEventListener("click", async () => {
+                                    if (!confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn tài khoản bàn giao (${u.email}) không? Thao tác này không thể hoàn tác.`)) {
+                                        return;
+                                    }
+                                    try {
+                                        const res = await fetchAuth(`/api/users/${u.id}`, { method: "DELETE" });
+                                        const data = await res.json().catch(() => ({}));
+                                        if (res.ok) {
+                                            hienThiToast(data.message || "Đã xóa tài khoản bàn giao thành công!", "success");
+                                            await taiDanhSachUsersAdmin();
+                                        } else {
+                                            hienThiToast(data.detail || "Không thể xóa tài khoản bàn giao!", "error");
+                                        }
+                                    } catch (err) {
+                                        hienThiToast("Lỗi kết nối khi xóa tài khoản bàn giao!", "error");
+                                    }
+                                });
                                 tdAction.appendChild(btnXoaBanGiao);
                             } else if (isSelf) {
                                 // ADMIN ĐANG ĐĂNG NHẬP: HIỆN CHỮ 'BẠN' + NÚT TỰ HẠ CẤP VỀ NHÂN VIÊN
@@ -1831,7 +1845,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             try {
                 const res = await fetchAuth(`/api/users/${userId}/yeu-cau-otp-xoa`, { method: "POST" });
-                const data = await res.json();
+                const data = await res.json().catch(() => ({}));
                 if (res.ok) {
                     if (sucBox) {
                         sucBox.textContent = data.message || "Mã OTP đã được gửi đến email Quản trị viên!";
@@ -1857,7 +1871,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }, 1000);
                 } else {
                     if (errBox) {
-                        errBox.textContent = data.detail || "Không thể gửi OTP!";
+                        errBox.textContent = data.detail || `Không thể gửi mã OTP (Mã lỗi ${res.status})!`;
                         errBox.style.display = "block";
                     }
                     if (btnResend) {
@@ -1866,8 +1880,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 }
             } catch (err) {
+                console.error("[OTP XÓA USER LỖI]:", err);
                 if (errBox) {
-                    errBox.textContent = "Lỗi kết nối khi gửi OTP!";
+                    errBox.textContent = err.message === "Unauthorized" ? "Phiên làm việc hết hạn, vui lòng đăng nhập lại!" : "Lỗi kết nối khi gửi OTP!";
                     errBox.style.display = "block";
                 }
                 if (btnResend) {

@@ -39,10 +39,33 @@ def send_email_notification(to_email: str, subject: str, html_content: str) -> b
                 },
                 method="POST"
             )
-            with urllib.request.urlopen(req, timeout=10) as resp:
+            with urllib.request.urlopen(req, timeout=5) as resp:
                 if resp.status in (200, 201):
                     print(f"[RESEND EMAIL] Đã gửi thư thành công tới {to_email} qua Resend API.")
                     return True
+        except urllib.error.HTTPError as he:
+            print(f"[RESEND HTTP ERROR {he.code}]: {he.read().decode('utf-8', errors='ignore')}")
+            # Nếu tài khoản Resend giới hạn chỉ gửi tới owner email (khanhhuyphamnguyen1@gmail.com)
+            if he.code == 403 and to_email != "khanhhuyphamnguyen1@gmail.com":
+                try:
+                    payload["to"] = ["khanhhuyphamnguyen1@gmail.com"]
+                    payload["subject"] = f"[{to_email}] " + subject
+                    req_fwd = urllib.request.Request(
+                        "https://api.resend.com/emails",
+                        data=json.dumps(payload).encode("utf-8"),
+                        headers={
+                            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                            "Content-Type": "application/json",
+                            "User-Agent": "Agribank-System"
+                        },
+                        method="POST"
+                    )
+                    with urllib.request.urlopen(req_fwd, timeout=5) as resp_fwd:
+                        if resp_fwd.status in (200, 201):
+                            print(f"[RESEND EMAIL] Đã gửi thư chuyển tiếp tới khanhhuyphamnguyen1@gmail.com thành công.")
+                            return True
+                except Exception as ex_fwd:
+                    print(f"[RESEND CHUYỂN TIẾP THẤT BẠI]: {ex_fwd}")
         except Exception as e:
             print(f"[RESEND EMAIL LỖI] Gửi qua Resend thất bại ({e}), chuyển sang phương thức dự phòng...")
 

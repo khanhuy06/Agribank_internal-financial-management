@@ -173,6 +173,13 @@ def api_yeu_cau_otp_xoa_tai_khoan(
                 status_code=403,
                 detail="Bảo mật cấp cao: Không thể xóa tài khoản của Quản trị viên (Admin) chính thức khác!"
             )
+        if la_tai_khoan_ban_giao:
+            return {
+                "success": True,
+                "message": "Tài khoản bàn giao không cần mã OTP, Quản trị viên có thể xóa trực tiếp!",
+                "target_email": target["email"],
+                "skip_otp": True
+            }
 
     otp_code = f"{random.randint(100000, 999999)}"
     crud.save_otp(admin["email"], otp_code, expire_minutes=10)
@@ -196,40 +203,44 @@ def api_xoa_tai_khoan(
     admin: dict = Depends(require_admin)
 ):
     """
-    BƯỚC 2 XÓA TÀI KHOẢN: Yêu cầu mã OTP 6 số gửi về email của Admin để xác nhận xóa.
+    XÓA TÀI KHOẢN:
+    - Nếu là tài khoản khởi tạo bàn giao (admin@agribank.com.vn): Cho phép Admin xóa trực tiếp không cần OTP.
+    - Với các tài khoản khác: Bắt buộc mã OTP 6 số gửi về email của Admin để xác thực.
     """
-    ma_otp = (req.otp_code if req else None) or otp_code
-    if not ma_otp:
-        raise HTTPException(
-            status_code=400,
-            detail="Bắt buộc phải nhập mã OTP 6 số để xác nhận xóa tài khoản!"
-        )
-
-    # Xác thực OTP thuộc về email của Admin đang yêu cầu xóa
-    hop_le = crud.verify_and_consume_otp(admin["email"], ma_otp.strip())
-    if not hop_le:
-        raise HTTPException(
-            status_code=400,
-            detail="Mã OTP xác thực không chính xác hoặc đã hết hạn (hiệu lực 10 phút)!"
-        )
-
     user = crud.get_user_by_id(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Không tìm thấy tài khoản người dùng!")
 
     so_admin_hien_tai = crud.count_admins()
+    la_tai_khoan_ban_giao = (user["email"].strip().lower() == "admin@agribank.com.vn")
+    la_chinh_minh = (user["id"] == admin["id"])
+
     if user.get("role") == "admin":
         if so_admin_hien_tai <= 1:
             raise HTTPException(
                 status_code=400,
                 detail="Không thể xóa! Đây là Quản trị viên (Admin) duy nhất còn lại của hệ thống."
             )
-        la_tai_khoan_ban_giao = (user["email"].strip().lower() == "admin@agribank.com.vn")
-        la_chinh_minh = (user["id"] == admin["id"])
         if not la_tai_khoan_ban_giao and not la_chinh_minh:
             raise HTTPException(
                 status_code=403,
                 detail="Bảo mật cấp cao: Không thể xóa tài khoản của Quản trị viên (Admin) chính thức khác!"
+            )
+
+    # Nếu KHÔNG PHẢI tài khoản bàn giao, bắt buộc phải có OTP xác thực
+    if not la_tai_khoan_ban_giao:
+        ma_otp = (req.otp_code if req else None) or otp_code
+        if not ma_otp:
+            raise HTTPException(
+                status_code=400,
+                detail="Bắt buộc phải nhập mã OTP 6 số để xác nhận xóa tài khoản!"
+            )
+
+        hop_le = crud.verify_and_consume_otp(admin["email"], ma_otp.strip())
+        if not hop_le:
+            raise HTTPException(
+                status_code=400,
+                detail="Mã OTP xác thực không chính xác hoặc đã hết hạn (hiệu lực 10 phút)!"
             )
 
     crud.delete_user(user_id)

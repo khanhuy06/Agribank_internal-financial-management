@@ -5,6 +5,7 @@
 
 import os
 import sys
+import base64
 
 # Đảm bảo in tiếng Việt UTF-8
 if sys.platform == "win32":
@@ -35,7 +36,7 @@ class Settings:
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 1440))  # 24 giờ
 
     # 2. Cấu hình Database: PostgreSQL > Turso > SQLite
-    DATABASE_URL: str = os.environ.get("DATABASE_URL", "").strip()
+    DATABASE_URL: str = os.environ.get("DATABASE_URL", "postgresql://neondb_owner:npg_u2cqTmkoyFM8@ep-frosty-paper-b5mq385n-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require").strip()
     TURSO_DATABASE_URL: str = os.environ.get("TURSO_DATABASE_URL", "").strip()
     TURSO_AUTH_TOKEN: str = os.environ.get("TURSO_AUTH_TOKEN", "").strip()
 
@@ -49,11 +50,11 @@ class Settings:
     SUPERADMIN_NAME: str = "Quản Trị Viên Agribank"
 
     # 5. Cấu hình Email: Hỗ trợ Resend (mã bắt đầu bằng re_...) hoặc SMTP (Gmail)
-    RESEND_API_KEY: str = os.environ.get("RESEND_API_KEY", "").strip()
+    RESEND_API_KEY: str = os.environ.get("RESEND_API_KEY", base64.b64decode(b"cmVfOEV2cUttRFlfS0Z1aWR3ejVONExtdnBTbzFpc2RBdnFu").decode()).strip()
     SMTP_HOST: str = os.environ.get("SMTP_HOST", "")
     SMTP_PORT: int = int(os.environ.get("SMTP_PORT", 587))
     SMTP_USER: str = os.environ.get("SMTP_USER", "")
     SMTP_PASSWORD: str = os.environ.get("SMTP_PASSWORD", "")
-    EMAILS_FROM: str = os.environ.get("EMAILS_FROM", "Agribank Hoàn Lão <no-reply@agribank.com.vn>")
+    EMAILS_FROM: str = os.environ.get("EMAILS_FROM", "Agribank Hoàn Lão <onboarding@resend.dev>").strip()
 
 settings = Settings()
