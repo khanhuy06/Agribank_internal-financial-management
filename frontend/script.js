@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     if (btnMoModalThem) {
         btnMoModalThem.addEventListener("click", () => {
-            tieuDeModalNhap.textContent = "Thêm Giao Dịch / Nhân Viên Mới";
+            tieuDeModalNhap.textContent = "Thêm Dòng Mới";
             editRowIndexInput.value = "";
             dungFormNhapLieu({});
             modalNhapLieu.style.display = "flex";
@@ -486,7 +486,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 input.addEventListener("input", capNhatPreviewTongModal);
             } else {
                 input.type = "text";
-                input.placeholder = `Nhập ${cot.ten.toLowerCase()}...`;
+                input.placeholder = cot.ten;
                 input.value = duLieuCoSan[cot.id] || "";
             }
 
@@ -512,7 +512,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function moModalChinhSua(item, index) {
-        tieuDeModalNhap.textContent = `Chỉnh Sửa Giao Dịch (${item.ma_nv || 'Dòng ' + (index + 1)})`;
+        tieuDeModalNhap.textContent = `Chỉnh Sửa Dữ Liệu (${item.ma_nv || 'Dòng ' + (index + 1)})`;
         editRowIndexInput.value = index;
         dungFormNhapLieu(item);
         modalNhapLieu.style.display = "flex";

@@ -809,59 +809,56 @@ body {
     background: var(--gray-50);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
-    padding: 12px 14px;
+    padding: 10px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 12px;
 }
 
-.switch-info strong {
+.switch-title {
     font-size: 13px;
+    font-weight: 600;
     color: var(--gray-900);
-}
-
-.switch-info p {
-    font-size: 12px;
-    color: var(--gray-500);
-    margin-top: 2px;
+    white-space: nowrap !important;
 }
 
 .switch-toggle-wrapper {
     display: flex;
     align-items: center;
     gap: 8px;
+    white-space: nowrap !important;
+    flex-shrink: 0;
 }
 
 .status-gate-badge {
-    padding: 2px 8px;
-    border-radius: 9999px;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
     font-size: 11px;
     font-weight: 600;
+    white-space: nowrap !important;
+    letter-spacing: 0.04em;
 }
 
 .gate-open {
-    background: #d1fae5;
-    color: #065f46;
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
 }
 
 .gate-closed {
-    background: #fee2e2;
+    background: #fef2f2;
     color: #991b1b;
+    border: 1px solid #fecaca;
 }
 
 .user-mgmt-header-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 12px 0 8px 0;
-    padding-bottom: 6px;
+    margin: 12px 0 10px 0;
+    padding-bottom: 8px;
     border-bottom: 1px solid var(--border-color);
-}
-
-.mgmt-title-group {
-    display: flex;
-    flex-direction: column;
 }
 
 .add-user-panel {
