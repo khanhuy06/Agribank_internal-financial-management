@@ -7,40 +7,73 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
+import json
+import urllib.request
 from backend.app.core.config import settings
 
 def send_email_notification(to_email: str, subject: str, html_content: str) -> bool:
     """
-    Gửi email qua giao thức SMTP.
-    Nếu chưa cấu hình tài khoản SMTP, hệ thống sẽ in trực tiếp nội dung email ra Console để nhà phát triển xem mã OTP.
+    Gửi email qua:
+    1. Resend API (nếu có mã RESEND_API_KEY bắt đầu bằng 're_...')
+    2. Giao thức SMTP (nếu có SMTP_HOST & SMTP_USER)
+    3. Dự phòng in ra Console (nếu chưa cấu hình dịch vụ ngoài)
     """
-    if not settings.SMTP_HOST or not settings.SMTP_USER:
-        print("\n" + "="*60)
-        print(f"[MÔ PHỎNG EMAIL] Gửi tới: {to_email}")
-        print(f"[TIÊU ĐỀ]: {subject}")
-        print(f"[NỘI DUNG]:\n{html_content}")
-        print("="*60 + "\n")
-        return True
+    # 1. Ưu tiên gửi qua Resend API nếu có key re_...
+    if settings.RESEND_API_KEY:
+        try:
+            # Domain gửi: nếu chưa xác thực domain riêng thì dùng onboarding@resend.dev của Resend
+            from_email = settings.EMAILS_FROM if "@" in settings.EMAILS_FROM and not "agribank.com.vn" in settings.EMAILS_FROM else "Agribank Hoàn Lão <onboarding@resend.dev>"
+            payload = {
+                "from": from_email,
+                "to": [to_email],
+                "subject": subject,
+                "html": html_content
+            }
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=json.dumps(payload).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "Agribank-System"
+                },
+                method="POST"
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                if resp.status in (200, 201):
+                    print(f"[RESEND EMAIL] Đã gửi thư thành công tới {to_email} qua Resend API.")
+                    return True
+        except Exception as e:
+            print(f"[RESEND EMAIL LỖI] Gửi qua Resend thất bại ({e}), chuyển sang phương thức dự phòng...")
 
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = settings.EMAILS_FROM
-        msg["To"] = to_email
+    # 2. Gửi qua SMTP truyền thống (Gmail, công ty)
+    if settings.SMTP_HOST and settings.SMTP_USER:
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"] = settings.EMAILS_FROM
+            msg["To"] = to_email
 
-        part = MIMEText(html_content, "html", "utf-8")
-        msg.attach(part)
+            part = MIMEText(html_content, "html", "utf-8")
+            msg.attach(part)
 
-        with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
-            server.starttls()
-            server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-            server.sendmail(settings.EMAILS_FROM, to_email, msg.as_string())
-        
-        print(f"[EMAIL] Đã gửi thư thành công tới {to_email}")
-        return True
-    except Exception as e:
-        print(f"[EMAIL LỖI] Không thể gửi email tới {to_email}: {e}")
-        return False
+            with smtplib.SMTP(settings.SMTP_HOST, settings.SMTP_PORT) as server:
+                server.starttls()
+                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                server.sendmail(settings.EMAILS_FROM, to_email, msg.as_string())
+            
+            print(f"[SMTP EMAIL] Đã gửi thư thành công tới {to_email}")
+            return True
+        except Exception as e:
+            print(f"[SMTP EMAIL LỖI] Không thể gửi email tới {to_email}: {e}")
+
+    # 3. Chế độ phát triển & kiểm thử: In mô phỏng ra Console
+    print("\n" + "="*60)
+    print(f"[MÔ PHỎNG EMAIL] Gửi tới: {to_email}")
+    print(f"[TIÊU ĐỀ]: {subject}")
+    print(f"[NỘI DUNG]:\n{html_content}")
+    print("="*60 + "\n")
+    return True
 
 def send_password_changed_email(to_email: str, ho_ten: str) -> bool:
     """Gửi email cảnh báo khi mật khẩu tài khoản vừa bị thay đổi."""

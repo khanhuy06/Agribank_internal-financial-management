@@ -33,7 +33,8 @@ class Settings:
     SUPERADMIN_PASSWORD: str = os.environ.get("SUPERADMIN_PASSWORD", "Agribank@2026")
     SUPERADMIN_NAME: str = "Quản Trị Viên Agribank"
 
-    # 5. Cấu hình Email SMTP (nếu để trống, hệ thống sẽ log OTP và thông báo ra console)
+    # 5. Cấu hình Email: Hỗ trợ Resend (mã bắt đầu bằng re_...) hoặc SMTP (Gmail)
+    RESEND_API_KEY: str = os.environ.get("RESEND_API_KEY", "").strip()
     SMTP_HOST: str = os.environ.get("SMTP_HOST", "")
     SMTP_PORT: int = int(os.environ.get("SMTP_PORT", 587))
     SMTP_USER: str = os.environ.get("SMTP_USER", "")
