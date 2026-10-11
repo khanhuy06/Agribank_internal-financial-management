@@ -18,7 +18,7 @@
     <meta http-equiv="Expires" content="0">
 
     <!-- CSS Chính (kèm cache-busting) -->
-    <link rel="stylesheet" href="style.css?v=20261011_v11">
+    <link rel="stylesheet" href="style.css?v=20261011_v12">
 </head>
 <body>
     <!-- 1. HEADER CHÍNH (CHUẨN VERCEL / ENTERPRISE SAAS) -->
@@ -372,28 +372,13 @@
                     <p class="privilege-desc" style="margin-top: 10px;">
                         Tài khoản của bạn hiện có toàn quyền Quản trị viên (thêm/sửa/xóa dòng, thêm cột, nhập/xuất Excel và quản lý tài khoản người dùng).
                     </p>
+                    <p id="sole-admin-warning-setting" style="display: none; color: #b45309; font-size: 11.5px; margin-top: 10px; font-weight: 500;">
+                        ⚠️ Bạn là Quản trị viên duy nhất trong hệ thống. Không thể hạ cấp để đảm bảo luôn có người quản trị.
+                    </p>
                     <div style="background: #fffbeb; border: 1px solid #fef3c7; border-radius: 6px; padding: 10px 12px; margin-top: 12px; font-size: 12px; color: #92400e;">
                         <strong>Lưu ý:</strong> Khi tự hạ cấp về Nhân viên, bạn sẽ chỉ còn quyền xem dữ liệu và không thể tự cấp lại quyền Admin cho chính mình.
                     </div>
                 </div>
-            </div>
-
-            <!-- KHU VỰC QUẢN TRỊ VIÊN: TỰ HẠ CẤP VỀ NHÂN VIÊN (CHỈ HIỆN VỚI ADMIN) -->
-            <div id="khu-vuc-quyen-admin" class="admin-privilege-card" style="display: none;">
-                <div class="privilege-header">
-                    <div class="privilege-info">
-                        <span class="privilege-title">Quyền Quản Trị Hệ Thống:</span>
-                        <span class="role-badge role-admin">ADMIN</span>
-                    </div>
-                    <button type="button" id="btn-tu-ha-quyen-admin" class="btn-demote-self" title="Tự nguyện từ bỏ quyền Quản trị viên để trở về người dùng thông thường">
-                        <svg class="icon-svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
-                        <span>Hạ Về Nhân Viên</span>
-                    </button>
-                </div>
-                <p class="privilege-desc">Tự nguyện chuyển tài khoản về người dùng thông thường. Thao tác này sẽ tước quyền quản trị của bạn.</p>
-                <p id="sole-admin-warning-setting" style="display: none; color: #b45309; font-size: 11.5px; margin-top: 6px; font-weight: 500;">
-                    ⚠️ Bạn là Quản trị viên duy nhất trong hệ thống. Không thể hạ cấp để đảm bảo luôn có người quản trị.
-                </p>
             </div>
 
             <!-- KHU VỰC ĐĂNG XUẤT GOM TRONG SETTINGS -->
@@ -621,6 +606,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- JAVASCRIPT ĐIỀU HÀNH (kèm cache-busting) -->
-    <script src="script.js?v=20261011_v11"></script>
+    <script src="script.js?v=20261011_v12"></script>
 </body>
 </html>

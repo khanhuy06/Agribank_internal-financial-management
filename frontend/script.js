@@ -1019,10 +1019,8 @@ document.addEventListener("DOMContentLoaded", function() {
             if (formDoiMk) formDoiMk.reset();
             if (doiMkErr) doiMkErr.style.display = "none";
 
-            // Hiển thị / ẩn tab và khu vực quyền Admin (Chỉ Admin mới thấy)
+            // Hiển thị / ẩn tab quyền Admin (Chỉ Admin mới thấy)
             if (tabBtnAdmin) tabBtnAdmin.style.display = isAdmin ? "block" : "none";
-            const khuVucAdmin = document.getElementById("khu-vuc-quyen-admin");
-            if (khuVucAdmin) khuVucAdmin.style.display = isAdmin ? "block" : "none";
 
             chuyenTabCaiDat(tabMacDinh);
             if (modalCaiDat) modalCaiDat.style.display = "flex";
