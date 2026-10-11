@@ -1277,7 +1277,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         const tdRole = document.createElement("td");
                         const spanRole = document.createElement("span");
                         spanRole.className = `role-badge ${u.role === 'admin' ? 'role-admin' : 'role-user'}`;
-                        spanRole.textContent = u.role === 'admin' ? "Quản Trị Viên" : "Nhân Viên";
+                        spanRole.textContent = u.role === 'admin' ? "Admin" : "Nhân viên";
                         tdRole.appendChild(spanRole);
                         tr.appendChild(tdRole);
 
@@ -1296,65 +1296,46 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (u.role === "admin") {
                             // TRƯỜNG HỢP ADMIN:
                             if (isInitialSeed && tongSoAdmin > 1) {
-                                // TÀI KHOẢN KHỞI TẠO BÀN GIAO: Khi đã có Admin khác -> CHO PHÉP XÓA HOÀN TẤT BÀN GIAO!
+                                // TÀI KHOẢN KHỞI TẠO BÀN GIAO: Cho phép xóa khi đã có Admin khác
                                 const btnXoaBanGiao = document.createElement("button");
-                                btnXoaBanGiao.className = "btn-action btn-delete";
-                                btnXoaBanGiao.title = "Xóa tài khoản khởi tạo mặc định (Bàn giao hoàn tất)";
-                                btnXoaBanGiao.innerHTML = `
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-                                    <span>Xóa TK Bàn Giao</span>
-                                `;
-                                btnXoaBanGiao.style.display = "inline-flex";
-                                btnXoaBanGiao.style.alignItems = "center";
-                                btnXoaBanGiao.style.gap = "4px";
-                                btnXoaBanGiao.style.fontSize = "11.5px";
-                                btnXoaBanGiao.style.padding = "3px 8px";
+                                btnXoaBanGiao.className = "btn-table-danger";
+                                btnXoaBanGiao.title = "Xóa tài khoản khởi tạo bàn giao";
+                                btnXoaBanGiao.textContent = "Xóa TK Bàn Giao";
                                 btnXoaBanGiao.addEventListener("click", () => xoaUser(u.id, u.email));
                                 tdAction.appendChild(btnXoaBanGiao);
                             } else if (isSelf && tongSoAdmin > 1) {
                                 // ADMIN TỰ XÓA MÌNH (RÚT LUI AN TOÀN NẾU ĐÃ CÓ ADMIN KHÁC)
                                 const spanShield = document.createElement("span");
                                 spanShield.className = "badge-protected-admin";
-                                spanShield.innerHTML = `<span>Bạn (Admin)</span>`;
+                                spanShield.textContent = "Bạn";
                                 tdAction.appendChild(spanShield);
 
                                 const btnRutLui = document.createElement("button");
-                                btnRutLui.className = "btn-action btn-delete";
-                                btnRutLui.title = "Xóa tài khoản của chính bạn (Đã có Admin khác thay thế)";
-                                btnRutLui.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
-                                btnRutLui.style.marginLeft = "6px";
+                                btnRutLui.className = "btn-table-delete";
+                                btnRutLui.title = "Xóa tài khoản của bạn";
+                                btnRutLui.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+                                btnRutLui.style.marginLeft = "8px";
                                 btnRutLui.addEventListener("click", () => xoaUser(u.id, u.email));
                                 tdAction.appendChild(btnRutLui);
                             } else {
                                 // ADMIN CHÍNH THỨC: BẢO VỆ TUYỆT ĐỐI
                                 const spanShield = document.createElement("span");
                                 spanShield.className = "badge-protected-admin";
-                                spanShield.innerHTML = `
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                                    <span>${isSelf ? "Bạn (Admin)" : "Admin Bảo Vệ"}</span>
-                                `;
-                                spanShield.title = "Quy tắc an ninh: Quản trị viên (Admin) chính thức được bảo vệ tuyệt đối, không thể bị xóa!";
+                                spanShield.textContent = isSelf ? "Bạn" : "Quản trị viên";
                                 tdAction.appendChild(spanShield);
                             }
                         } else {
-                            // NHÂN VIÊN: CÓ THỂ ĐƯỢC THĂNG CHỨC LÀM ADMIN HOẶC XÓA
+                            // NHÂN VIÊN: CÓ THỂ ĐƯỢC CẤP QUYỀN ADMIN HOẶC XÓA
                             const btnThangChuc = document.createElement("button");
-                            btnThangChuc.className = "btn-action btn-promote";
-                            btnThangChuc.innerHTML = `
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                                <span>Thăng Admin</span>
-                            `;
-                            btnThangChuc.style.display = "inline-flex";
-                            btnThangChuc.style.alignItems = "center";
-                            btnThangChuc.style.gap = "4px";
-                            btnThangChuc.title = "Cấp quyền Quản trị viên (Admin) toàn quyền cho nhân viên này";
+                            btnThangChuc.className = "btn-table-action";
+                            btnThangChuc.textContent = "Cấp quyền Admin";
                             btnThangChuc.addEventListener("click", () => doiQuyenUser(u.id, "admin", u.email));
                             tdAction.appendChild(btnThangChuc);
 
                             const btnXoa = document.createElement("button");
-                            btnXoa.className = "btn-action btn-delete";
-                            btnXoa.title = "Xóa tài khoản nhân viên này khỏi hệ thống";
-                            btnXoa.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
+                            btnXoa.className = "btn-table-delete";
+                            btnXoa.title = "Xóa tài khoản";
+                            btnXoa.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>`;
                             btnXoa.style.marginLeft = "8px";
                             btnXoa.addEventListener("click", () => xoaUser(u.id, u.email));
                             tdAction.appendChild(btnXoa);

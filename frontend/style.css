@@ -141,25 +141,27 @@ body {
 }
 
 .role-badge {
-    font-size: 10.5px;
-    padding: 1px 6px;
-    border-radius: 4px;
-    font-weight: 600;
+    font-size: 11px;
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.3px;
     white-space: nowrap !important;
     flex-shrink: 0;
+    display: inline-block;
 }
 
 .role-admin {
-    background: rgba(234, 179, 8, 0.15);
-    color: #facc15;
-    border: 1px solid rgba(234, 179, 8, 0.3);
+    background: #18181b;
+    color: #ffffff;
+    border: 1px solid #27272a;
 }
 
 .role-user {
-    background: #27272a;
-    color: #a1a1aa;
+    background: #f4f4f5;
+    color: #52525b;
+    border: 1px solid #e4e4e7;
 }
 
 .btn-header-action {
@@ -922,32 +924,70 @@ body {
 }
 
 .badge-protected-admin {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    background: rgba(234, 179, 8, 0.1);
-    color: #a16207;
-    border: 1px solid rgba(234, 179, 8, 0.3);
-    border-radius: var(--radius-sm);
-    font-size: 11.5px;
+    display: inline-block;
+    color: #71717a;
+    font-size: 12px;
     font-weight: 500;
+    padding: 2px 0;
+    white-space: nowrap !important;
 }
 
-.btn-promote {
+.btn-table-action {
     background: #ffffff;
-    color: #047857;
-    border: 1px solid #a7f3d0;
+    color: #18181b;
+    border: 1px solid #e4e4e7;
     border-radius: var(--radius-sm);
     padding: 3px 8px;
-    font-size: 11.5px;
+    font-size: 12px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
+    white-space: nowrap !important;
+    display: inline-flex;
+    align-items: center;
 }
 
-.btn-promote:hover {
-    background: #ecfdf5;
+.btn-table-action:hover {
+    background: #f4f4f5;
+    border-color: #d4d4d8;
+}
+
+.btn-table-delete {
+    background: transparent;
+    color: #71717a;
+    border: 1px solid #e4e4e7;
+    border-radius: var(--radius-sm);
+    padding: 3px 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+}
+
+.btn-table-delete:hover {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+
+.btn-table-danger {
+    background: #ffffff;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+    border-radius: var(--radius-sm);
+    padding: 3px 8px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap !important;
+}
+
+.btn-table-danger:hover {
+    background: #fef2f2;
+    border-color: #f87171;
 }
 
 /* =========================================================
